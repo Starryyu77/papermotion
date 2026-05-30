@@ -5,6 +5,7 @@ You are creating required cinematic support assets for a technical explainer vid
 Input:
 - A Manim still frame, short rough clip, or scene description.
 - `examples/<demo>/production_manifest.json`
+- `examples/<demo>/enriched_scene_spec.json`
 
 Rules:
 - Do not change formulas, symbols, matrices, or mathematical relationships.
@@ -14,6 +15,7 @@ Rules:
 - If using image-to-video, preserve the provided frame composition.
 - Record every asset request in `production_manifest.visual_asset_requests`.
 - Record every generation attempt in `production_manifest.pixverse_jobs`.
+- Ensure every generated PixVerse clip corresponds to a `pixverse` entry in `enriched_scene_spec.scenes[*]`.
 
 Output:
 - PixVerse prompt.

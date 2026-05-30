@@ -1,0 +1,267 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PaperMotion Enriched Scene Spec",
+  "type": "object",
+  "required": ["contract_version", "demo_id", "source_manifest", "scenes"],
+  "properties": {
+    "contract_version": {
+      "type": "string"
+    },
+    "demo_id": {
+      "type": "string"
+    },
+    "source_manifest": {
+      "type": "string"
+    },
+    "total_duration_s": {
+      "type": "number"
+    },
+    "global_style_tokens": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "scene_id",
+          "timestamp_start_s",
+          "duration_s",
+          "narration",
+          "narration_duration_s",
+          "pacing",
+          "insight_moment",
+          "visual_type",
+          "manim",
+          "pixverse",
+          "tts",
+          "music_cue",
+          "assembly",
+          "qa_checks"
+        ],
+        "properties": {
+          "scene_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "linked_beats": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timestamp_start_s": {
+            "type": "number",
+            "minimum": 0
+          },
+          "duration_s": {
+            "type": "number",
+            "minimum": 0
+          },
+          "narration": {
+            "type": "string"
+          },
+          "narration_duration_s": {
+            "type": "number",
+            "minimum": 0
+          },
+          "pacing": {
+            "type": "string"
+          },
+          "insight_moment": {
+            "type": "boolean"
+          },
+          "wait_after_s": {
+            "type": "number",
+            "minimum": 0
+          },
+          "visual_type": {
+            "type": "string",
+            "enum": ["manim", "pixverse", "hybrid", "website_only"]
+          },
+          "manim": {
+            "type": ["object", "null"],
+            "properties": {
+              "scene_class": {
+                "type": "string"
+              },
+              "camera_type": {
+                "type": "string"
+              },
+              "camera_action": {
+                "type": "string"
+              },
+              "objects": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "animation_sequence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["action", "run_time"],
+                  "properties": {
+                    "action": {
+                      "type": "string"
+                    },
+                    "target": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "run_time": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  }
+                }
+              },
+              "render": {
+                "type": "object",
+                "properties": {
+                  "transparent_background": {
+                    "type": "boolean"
+                  },
+                  "output_path": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "pixverse": {
+            "type": ["object", "null"],
+            "properties": {
+              "job_id": {
+                "type": "string"
+              },
+              "asset_id": {
+                "type": "string"
+              },
+              "mode": {
+                "type": "string",
+                "enum": ["text_to_video", "image_to_video", "transition"]
+              },
+              "input_image_path": {
+                "type": "string"
+              },
+              "prompt": {
+                "type": "string"
+              },
+              "negative_prompt": {
+                "type": "string"
+              },
+              "duration_s": {
+                "type": "number",
+                "minimum": 0
+              },
+              "status": {
+                "type": "string"
+              },
+              "video_id": {
+                "type": "string"
+              },
+              "output_url": {
+                "type": "string"
+              },
+              "local_path": {
+                "type": "string"
+              },
+              "must_not_include": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "tts": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "pause_before_s": {
+                "type": "number",
+                "minimum": 0
+              },
+              "pause_after_s": {
+                "type": "number",
+                "minimum": 0
+              },
+              "voice": {
+                "type": "string"
+              },
+              "output_path": {
+                "type": "string"
+              },
+              "actual_duration_s": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          },
+          "music_cue": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "energy": {
+                "type": "string"
+              },
+              "transition": {
+                "type": "string"
+              },
+              "volume_relative": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "sfx": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "assembly": {
+            "type": "object",
+            "properties": {
+              "base_layer": {
+                "type": "string"
+              },
+              "overlay_layers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "subtitle": {
+                "type": "string"
+              },
+              "expected_output_path": {
+                "type": "string"
+              }
+            }
+          },
+          "qa_checks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

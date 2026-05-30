@@ -8,13 +8,15 @@ Goal:
 
 Inputs:
 - `examples/<demo>/production_manifest.json`
-- `examples/<demo>/scene_specs/*.json`
+- `examples/<demo>/enriched_scene_spec.json`
+- Optional detailed files under `examples/<demo>/scene_specs/*.json`
 - Manim still frames or rough MP4 clips if available
 
 Outputs:
 - Updated `visual_asset_requests`
 - Updated `pixverse_jobs`
 - Updated `asset_manifest`
+- Updated `enriched_scene_spec.scenes[*].pixverse` when the scene-level PixVerse contract changes
 - PixVerse prompt drafts and generation status notes
 
 Decision policy:
