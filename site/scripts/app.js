@@ -3,6 +3,7 @@ const state = {
   spec: null,
   scenes: [],
   activeSceneId: null,
+  activeStepId: "intake",
   runTimer: null,
   running: false,
   completed: false
@@ -21,6 +22,8 @@ const pipelineSteps = [
     title: "Research intake",
     detail: "Normalize the formula, target audience, and learning goal.",
     artifact: "examples/attention/input.md",
+    explanation: "The source request is converted into a bounded video task: topic, audience, learning objective, scope, and out-of-scope items.",
+    output: "A clean run brief that tells later stages what the video should teach and what it must not claim.",
     log: "Source request normalized into the attention demo run."
   },
   {
@@ -28,6 +31,8 @@ const pipelineSteps = [
     title: "Mechanism model",
     detail: "Extract symbols, assumptions, causal steps, and misconception guardrails.",
     artifact: "examples/attention/mechanism_spec.json",
+    explanation: "PaperMotion identifies the symbols and mechanism behind the equation, then records guardrails so the video does not over-explain or invent meaning.",
+    output: "A symbol ledger for Q, K, V, scaling, softmax, weights, and contextual output.",
     log: "Q, K, V, scaling, softmax, and weighted values mapped into a symbol ledger."
   },
   {
@@ -35,6 +40,8 @@ const pipelineSteps = [
     title: "Storyboard",
     detail: "Turn teaching beats into five timed scenes.",
     artifact: "examples/attention/storyboard.md",
+    explanation: "The teaching script is split into visual chapters so each conceptual move has one clear scene and one viewer takeaway.",
+    output: "Five scenes: tokens, Q/K/V roles, similarity heatmap, softmax weights, and weighted values.",
     log: "Five-scene attention storyboard selected for the preview."
   },
   {
@@ -42,6 +49,8 @@ const pipelineSteps = [
     title: "Scene contract",
     detail: "Freeze timing, layers, narration, QA checks, and output paths.",
     artifact: "examples/attention/enriched_scene_spec.json",
+    explanation: "The scene contract is the handoff between planning and rendering. It declares timing, Manim classes, optional cinematic support, assembly hints, and QA checks.",
+    output: "An executable scene-level contract that the website and renderer can both inspect.",
     log: "Enriched scene spec loaded as the executable single source of truth."
   },
   {
@@ -49,6 +58,8 @@ const pipelineSteps = [
     title: "Manim exact render",
     detail: "Render formulas, matrices, heatmaps, bars, and labels deterministically.",
     artifact: "manim/attention_demo.py",
+    explanation: "Exact math stays in deterministic code. Manim owns the equation, matrix grids, labels, heatmap, and symbolic transformations.",
+    output: "A rough but traceable MP4 demo plus scene-layer WebM artifacts.",
     log: "Pre-rendered Manim rough pass found at site/public/videos/attention-demo.mp4."
   },
   {
@@ -56,6 +67,8 @@ const pipelineSteps = [
     title: "Cinematic support",
     detail: "Reserve PixVerse for non-exact atmosphere and transitions only.",
     artifact: "examples/attention/keyframes/",
+    explanation: "AI video is treated as optional support material. It can add atmosphere, abstract transitions, and non-symbolic motion, but it cannot render equations or labels.",
+    output: "Provider-neutral support-shot prompts and text-free keyframes.",
     log: "Optional PixVerse support jobs prepared; exact math remains in Manim."
   },
   {
@@ -63,6 +76,8 @@ const pipelineSteps = [
     title: "Assembly and QA",
     detail: "Reveal the pre-generated video and linked scene evidence.",
     artifact: "site/public/videos/attention-demo.mp4",
+    explanation: "The demo reveals the already-rendered video while keeping the trace visible, so the result can be reviewed against the source artifacts.",
+    output: "A pre-rendered attention explainer video with clickable evidence below.",
     log: "Preview complete. Final demo video unlocked."
   }
 ];
@@ -124,19 +139,25 @@ function renderPipeline(activeIndex = -1, completed = false) {
       if (completed || index < activeIndex) status = "done";
       if (index === activeIndex && !completed) status = "running";
       const statusLabel = status === "done" ? "Done" : status === "running" ? "Running" : "Waiting";
+      const active = state.activeStepId === step.id ? " active" : "";
       return `
-        <article class="pipeline-step ${status}">
-          <div>
-            <span>${String(index + 1).padStart(2, "0")}</span>
+        <button class="pipeline-step ${status}${active}" type="button" data-step-id="${escapeHtml(step.id)}">
+          <span class="pipeline-index">${String(index + 1).padStart(2, "0")}</span>
+          <div class="pipeline-copy">
             <strong>${escapeHtml(step.title)}</strong>
             <p>${escapeHtml(step.detail)}</p>
-            <code>${escapeHtml(step.artifact)}</code>
           </div>
-          <em>${statusLabel}</em>
-        </article>
+          <em class="pipeline-status">${statusLabel}</em>
+        </button>
       `;
     })
     .join("");
+
+  $$(".pipeline-step").forEach((button) => {
+    button.addEventListener("click", () => {
+      setActiveStep(button.dataset.stepId);
+    });
+  });
 }
 
 function renderWorkflowRail() {
@@ -152,6 +173,33 @@ function renderWorkflowRail() {
       `
     )
     .join("");
+}
+
+function setActiveStep(stepId) {
+  state.activeStepId = stepId;
+  renderPipeline(currentRunIndex(), state.completed);
+  renderStepDetail();
+}
+
+function currentRunIndex() {
+  if (state.completed) return pipelineSteps.length;
+  const status = $("#pipelineStatus")?.dataset.activeIndex;
+  return status ? Number(status) : -1;
+}
+
+function renderStepDetail() {
+  const step = pipelineSteps.find((item) => item.id === state.activeStepId) || pipelineSteps[0];
+  const index = pipelineSteps.findIndex((item) => item.id === step.id);
+  $("#stepDetail").innerHTML = `
+    <span class="detail-label">Step ${String(index + 1).padStart(2, "0")}</span>
+    <h3>${escapeHtml(step.title)}</h3>
+    <p>${escapeHtml(step.explanation)}</p>
+    <div class="detail-grid">
+      <div class="detail-row"><span>Output</span><strong>${escapeHtml(step.output)}</strong></div>
+      <div class="detail-row"><span>Artifact</span><code>${escapeHtml(step.artifact)}</code></div>
+      <div class="detail-row"><span>Boundary</span><strong>${step.id === "support" ? "Cinematic only. No exact math or readable formulas." : "File-backed and reviewable."}</strong></div>
+    </div>
+  `;
 }
 
 function activeScene() {
@@ -221,7 +269,10 @@ function resetRun() {
   $("#generateButton").textContent = "Start simulated generation";
   $("#runState").textContent = "Ready";
   $("#pipelineStatus").textContent = "Waiting for input";
+  $("#pipelineStatus").dataset.activeIndex = "";
   $("#outputStatus").textContent = "Locked until run completes";
+  $("#runState").className = "state-pill";
+  $("#pipelineStatus").className = "state-pill";
   $("#resultShell").classList.remove("complete");
   $("#resultShell").classList.remove("playing");
   $("#consoleLog").innerHTML = "";
@@ -238,9 +289,14 @@ function completeRun() {
   $("#generateButton").textContent = "Run simulation again";
   $("#runState").textContent = "Complete";
   $("#pipelineStatus").textContent = "All preset stages complete";
+  $("#pipelineStatus").dataset.activeIndex = String(pipelineSteps.length);
   $("#outputStatus").textContent = "Pre-rendered demo unlocked";
+  $("#runState").className = "state-pill complete";
+  $("#pipelineStatus").className = "state-pill complete";
   $("#resultShell").classList.add("complete");
+  state.activeStepId = "delivery";
   renderPipeline(pipelineSteps.length, true);
+  renderStepDetail();
   const video = $("#finalVideo");
   video.pause();
   video.currentTime = 0;
@@ -253,6 +309,8 @@ function startRun() {
   $("#generateButton").disabled = true;
   $("#generateButton").textContent = "Simulating...";
   $("#runState").textContent = "Running";
+  $("#runState").className = "state-pill running";
+  $("#pipelineStatus").className = "state-pill running";
   appendLog(`Input accepted: ${$("#sourceInput").value.trim().slice(0, 90)}...`);
 
   let index = 0;
@@ -265,7 +323,10 @@ function startRun() {
     }
 
     $("#pipelineStatus").textContent = step.title;
+    $("#pipelineStatus").dataset.activeIndex = String(index);
+    state.activeStepId = step.id;
     renderPipeline(index);
+    renderStepDetail();
     appendLog(step.log);
     index += 1;
     state.runTimer = window.setTimeout(tick, index === pipelineSteps.length ? 720 : 620);
@@ -294,6 +355,7 @@ async function init() {
   wireControls();
   renderPipeline();
   renderWorkflowRail();
+  renderStepDetail();
 
   try {
     const [manifest, spec] = await Promise.all([
