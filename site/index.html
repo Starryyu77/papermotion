@@ -29,21 +29,79 @@
               <div class="window-buttons" aria-hidden="true">
                 <span></span><span></span><span></span>
               </div>
-              <strong>Attention Film Workbench</strong>
+              <strong>Formula-to-Film Workbench</strong>
               <span id="sceneTimecode">00:00 / 00:56</span>
             </div>
 
             <div class="video-shell">
               <div class="video-placeholder" id="videoPlaceholder">
                 <div class="scanlines" aria-hidden="true"></div>
-                <div class="placeholder-copy">
-                  <span class="mini-label">Ready for MP4</span>
-                  <h1 id="activeSceneTitle">Loading scene</h1>
-                  <p id="activeNarration">Loading demo data...</p>
+                <div class="product-hero">
+                  <section class="product-copy" aria-label="PaperMotion product promise">
+                    <span class="mini-label">PaperMotion Demo</span>
+                    <h1>Turn formulas into explainer films.</h1>
+                    <p>
+                      Paste a paper excerpt or equation. PaperMotion reads the mechanism, builds a
+                      scene spec, renders exact Manim math, adds PixVerse support shots, and assembles
+                      a short film with synced notes.
+                    </p>
+                    <div class="hero-actions">
+                      <button type="button" id="openInspectorHero">Inspect the Pipeline</button>
+                      <button type="button" id="openPixverseHero">Generate Support Shot</button>
+                    </div>
+                  </section>
+
+                  <section class="conversion-panel" aria-label="Formula to video conversion">
+                    <div class="conversion-card input-card">
+                      <span class="mini-label">Input</span>
+                      <strong>Paper formula</strong>
+                      <code>Attention(Q,K,V) = softmax(QK^T / sqrt(d_k))V</code>
+                    </div>
+                    <div class="conversion-arrow" aria-hidden="true">-&gt;</div>
+                    <div class="conversion-card output-card">
+                      <span class="mini-label">Output</span>
+                      <strong>56s explainer film</strong>
+                      <p>Scene spec + exact math render + cinematic support layer.</p>
+                    </div>
+                  </section>
+
+                  <section class="product-flow" aria-label="PaperMotion production workflow">
+                    <div class="flow-step active">
+                      <span>01</span>
+                      <strong>Formula</strong>
+                      <small>paper excerpt</small>
+                    </div>
+                    <div class="flow-step">
+                      <span>02</span>
+                      <strong>Mechanism</strong>
+                      <small>symbol ledger</small>
+                    </div>
+                    <div class="flow-step">
+                      <span>03</span>
+                      <strong>Scene Spec</strong>
+                      <small>timed contract</small>
+                    </div>
+                    <div class="flow-step">
+                      <span>04</span>
+                      <strong>Render Layers</strong>
+                      <small>Manim + PixVerse</small>
+                    </div>
+                    <div class="flow-step">
+                      <span>05</span>
+                      <strong>Explainer Film</strong>
+                      <small>synced notes</small>
+                    </div>
+                  </section>
+
+                  <section class="active-demo-card" aria-label="Current demo scene">
+                    <span class="mini-label">Live demo: attention formula</span>
+                    <strong id="activeSceneTitle">Loading scene</strong>
+                    <p id="activeNarration">Loading demo data...</p>
+                  </section>
                 </div>
 
                 <div class="formula-overlay" aria-label="Formula ledger">
-                  <span class="mini-label">Formula</span>
+                  <span class="mini-label">Exact math layer</span>
                   <div class="formula-line" aria-label="Scaled dot product attention formula">
                     <button data-token="Q">Q</button><span>,</span>
                     <button data-token="K">K</button><span>,</span>
@@ -55,7 +113,7 @@
                     <button data-token="scale">sqrt(d_k)</button><span>)</span>
                     <button data-token="context">V</button>
                   </div>
-                  <p id="formulaNote">Select a scene or symbol to inspect the exact Manim layer.</p>
+                  <p id="formulaNote">Manim keeps formulas, matrices, and labels precise. PixVerse only supports cinematic motion.</p>
                 </div>
               </div>
             </div>
@@ -66,10 +124,10 @@
           <section class="workflow-strip" aria-label="Pipeline stages">
             <div class="stage-summary">
               <span class="status-dot ready"></span>
-              <strong>Scene Spec 4/8</strong>
-              <span>Manifest -> Enriched Scene Spec -> Manim/PixVerse</span>
+              <strong>Demo path: formula -> film</strong>
+              <span>Attention formula becomes scene specs, exact animation, support shots, and synced notes.</span>
             </div>
-            <button type="button" id="openInspectorFromStrip">Open Inspector</button>
+            <button type="button" id="openInspectorFromStrip">Inspect the Pipeline</button>
           </section>
         </section>
 

@@ -20,6 +20,7 @@
 | Add enriched scene spec contract | Shared | `contracts/enriched_scene_spec.schema.json` | Defines scene-level SSOT fields for Manim, TTS, Music, PixVerse, Assembly, and QA. |
 | Add attention enriched scene spec seed | Shared | `examples/attention/enriched_scene_spec.json` | Gives the website and downstream agents a concrete scene-level contract to read. |
 | Build focused website skeleton | Person B | `site/` | Zero-dependency local desktop website loads manifest/spec data and supports scene navigation, formula token jumps, hidden inspector panels, and mock PixVerse generate/status flow. |
+| Clarify first-viewport product story | Person B | `site/index.html`, `site/styles/main.css` | First viewport now states formula-to-film promise, shows input/output conversion, and exposes Formula -> Mechanism -> Scene Spec -> Render Layers -> Explainer Film. |
 
 ## Next
 

@@ -146,7 +146,7 @@ function setActiveToken(token, options = {}) {
   state.activeToken = token;
   $$("[data-token]").forEach((button) => button.classList.toggle("active", button.dataset.token === token));
   const note = tokenNotes[token] || tokenNotes.softmax;
-  $("#formulaNote").textContent = `${note.label}: ${note.text}`;
+  $("#formulaNote").textContent = `Manim exact layer - ${note.label}: ${note.text}`;
   if (options.jumpToLinkedScene && note.sceneId) {
     setActiveScene(note.sceneId, { preserveToken: true });
   } else {
@@ -378,6 +378,8 @@ function wireStaticControls() {
   });
   $("#inspectButton")?.addEventListener("click", () => openInspector());
   $("#openInspectorFromStrip")?.addEventListener("click", () => openInspector());
+  $("#openInspectorHero")?.addEventListener("click", () => setActivePanel("spec"));
+  $("#openPixverseHero")?.addEventListener("click", () => setActivePanel("pixverse"));
   $("#closeInspector")?.addEventListener("click", () => closeInspector());
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeInspector();

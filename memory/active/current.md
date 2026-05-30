@@ -40,7 +40,7 @@ Reason: it is recognizable, formula-heavy enough to show value, and simple enoug
 ## Active Workstream
 Current branch is for Person B: presentation-facing work around the website, demo flow, PixVerse support specs, audio rhythm, final embed, and QA.
 
-Person B website direction is `PaperMotion Workbench`: a desktop-only retro workstation presentation surface that borrows from early Mac OS X Aqua / classic desktop UI and Windows 98 control density without copying real Apple or Microsoft assets or framing the product as a literal OS clone. The current implementation uses one primary film workbench as the visual focus, with formula overlay, chapter rail, compact workflow strip, and a hidden context inspector drawer. Mobile layout is out of scope for this pass.
+Person B website direction is `PaperMotion Workbench`: a desktop-only retro workstation presentation surface that borrows from early Mac OS X Aqua / classic desktop UI and Windows 98 control density without copying real Apple or Microsoft assets or framing the product as a literal OS clone. The current implementation uses one primary formula-to-film workbench as the visual focus. The first viewport must explain the product before the demo details: PaperMotion turns a paper formula into an inspectable explainer film through mechanism understanding, scene spec, exact Manim render layers, PixVerse support shots, and synced notes. Mobile layout is out of scope for this pass.
 
 PixVerse API access is available. Website implementation should include a server-side PixVerse proxy/generate flow instead of only showing planned jobs.
 
@@ -72,6 +72,7 @@ Website-builder handoff package is captured in `docs/website-builder-handoff.md`
 ## Next Step
 Finalize the Person B presentation site:
 - Keep the first viewport focused on the film workbench rather than multiple competing desktop widgets.
+- Make the product promise visible before the specific attention scene title.
 - Use `site/` as the zero-dependency desktop demo website.
 - Keep PixVerse API credentials server-side; the current local server exposes mock generate/status routes ready for a real proxy.
 - Run build/browser QA, then commit and push the focused website branch.
