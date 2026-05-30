@@ -4,17 +4,17 @@
 
 Person B owns the public-facing demonstration layer for PaperMotion. Person A owns the Trae Solo production workflow: paper understanding, mechanism specs, storyboard, scene specs, and Manim exact renders. The website should make that workflow visible, usable, and memorable.
 
-The site should feel like a retro technical desktop environment: a fictional `PaperMotionOS` workbench where a viewer can inspect the formula, play the current film draft, see the Solo pipeline, and generate PixVerse cinematic support clips.
+The site should feel like a retro technical desktop environment: a focused `PaperMotion Workbench` where a viewer can inspect the formula-to-film workflow, play the current film draft, and open deeper scene/PixVerse details only when needed.
 
 This is not a generic landing page. The first viewport is the product demo.
 
 ## Recommended Direction
 
-Use a `PaperMotionOS Classic Workbench` aesthetic:
+Use a `PaperMotion Workbench` aesthetic:
 
 - Inspired by early desktop OS interfaces such as classic Mac OS, early Mac OS X Aqua, and Windows 98.
 - Do not copy Apple, Microsoft, Finder, Windows, or system icons directly.
-- Create a fictional production OS for paper-to-film workflows.
+- Create a fictional retro research workstation for paper-to-film workflows.
 - Keep it professional enough for a demo, but memorable enough to stand apart from normal AI SaaS pages.
 
 The visual target is:
@@ -45,54 +45,44 @@ Keep this as a possible alternate skin.
 
 ### Final Choice
 
-Start with Option A, but borrow the legibility and control density of Option B. The MVP should look like a classic creative OS, not a parody desktop.
+Start with Option A, but borrow the legibility and control density of Option B. The MVP should look like a classic creative workstation, not a parody desktop or literal operating-system clone. Keep visible product language on PaperMotion, not on an OS brand.
 
 ## First Viewport Layout
 
-The first viewport should show a working desktop, not a marketing hero.
+The first viewport should show one working desktop workbench, not a marketing hero and not a scattered multi-window dashboard.
 
 Required regions:
 
 1. `Menu Bar`
-   - Left: `PaperMotion  File  Workflow  PixVerse  View  Help`
+   - Left: `PaperMotion` plus one primary inspect command.
    - Right: current demo name, render status, clock-style timestamp.
 
-2. `Desktop`
+2. `Focused Film Workbench`
    - Background texture or wallpaper.
-   - A small set of desktop icons:
-     - `attention.formula`
-     - `production_manifest.json`
-     - `pixverse_queue`
-     - `final_film.mov`
-
-3. `Main Film Window`
-   - Largest window.
+   - One large active window dominates the screen.
    - Shows Manim exact render or a placeholder player.
    - Has classic window controls.
    - Includes scene title, timecode, and chapter rail.
 
-4. `Formula Window`
+3. `Formula Overlay`
    - Shows `Attention(Q,K,V) = softmax(QK^T / sqrt(d_k))V`.
    - Symbol ledger with stable colors for Q, K, V, softmax, scaling, and weights.
    - Clickable formula tokens update the current explanation.
 
-5. `PixVerse Console`
+4. `Workflow Strip`
+   - Compact status row under the film workbench.
+   - Shows the file-backed pipeline in one line:
+     `Manifest -> Enriched Scene Spec -> Manim/PixVerse`.
+   - Offers `Open Inspector` as the single expansion path.
+
+5. `Hidden Context Inspector`
+   - Closed by default so the page has a clear visual focus.
+   - Tabs expose Formula, Spec, and PixVerse detail.
    - Shows PixVerse jobs from the manifest.
    - Allows selecting a scene and generating a support shot.
    - Displays `queued`, `generating`, `polling`, `ready`, `failed`, or `fallback`.
-
-6. `Solo Workflow Window`
-   - Shows the production pipeline:
-     `Input -> Mechanism -> Storyboard -> Manim -> PixVerse -> Assembly -> Website`
-   - Each stage links to file-backed artifacts where available.
-
-7. `Scene Spec Inspector`
    - Shows the active scene from `examples/attention/enriched_scene_spec.json`.
    - Displays timing, narration duration, visual type, Manim layer, TTS cue, music cue, PixVerse cue, assembly layer, and QA checks.
-
-8. `Assembly Monitor`
-   - Shows layer readiness for each scene.
-   - Makes clear which layers are Manim exact overlays, PixVerse cinematic bases, subtitles, voiceover, music, and SFX.
 
 ## Core User Story
 
@@ -100,7 +90,7 @@ As a viewer, I should immediately understand that PaperMotion turns a paper/form
 
 The main demo path:
 
-1. Viewer lands on `PaperMotionOS`.
+1. Viewer lands on `PaperMotion Workbench`.
 2. Film window is already open with the attention demo selected.
 3. Viewer clicks scene chapters.
 4. Formula window updates to explain the active symbol or transformation.
@@ -317,7 +307,7 @@ Required icon set:
 
 Suggested routes:
 
-- `/`: main `PaperMotionOS` demo desktop.
+- `/`: main `PaperMotion Workbench` demo desktop.
 - `/api/pixverse/generate`: server route for PixVerse generation.
 - `/api/pixverse/status/:video_id`: server route for PixVerse polling.
 
@@ -408,7 +398,7 @@ The UI should communicate this boundary. Manim is the exact math layer. PixVerse
 
 ## Implementation Sequence
 
-1. Create static `PaperMotionOS` shell and window components.
+1. Create static `PaperMotion Workbench` shell and window components.
 2. Wire `production_manifest.json` into project, formula, storyboard, and PixVerse panels.
 3. Wire `enriched_scene_spec.json` into Scene Spec Inspector, Assembly Monitor, timing, and layer readiness.
 4. Add PixVerse backend proxy routes with environment-based API key.

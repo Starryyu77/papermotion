@@ -8,7 +8,7 @@
 
 融合后的方向是：
 
-> PaperMotion 是 Formula2Video 的 Trae Solo-native 展示与生产工作台。`production_manifest.json` 管项目级状态，`enriched_scene_spec.json` 管场景级可执行规格，Person B 的 `PaperMotionOS` 网站负责展示、触发 PixVerse、预览素材和证明 workflow。
+> PaperMotion 是 Formula2Video 的 Trae Solo-native 展示与生产工作台。`production_manifest.json` 管项目级状态，`enriched_scene_spec.json` 管场景级可执行规格，Person B 的 `PaperMotion Workbench` 网站负责展示、触发 PixVerse、预览素材和证明 workflow。
 
 ## 关键差异
 
@@ -41,7 +41,7 @@ FFmpeg assembly -> QA review -> final MP4
         |
         v
 阶段 D：展示层（Person B）
-PaperMotionOS website -> film window + formula inspector + PixVerse console + workflow proof
+PaperMotion Workbench website -> focused film workbench + formula overlay + hidden spec/PixVerse inspector + workflow proof
 ```
 
 贯穿全程：
@@ -124,7 +124,7 @@ examples/<demo>/enriched_scene_spec.json
 | WP8 | Music Agent | Person B / later | MVP 可先输出 music cue plan |
 | WP9 | PixVerse Agent | Person B | 可做；API 可用，网站提供生成入口 |
 | WP10 | Assembly + QA Agent | Person B/shared | MVP 至少做 assembly plan 和网站预览 |
-| Website | PaperMotionOS demo | Person B | 必做，展示工作流和触发 PixVerse |
+| Website | PaperMotion Workbench demo | Person B | 必做，展示工作流和触发 PixVerse |
 
 ## 当前 MVP 决策
 
@@ -138,10 +138,10 @@ examples/<demo>/enriched_scene_spec.json
 
 ## 对 Person B 网站的影响
 
-`PaperMotionOS Classic Workbench` 保持不变，但增加两个窗口/能力：
+`PaperMotion Workbench` 保留复古工作站视觉，但收敛成一个主工作台和一个按需打开的 inspector：
 
-- `Scene Spec Inspector`: 展示 `enriched_scene_spec.json` 中当前 scene 的 timing、layers、tts、music cue、pixverse cue 和 QA checks。
-- `Assembly Monitor`: 展示每个 scene 的 layer readiness，以及最终合成顺序。
+- 主工作台：展示 film placeholder/player、scene chapters、formula overlay 和当前解释。
+- Context Inspector：展示 `enriched_scene_spec.json` 中当前 scene 的 timing、layers、tts、music cue、pixverse cue、QA checks，并提供 PixVerse support shot 生成入口。
 
 网站不只是“好看的官网”，而是 Formula2Video pipeline 的可视化控制台。
 

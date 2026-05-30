@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PaperMotion Workbench</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23284b70'/%3E%3Cpath d='M14 39h36M18 25h28M24 14l-8 18 8 18M40 14l8 18-8 18' stroke='%23f6f2e8' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body>
+    <div class="boot-sheen" aria-hidden="true"></div>
+    <main id="app" class="pm-os" aria-label="PaperMotion presentation workbench">
+      <header class="menu-bar">
+        <nav class="menu-left" aria-label="Workbench menu">
+          <strong>PaperMotion</strong>
+          <button type="button" id="inspectButton">Inspect</button>
+        </nav>
+        <div class="menu-right">
+          <span>Attention Demo</span>
+          <span id="projectStatus">loading</span>
+          <span id="clock">12:00</span>
+        </div>
+      </header>
+
+      <section class="desktop">
+        <section class="focus-stage" aria-label="Focused production workbench">
+          <article class="window main-window active-window" id="filmWindow">
+            <div class="title-bar">
+              <div class="window-buttons" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <strong>Attention Film Workbench</strong>
+              <span id="sceneTimecode">00:00 / 00:56</span>
+            </div>
+
+            <div class="video-shell">
+              <div class="video-placeholder" id="videoPlaceholder">
+                <div class="scanlines" aria-hidden="true"></div>
+                <div class="placeholder-copy">
+                  <span class="mini-label">Ready for MP4</span>
+                  <h1 id="activeSceneTitle">Loading scene</h1>
+                  <p id="activeNarration">Loading demo data...</p>
+                </div>
+
+                <div class="formula-overlay" aria-label="Formula ledger">
+                  <span class="mini-label">Formula</span>
+                  <div class="formula-line" aria-label="Scaled dot product attention formula">
+                    <button data-token="Q">Q</button><span>,</span>
+                    <button data-token="K">K</button><span>,</span>
+                    <button data-token="V">V</button>
+                    <span class="formula-eq">-></span>
+                    <button data-token="softmax">softmax</button><span>(</span>
+                    <button data-token="QK">QK^T</button>
+                    <span>/</span>
+                    <button data-token="scale">sqrt(d_k)</button><span>)</span>
+                    <button data-token="context">V</button>
+                  </div>
+                  <p id="formulaNote">Select a scene or symbol to inspect the exact Manim layer.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="chapter-rail" id="chapterRail" aria-label="Scene chapters"></div>
+          </article>
+
+          <section class="workflow-strip" aria-label="Pipeline stages">
+            <div class="stage-summary">
+              <span class="status-dot ready"></span>
+              <strong>Scene Spec 4/8</strong>
+              <span>Manifest -> Enriched Scene Spec -> Manim/PixVerse</span>
+            </div>
+            <button type="button" id="openInspectorFromStrip">Open Inspector</button>
+          </section>
+        </section>
+
+        <aside class="window inspector-window" id="inspectorDrawer" aria-label="Context inspector" aria-hidden="true" inert>
+          <div class="title-bar">
+            <div class="window-buttons" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <strong>Context Inspector</strong>
+            <button type="button" id="closeInspector">Close</button>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="Inspector tabs">
+            <button class="tab active" type="button" data-panel="formula" role="tab">Formula</button>
+            <button class="tab" type="button" data-panel="spec" role="tab">Spec</button>
+            <button class="tab" type="button" data-panel="pixverse" role="tab">PixVerse</button>
+          </div>
+
+          <div class="inspector-body">
+            <section class="panel active" id="panel-formula"></section>
+            <section class="panel" id="panel-spec"></section>
+            <section class="panel" id="panel-pixverse"></section>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script type="module" src="./scripts/app.js"></script>
+  </body>
+</html>

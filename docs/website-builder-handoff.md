@@ -1,10 +1,12 @@
-# Website Builder Handoff: PaperMotionOS
+# Website Builder Handoff: PaperMotion Workbench
+
+Note: this handoff is now secondary. Person B is building the site directly in `site/`; use this document only as background if a dedicated builder is reintroduced.
 
 ## Copy-Paste Brief
 
 You are the dedicated website builder for PaperMotion. Build the public demo website for the current repo.
 
-The website is not a generic landing page. It is a retro desktop-style product demo called `PaperMotionOS Classic Workbench`: a fictional early-desktop operating system interface where a viewer can inspect a formula-to-video pipeline, preview the film, inspect scene specs, and trigger PixVerse cinematic support generation.
+The website is not a generic landing page. It is a retro desktop-style product demo called `PaperMotion Workbench`: a fictional retro research workstation where a viewer can inspect a formula-to-video pipeline, preview the film, inspect scene specs, and trigger PixVerse cinematic support generation.
 
 Build the actual usable first screen, not marketing filler.
 
@@ -86,7 +88,7 @@ Attention(Q,K,V) = softmax(QK^T / sqrt(d_k))V
 
 ## Required Aesthetic
 
-Use `PaperMotionOS Classic Workbench`.
+Use `PaperMotion Workbench`.
 
 Visual references:
 
@@ -416,7 +418,7 @@ Browser QA:
 The implementation is done when:
 
 - Site runs locally.
-- First viewport looks like `PaperMotionOS`, not a marketing landing page.
+- First viewport looks like `PaperMotion Workbench`, not a marketing landing page.
 - Film, Formula, PixVerse, Workflow, Scene Spec, and Assembly windows are visible or focusable.
 - Chapter clicks update multiple windows.
 - Formula token clicks update explanation.

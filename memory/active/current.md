@@ -40,13 +40,13 @@ Reason: it is recognizable, formula-heavy enough to show value, and simple enoug
 ## Active Workstream
 Current branch is for Person B: presentation-facing work around the website, demo flow, PixVerse support specs, audio rhythm, final embed, and QA.
 
-Person B website direction is `PaperMotionOS Classic Workbench`: a retro desktop-inspired presentation surface that borrows from early Mac OS X Aqua / classic desktop UI and Windows 98 control density without copying real Apple or Microsoft assets. The design source of truth is `docs/person-b-presentation-website-design.md`.
+Person B website direction is `PaperMotion Workbench`: a desktop-only retro workstation presentation surface that borrows from early Mac OS X Aqua / classic desktop UI and Windows 98 control density without copying real Apple or Microsoft assets or framing the product as a literal OS clone. The current implementation uses one primary film workbench as the visual focus, with formula overlay, chapter rail, compact workflow strip, and a hidden context inspector drawer. Mobile layout is out of scope for this pass.
 
 PixVerse API access is available. Website implementation should include a server-side PixVerse proxy/generate flow instead of only showing planned jobs.
 
 Updated project-plan fusion is captured in `docs/project-plan-fusion.md`. The fused architecture uses a two-level contract: `production_manifest.json` remains the project-level registry and website navigation source, while `enriched_scene_spec.json` is the executable scene-level single source of truth for Manim, TTS, Music/SFX, PixVerse, Assembly, and QA.
 
-Website-builder handoff package is captured in `docs/website-builder-handoff.md`. Give this file to any dedicated website-building tool as the standalone implementation brief for `PaperMotionOS`.
+Website-builder handoff package is captured in `docs/website-builder-handoff.md`. It is now secondary to the repo-local `site/` implementation because Person B is building the website directly.
 
 ## Trae Solo Integration
 - Open this repo as the Solo Desktop workspace.
@@ -70,12 +70,8 @@ Website-builder handoff package is captured in `docs/website-builder-handoff.md`
 - Coordination happens through repo files, not chat-only decisions. Project status lives in `production_manifest.json`; executable scene details live in `enriched_scene_spec.json`.
 
 ## Next Step
-Create the site skeleton and a sample workflow artifact set:
-- `examples/attention/input.md`
-- `examples/attention/production_manifest.json`
-- `examples/attention/enriched_scene_spec.json`
-- `examples/attention/mechanism_spec.json`
-- `examples/attention/storyboard.md`
-- `examples/attention/scene_specs/*.json`
-- `manim/attention_demo.py`
-- `site/` or Vite root app
+Finalize the Person B presentation site:
+- Keep the first viewport focused on the film workbench rather than multiple competing desktop widgets.
+- Use `site/` as the zero-dependency desktop demo website.
+- Keep PixVerse API credentials server-side; the current local server exposes mock generate/status routes ready for a real proxy.
+- Run build/browser QA, then commit and push the focused website branch.

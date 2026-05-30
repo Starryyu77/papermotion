@@ -8,7 +8,7 @@
 | Create production manifest | Person A | MTC | `contracts/production_manifest.schema.json` | `examples/attention/production_manifest.json` | Contains project registry, intent, prerequisite graph, curriculum plan, script slots, PixVerse job slots, and pointer to enriched scene spec. |
 | Generate intent/prereq/curriculum | Person A | MTC | `examples/attention/input.md` | `production_manifest` sections | Uses minimal just-in-time prerequisite policy. |
 | Generate PixVerse asset plan | Person B | MTC | `production_manifest.script.beats` | `production_manifest.visual_asset_requests` | Marks which assets are PixVerse, Manim, static, or website-only. |
-| Build website skeleton | Person B | Code | `docs/person-b-presentation-website-design.md` + `examples/attention/enriched_scene_spec.json` | `site/` | First viewport has retro desktop workbench, film window, formula window, PixVerse console, workflow window, scene spec inspector, and assembly monitor. |
+| Finalize focused presentation site | Person B | Code | `site/` + `examples/attention/enriched_scene_spec.json` | committed `site/` branch state | Desktop first viewport centers one film workbench, with formula overlay, chapter rail, compact workflow strip, hidden inspector drawer, and PixVerse server-side mock/proxy boundary. |
 
 ## Done
 
@@ -19,6 +19,7 @@
 | Fuse updated project plan | Shared | `docs/project-plan-fusion.md` | Reconciles Formula2Video plan with PaperMotion/Solo/website direction. |
 | Add enriched scene spec contract | Shared | `contracts/enriched_scene_spec.schema.json` | Defines scene-level SSOT fields for Manim, TTS, Music, PixVerse, Assembly, and QA. |
 | Add attention enriched scene spec seed | Shared | `examples/attention/enriched_scene_spec.json` | Gives the website and downstream agents a concrete scene-level contract to read. |
+| Build focused website skeleton | Person B | `site/` | Zero-dependency local desktop website loads manifest/spec data and supports scene navigation, formula token jumps, hidden inspector panels, and mock PixVerse generate/status flow. |
 
 ## Next
 
