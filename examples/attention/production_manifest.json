@@ -1,0 +1,311 @@
+{
+  "project": {
+    "demo_id": "attention",
+    "title": "Scaled Dot-Product Attention",
+    "source_type": "formula",
+    "status": "planning",
+    "owner": "PaperMotion"
+  },
+  "intent": {
+    "viewer_goal": "Understand how the attention formula turns token relationships into weighted value aggregation.",
+    "target_audience": "AI-curious students or developers who have seen the Transformer attention formula but do not yet feel the mechanism.",
+    "learning_objective": "After watching, the viewer should be able to explain why QK^T creates relevance scores, why scaling is applied, why softmax creates weights, and how V is mixed into a contextual representation.",
+    "scope": [
+      "Scaled dot-product attention formula",
+      "Q/K/V roles",
+      "Similarity heatmap",
+      "Softmax weights",
+      "Weighted sum over values"
+    ],
+    "out_of_scope": [
+      "Multi-head attention details",
+      "Backpropagation",
+      "Full Transformer architecture",
+      "Training objective"
+    ]
+  },
+  "prerequisite_graph": {
+    "nodes": [
+      {
+        "id": "token_vector",
+        "label": "Token as vector",
+        "is_blocker": true,
+        "explain_policy": "brief_before_use"
+      },
+      {
+        "id": "dot_product",
+        "label": "Dot product as similarity",
+        "is_blocker": true,
+        "explain_policy": "just_in_time"
+      },
+      {
+        "id": "softmax",
+        "label": "Softmax turns scores into weights",
+        "is_blocker": true,
+        "explain_policy": "just_in_time"
+      },
+      {
+        "id": "matrix_multiplication",
+        "label": "Matrix multiplication",
+        "is_blocker": false,
+        "explain_policy": "skip"
+      }
+    ],
+    "edges": [
+      {
+        "from": "token_vector",
+        "to": "dot_product",
+        "reason": "Similarity is computed between vector representations."
+      },
+      {
+        "from": "dot_product",
+        "to": "softmax",
+        "reason": "Raw relevance scores must become normalized weights."
+      }
+    ]
+  },
+  "curriculum_plan": {
+    "concept_order": [
+      "token_vector",
+      "Q/K/V roles",
+      "dot_product",
+      "scaling",
+      "softmax",
+      "weighted sum"
+    ],
+    "just_in_time_insertions": [
+      {
+        "concept_id": "dot_product",
+        "insert_before_beat": "b03",
+        "one_sentence_explanation": "顺带一提，点积可以被当作两个向量朝向是否相似的快速打分。"
+      },
+      {
+        "concept_id": "softmax",
+        "insert_before_beat": "b05",
+        "one_sentence_explanation": "顺带一提，softmax 会把一排分数变成总和为 1 的注意力比例。"
+      }
+    ]
+  },
+  "script": {
+    "style_guide": "Geometric intuition explainer: precise, visual, calm, and just-in-time. Do not impersonate a specific creator.",
+    "beats": [
+      {
+        "beat_id": "b01",
+        "spoken_text": "A token does not look at a sentence all at once. It asks a more local question: which other tokens matter to me right now?",
+        "teaching_intent": "hook",
+        "visual_need": "tokens appear as tiles in a sentence strip",
+        "pacing_intent": "medium",
+        "linked_prerequisites": ["token_vector"]
+      },
+      {
+        "beat_id": "b02",
+        "spoken_text": "For each token, we create three roles: a query that asks, keys that can answer, and values that carry the information to mix.",
+        "teaching_intent": "define_roles",
+        "visual_need": "each token splits into Q, K, and V colored cards",
+        "pacing_intent": "medium",
+        "linked_prerequisites": []
+      },
+      {
+        "beat_id": "b03",
+        "spoken_text": "The query compares itself with every key. These comparisons become a grid of relevance scores.",
+        "teaching_intent": "reveal",
+        "visual_need": "QK^T heatmap emerges from query-key comparisons",
+        "pacing_intent": "slow_down",
+        "linked_prerequisites": ["dot_product"]
+      },
+      {
+        "beat_id": "b04",
+        "spoken_text": "Dividing by the square root of the key dimension keeps the scores from becoming too extreme too early.",
+        "teaching_intent": "misconception_repair",
+        "visual_need": "over-sharp heatmap calms into a readable score field",
+        "pacing_intent": "slow_down",
+        "linked_prerequisites": []
+      },
+      {
+        "beat_id": "b05",
+        "spoken_text": "Softmax turns those scores into attention weights: not just who is relevant, but how much each token contributes.",
+        "teaching_intent": "transform",
+        "visual_need": "score bars normalize into weights that sum to one",
+        "pacing_intent": "medium",
+        "linked_prerequisites": ["softmax"]
+      },
+      {
+        "beat_id": "b06",
+        "spoken_text": "Finally, the weights mix the value vectors. The output is the same token, now carrying context from the tokens it attended to.",
+        "teaching_intent": "synthesis",
+        "visual_need": "weighted value streams combine into one contextual vector",
+        "pacing_intent": "slow_reveal",
+        "linked_prerequisites": []
+      }
+    ]
+  },
+  "storyboard": {
+    "scenes": [
+      {
+        "scene_id": "s01",
+        "title": "Tokens Ask For Context",
+        "beat_ids": ["b01"],
+        "duration_seconds": 7,
+        "high_level_visual": "Sentence tokens become vector tiles; one token is highlighted as the current query.",
+        "pacing_intent": "medium"
+      },
+      {
+        "scene_id": "s02",
+        "title": "Q K V Roles",
+        "beat_ids": ["b02"],
+        "duration_seconds": 10,
+        "high_level_visual": "Each token splits into query, key, and value cards with stable colors.",
+        "pacing_intent": "medium"
+      },
+      {
+        "scene_id": "s03",
+        "title": "Similarity Heatmap",
+        "beat_ids": ["b03", "b04"],
+        "duration_seconds": 16,
+        "high_level_visual": "Query-key comparisons form a heatmap; scaling softens overconfident scores.",
+        "pacing_intent": "slow_down"
+      },
+      {
+        "scene_id": "s04",
+        "title": "Softmax To Weights",
+        "beat_ids": ["b05"],
+        "duration_seconds": 10,
+        "high_level_visual": "Raw score bars become normalized attention weights.",
+        "pacing_intent": "medium"
+      },
+      {
+        "scene_id": "s05",
+        "title": "Weighted Values Become Context",
+        "beat_ids": ["b06"],
+        "duration_seconds": 13,
+        "high_level_visual": "Weighted value streams merge into one contextual output vector.",
+        "pacing_intent": "slow_reveal"
+      }
+    ]
+  },
+  "scenes": [
+    {
+      "scene_id": "s01",
+      "scene_spec_path": "examples/attention/scene_specs/s01_tokens_context.json",
+      "render_layer": ["manim_exact", "pixverse_cinematic"],
+      "status": "planned"
+    },
+    {
+      "scene_id": "s02",
+      "scene_spec_path": "examples/attention/scene_specs/s02_qkv_roles.json",
+      "render_layer": ["manim_exact"],
+      "status": "planned"
+    },
+    {
+      "scene_id": "s03",
+      "scene_spec_path": "examples/attention/scene_specs/s03_similarity_heatmap.json",
+      "render_layer": ["manim_exact", "pixverse_cinematic"],
+      "status": "planned"
+    },
+    {
+      "scene_id": "s04",
+      "scene_spec_path": "examples/attention/scene_specs/s04_softmax_weights.json",
+      "render_layer": ["manim_exact"],
+      "status": "planned"
+    },
+    {
+      "scene_id": "s05",
+      "scene_spec_path": "examples/attention/scene_specs/s05_weighted_values.json",
+      "render_layer": ["manim_exact", "pixverse_cinematic"],
+      "status": "planned"
+    }
+  ],
+  "visual_asset_requests": [
+    {
+      "asset_id": "asset_attention_spotlight",
+      "requested_by": "Teaching Script Agent",
+      "scene_id": "s01",
+      "asset_type": "pixverse_clip",
+      "prompt_intent": "A cinematic metaphor clip where a highlighted token emits a soft spotlight across related token tiles.",
+      "duration_seconds": 4,
+      "status": "proposed",
+      "risk_note": "No readable formulas; use as intro atmosphere only."
+    },
+    {
+      "asset_id": "asset_heatmap_cooling",
+      "requested_by": "Teaching Script Agent",
+      "scene_id": "s03",
+      "asset_type": "pixverse_clip",
+      "prompt_intent": "A smooth abstract transition from sharp glowing score spikes into a calm readable heatmap field.",
+      "duration_seconds": 4,
+      "status": "proposed",
+      "risk_note": "Must not replace exact Manim heatmap; only transition around it."
+    }
+  ],
+  "rhythm_map": [
+    {
+      "beat_id": "b03",
+      "scene_id": "s03",
+      "time_intent": "slow_reveal",
+      "target_duration_seconds": 8,
+      "music_energy": "low",
+      "silence_before_seconds": 0.3,
+      "sfx": ["soft_hit_on_heatmap_reveal"],
+      "reason": "Viewer must see that QK^T is a table of pairwise relevance."
+    },
+    {
+      "beat_id": "b04",
+      "scene_id": "s03",
+      "time_intent": "careful_explanation",
+      "target_duration_seconds": 8,
+      "music_energy": "low",
+      "silence_before_seconds": 0.2,
+      "sfx": ["gentle_filter_sweep"],
+      "reason": "Scaling is easy to miss and should not be rushed."
+    },
+    {
+      "beat_id": "b06",
+      "scene_id": "s05",
+      "time_intent": "slow_synthesis",
+      "target_duration_seconds": 13,
+      "music_energy": "medium_low",
+      "silence_before_seconds": 0.4,
+      "sfx": ["soft_merge"],
+      "reason": "Final weighted value aggregation is the conceptual payoff."
+    }
+  ],
+  "audio_manifest": {
+    "voiceover": [],
+    "music": [],
+    "sfx": []
+  },
+  "pixverse_jobs": [
+    {
+      "job_id": "pv_s01_attention_spotlight_001",
+      "asset_id": "asset_attention_spotlight",
+      "mode": "image_to_video",
+      "input_image_path": "examples/attention/keyframes/s01_attention_spotlight.png",
+      "prompt": "A clean cinematic educational animation: glowing token tiles in a dark neutral space, one highlighted token emits a soft spotlight sweeping across related token tiles, slow camera push, elegant geometric motion, no readable text.",
+      "negative_prompt": "random equations, readable labels, distorted text, extra symbols, noisy background, fast chaotic motion, misleading math",
+      "duration_seconds": 4,
+      "quality": "720p",
+      "model": "v6",
+      "status": "proposed",
+      "video_id": "",
+      "output_url": "",
+      "local_path": ""
+    },
+    {
+      "job_id": "pv_s03_heatmap_cooling_001",
+      "asset_id": "asset_heatmap_cooling",
+      "mode": "image_to_video",
+      "input_image_path": "examples/attention/keyframes/s03_heatmap_cooling.png",
+      "prompt": "Abstract cinematic transition for an educational video: sharp glowing score peaks gradually cool into a smooth readable attention heatmap, dark neutral background, controlled slow motion, elegant light trails, no readable text.",
+      "negative_prompt": "random equations, readable labels, distorted text, extra symbols, noisy background, chaotic motion, incorrect math symbols",
+      "duration_seconds": 4,
+      "quality": "720p",
+      "model": "v6",
+      "status": "proposed",
+      "video_id": "",
+      "output_url": "",
+      "local_path": ""
+    }
+  ],
+  "asset_manifest": [],
+  "edit_decision_list": []
+}

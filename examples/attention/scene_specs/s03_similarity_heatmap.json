@@ -1,0 +1,144 @@
+{
+  "scene_id": "s03",
+  "title": "Similarity Heatmap",
+  "linked_beats": ["b03", "b04"],
+  "duration_seconds": 16,
+  "render_layers": ["manim_exact", "pixverse_cinematic"],
+  "learning_goal": "Show that QK^T is a table of pairwise relevance scores, and that scaling prevents scores from becoming too extreme before softmax.",
+  "coordinate_system": {
+    "canvas": "16:9",
+    "origin": "center",
+    "safe_margin": 0.6,
+    "regions": {
+      "formula_top": { "x": 0, "y": 3.1, "w": 12.0, "h": 0.9 },
+      "query_left": { "x": -4.8, "y": 0.6, "w": 2.0, "h": 3.0 },
+      "key_top": { "x": 0.8, "y": 2.0, "w": 5.5, "h": 1.2 },
+      "heatmap_center": { "x": 0.8, "y": -0.5, "w": 5.2, "h": 3.2 },
+      "caption_bottom": { "x": 0, "y": -3.3, "w": 11.0, "h": 0.8 }
+    }
+  },
+  "style_tokens": {
+    "background": "#101114",
+    "query_color": "#7DD3FC",
+    "key_color": "#A7F3D0",
+    "score_color_low": "#1E293B",
+    "score_color_high": "#FBBF24",
+    "scale_color": "#FCA5A5",
+    "text_color": "#E5E7EB",
+    "muted_text_color": "#9CA3AF"
+  },
+  "manim_objects": [
+    {
+      "id": "formula_qkt",
+      "type": "MathTex",
+      "content": "QK^T",
+      "region": "formula_top",
+      "color_policy": {
+        "Q": "query_color",
+        "K": "key_color"
+      }
+    },
+    {
+      "id": "query_vector_cards",
+      "type": "VGroup",
+      "content": "three query vector cards",
+      "region": "query_left"
+    },
+    {
+      "id": "key_vector_cards",
+      "type": "VGroup",
+      "content": "four key vector cards",
+      "region": "key_top"
+    },
+    {
+      "id": "attention_heatmap",
+      "type": "MatrixGrid",
+      "content": "3 by 4 score grid",
+      "region": "heatmap_center"
+    },
+    {
+      "id": "scale_term",
+      "type": "MathTex",
+      "content": "\\\\frac{QK^T}{\\\\sqrt{d_k}}",
+      "region": "formula_top",
+      "color_policy": {
+        "Q": "query_color",
+        "K": "key_color",
+        "d_k": "scale_color"
+      }
+    }
+  ],
+  "animation_sequence": [
+    {
+      "time_start": 0,
+      "duration": 2.0,
+      "action": "Introduce Q and K cards with stable colors; show formula QK^T above.",
+      "manim_hint": "FadeIn(query_vector_cards), FadeIn(key_vector_cards), Write(formula_qkt)"
+    },
+    {
+      "time_start": 2.0,
+      "duration": 4.0,
+      "action": "Draw comparison lines from one query to all keys; populate one heatmap row.",
+      "manim_hint": "Create arrows/lines, then animate cells from low to high color intensity."
+    },
+    {
+      "time_start": 6.0,
+      "duration": 2.0,
+      "action": "Complete the heatmap for all query-key pairs.",
+      "manim_hint": "LaggedStart cell fills row by row."
+    },
+    {
+      "time_start": 8.0,
+      "duration": 4.0,
+      "action": "Show an over-sharp score pattern and label why this can make softmax too peaky.",
+      "manim_hint": "Pulse high-score cells, add small caption."
+    },
+    {
+      "time_start": 12.0,
+      "duration": 4.0,
+      "action": "Transform QK^T into QK^T / sqrt(d_k); soften heatmap intensity.",
+      "manim_hint": "TransformMatchingTex(formula_qkt, scale_term); animate cell colors toward calmer palette."
+    }
+  ],
+  "pixverse_support": [
+    {
+      "asset_id": "asset_heatmap_cooling",
+      "usage": "4-second abstract transition before returning to exact Manim heatmap.",
+      "must_preserve": [
+        "No readable equations",
+        "No fake symbols",
+        "No replacement for Manim heatmap explanation"
+      ]
+    }
+  ],
+  "voiceover_timing": [
+    {
+      "beat_id": "b03",
+      "start_seconds": 0.5,
+      "target_duration_seconds": 8
+    },
+    {
+      "beat_id": "b04",
+      "start_seconds": 8.5,
+      "target_duration_seconds": 7
+    }
+  ],
+  "music_sfx_cues": [
+    {
+      "time_seconds": 6.0,
+      "cue": "soft_hit_on_heatmap_reveal",
+      "purpose": "Mark the moment when individual comparisons become a full relevance table."
+    },
+    {
+      "time_seconds": 12.0,
+      "cue": "gentle_filter_sweep",
+      "purpose": "Support the score-scaling visual without distracting from the formula."
+    }
+  ],
+  "acceptance_checks": [
+    "Q and K colors match the production manifest.",
+    "Viewer can distinguish raw QK^T scores from scaled scores.",
+    "Scaling explanation uses exactly one just-in-time aside.",
+    "PixVerse transition does not contain readable math."
+  ]
+}

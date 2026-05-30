@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PaperMotion Production Manifest",
+  "type": "object",
+  "required": [
+    "project",
+    "intent",
+    "prerequisite_graph",
+    "curriculum_plan",
+    "script",
+    "storyboard",
+    "scenes",
+    "visual_asset_requests",
+    "rhythm_map",
+    "audio_manifest",
+    "pixverse_jobs",
+    "asset_manifest",
+    "edit_decision_list"
+  ],
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": ["demo_id", "title", "source_type", "status"],
+      "properties": {
+        "demo_id": { "type": "string" },
+        "title": { "type": "string" },
+        "source_type": { "type": "string", "enum": ["formula", "paper_excerpt", "paper_pdf", "manual_topic"] },
+        "status": { "type": "string" },
+        "owner": { "type": "string" }
+      }
+    },
+    "intent": {
+      "type": "object",
+      "properties": {
+        "viewer_goal": { "type": "string" },
+        "target_audience": { "type": "string" },
+        "learning_objective": { "type": "string" },
+        "scope": { "type": "array", "items": { "type": "string" } },
+        "out_of_scope": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "prerequisite_graph": {
+      "type": "object",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label", "is_blocker"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "is_blocker": { "type": "boolean" },
+              "explain_policy": { "type": "string", "enum": ["skip", "just_in_time", "brief_before_use", "core"] }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to"],
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "reason": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "curriculum_plan": {
+      "type": "object",
+      "properties": {
+        "concept_order": { "type": "array", "items": { "type": "string" } },
+        "just_in_time_insertions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["concept_id", "insert_before_beat", "one_sentence_explanation"],
+            "properties": {
+              "concept_id": { "type": "string" },
+              "insert_before_beat": { "type": "string" },
+              "one_sentence_explanation": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "script": {
+      "type": "object",
+      "properties": {
+        "style_guide": { "type": "string" },
+        "beats": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["beat_id", "spoken_text", "teaching_intent", "pacing_intent"],
+            "properties": {
+              "beat_id": { "type": "string" },
+              "spoken_text": { "type": "string" },
+              "teaching_intent": { "type": "string" },
+              "visual_need": { "type": "string" },
+              "pacing_intent": { "type": "string" },
+              "linked_prerequisites": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "storyboard": {
+      "type": "object",
+      "properties": {
+        "scenes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["scene_id", "title", "beat_ids", "duration_seconds"],
+            "properties": {
+              "scene_id": { "type": "string" },
+              "title": { "type": "string" },
+              "beat_ids": { "type": "array", "items": { "type": "string" } },
+              "duration_seconds": { "type": "number" },
+              "high_level_visual": { "type": "string" },
+              "pacing_intent": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scene_id", "scene_spec_path", "render_layer"],
+        "properties": {
+          "scene_id": { "type": "string" },
+          "scene_spec_path": { "type": "string" },
+          "render_layer": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["manim_exact", "pixverse_cinematic", "static_asset", "website_only"] }
+          },
+          "status": { "type": "string" }
+        }
+      }
+    },
+    "visual_asset_requests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["asset_id", "requested_by", "scene_id", "asset_type", "status"],
+        "properties": {
+          "asset_id": { "type": "string" },
+          "requested_by": { "type": "string" },
+          "scene_id": { "type": "string" },
+          "asset_type": { "type": "string", "enum": ["pixverse_clip", "manim_still", "static_image", "sound_effect", "music_cue"] },
+          "prompt_intent": { "type": "string" },
+          "duration_seconds": { "type": "number" },
+          "status": { "type": "string", "enum": ["proposed", "approved", "rejected", "generation_pending", "complete", "replace_with_manim", "replace_with_static_asset"] },
+          "risk_note": { "type": "string" }
+        }
+      }
+    },
+    "rhythm_map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["beat_id", "scene_id", "target_duration_seconds"],
+        "properties": {
+          "beat_id": { "type": "string" },
+          "scene_id": { "type": "string" },
+          "time_intent": { "type": "string" },
+          "target_duration_seconds": { "type": "number" },
+          "music_energy": { "type": "string" },
+          "silence_before_seconds": { "type": "number" },
+          "sfx": { "type": "array", "items": { "type": "string" } },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "audio_manifest": {
+      "type": "object",
+      "properties": {
+        "voiceover": { "type": "array", "items": { "type": "object" } },
+        "music": { "type": "array", "items": { "type": "object" } },
+        "sfx": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "pixverse_jobs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["job_id", "asset_id", "mode", "status"],
+        "properties": {
+          "job_id": { "type": "string" },
+          "asset_id": { "type": "string" },
+          "mode": { "type": "string", "enum": ["text_to_video", "image_to_video", "transition"] },
+          "input_image_path": { "type": "string" },
+          "prompt": { "type": "string" },
+          "negative_prompt": { "type": "string" },
+          "duration_seconds": { "type": "number" },
+          "quality": { "type": "string" },
+          "model": { "type": "string" },
+          "status": { "type": "string" },
+          "video_id": { "type": "string" },
+          "output_url": { "type": "string" },
+          "local_path": { "type": "string" }
+        }
+      }
+    },
+    "asset_manifest": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["asset_id", "kind", "path_or_url", "status"],
+        "properties": {
+          "asset_id": { "type": "string" },
+          "kind": { "type": "string" },
+          "path_or_url": { "type": "string" },
+          "status": { "type": "string" },
+          "usage": { "type": "string" }
+        }
+      }
+    },
+    "edit_decision_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["order", "scene_id", "source"],
+        "properties": {
+          "order": { "type": "integer" },
+          "scene_id": { "type": "string" },
+          "source": { "type": "string" },
+          "start_seconds": { "type": "number" },
+          "duration_seconds": { "type": "number" },
+          "audio_layers": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}
