@@ -1,0 +1,1217 @@
+{
+  "contract_version": "dynamic-scene-model/v0.1",
+  "demo_id": "attention",
+  "source_links": {
+    "mechanism_spec_path": "examples/attention/mechanism_spec.json",
+    "source_claim_ids": ["attention_formula_claim", "symbol_ledger", "misconceptions"],
+    "formula_ids": ["scaled_dot_product_attention"],
+    "figure_ids": [],
+    "mechanism_step_ids": [
+      "m01_token_context_question",
+      "m02_role_projection",
+      "m03_pairwise_scores",
+      "m04_score_scaling",
+      "m05_weight_normalization",
+      "m06_value_aggregation"
+    ],
+    "symbol_ids": ["Q", "K", "V", "QK^T", "sqrt(d_k)", "softmax", "context"]
+  },
+  "content_profile": {
+    "content_families": ["formula_derivation", "model_architecture", "causal_mechanism"],
+    "learning_objective": "Explain how scaled dot-product attention turns token relationships into weighted value aggregation.",
+    "audience_level": "graduate",
+    "visual_thesis": "Attention is shown as a query-dependent redistribution of value information through normalized token-token affinities.",
+    "scope": [
+      "Introduce Q, K, and V as roles derived from tokens.",
+      "Show pairwise query-key comparison as a score field.",
+      "Show scaling and softmax as staged transformations from raw scores to weights.",
+      "Show values being scaled and merged into a context vector."
+    ],
+    "out_of_scope": [
+      "Multi-head attention internals.",
+      "Training or gradient flow.",
+      "Implementation-level tensor batching details."
+    ]
+  },
+  "semantic_units": {
+    "entities": [
+      {
+        "id": "tokens",
+        "label": "Input tokens",
+        "type": "symbol",
+        "source_refs": ["m01_token_context_question"],
+        "technical_role": "Discrete sequence elements whose representations are contextualized.",
+        "meaning": "Each token can query other tokens for context.",
+        "state_variables": ["position", "active_query_status"],
+        "visualization_need": "Provides the viewer's anchor before formula symbols appear.",
+        "claim_boundary": "Token text is illustrative; the mechanism is about representations."
+      },
+      {
+        "id": "query_vectors",
+        "label": "Q",
+        "type": "vector",
+        "source_refs": ["Q", "m02_role_projection"],
+        "technical_role": "Asking role used to compare against keys.",
+        "meaning": "Query vectors express what each token is looking for.",
+        "state_variables": ["source_token", "vector_dimension"],
+        "visualization_need": "Must be visually distinct from key and value roles.",
+        "claim_boundary": "Vectors are shown schematically, not with real model values."
+      },
+      {
+        "id": "key_vectors",
+        "label": "K",
+        "type": "vector",
+        "source_refs": ["K", "m02_role_projection"],
+        "technical_role": "Matching role used in query-key comparison.",
+        "meaning": "Key vectors express what each token can match.",
+        "state_variables": ["source_token", "vector_dimension"],
+        "visualization_need": "Must align spatially with query vectors during comparison.",
+        "claim_boundary": "Vectors are schematic role cards."
+      },
+      {
+        "id": "value_vectors",
+        "label": "V",
+        "type": "vector",
+        "source_refs": ["V", "m02_role_projection", "m06_value_aggregation"],
+        "technical_role": "Information carriers that are mixed by attention weights.",
+        "meaning": "Value vectors carry information into the output context.",
+        "state_variables": ["source_token", "weight", "contribution"],
+        "visualization_need": "Need a flow or stream metaphor during aggregation.",
+        "claim_boundary": "Stream thickness encodes toy weights, not source model activations."
+      },
+      {
+        "id": "score_matrix",
+        "label": "QK^T scores",
+        "type": "matrix",
+        "source_refs": ["QK^T", "m03_pairwise_scores"],
+        "technical_role": "Pairwise query-key relevance field.",
+        "meaning": "Each cell is a query-key comparison score.",
+        "state_variables": ["cell_value", "row_query", "column_key"],
+        "visualization_need": "A heatmap preserves pairwise structure.",
+        "claim_boundary": "Numeric values are illustrative unless explicitly computed from toy vectors."
+      },
+      {
+        "id": "attention_weights",
+        "label": "Attention weights",
+        "type": "distribution",
+        "source_refs": ["softmax", "m05_weight_normalization"],
+        "technical_role": "Non-negative normalized weights that sum to one.",
+        "meaning": "Softmax turns scores into proportions.",
+        "state_variables": ["weight_value", "sum_to_one"],
+        "visualization_need": "Bars make normalization visible.",
+        "claim_boundary": "Only the sum-to-one relationship is exact in the educational toy example."
+      },
+      {
+        "id": "context_vector",
+        "label": "Context vector",
+        "type": "vector",
+        "source_refs": ["context", "m06_value_aggregation"],
+        "technical_role": "Output representation after value aggregation.",
+        "meaning": "The output token representation includes weighted context.",
+        "state_variables": ["merged_contributions"],
+        "visualization_need": "A merge target makes the final payoff visible.",
+        "claim_boundary": "Shown as one vector for one query position."
+      }
+    ],
+    "operators": [
+      {
+        "id": "op_role_projection",
+        "label": "Role projection",
+        "operator_type": "transform",
+        "source_refs": ["m02_role_projection"],
+        "input_refs": ["tokens"],
+        "output_refs": ["query_vectors", "key_vectors", "value_vectors"],
+        "technical_meaning": "Each token representation is projected into Q, K, and V roles.",
+        "visual_operation_hint": "Split each token into three same-origin role cards."
+      },
+      {
+        "id": "op_pairwise_compare",
+        "label": "Query-key comparison",
+        "operator_type": "compare",
+        "source_refs": ["m03_pairwise_scores"],
+        "input_refs": ["query_vectors", "key_vectors"],
+        "output_refs": ["score_matrix"],
+        "technical_meaning": "Queries compare against keys to produce scores.",
+        "visual_operation_hint": "Trace comparison lines into heatmap cells."
+      },
+      {
+        "id": "op_scale_scores",
+        "label": "Scale scores",
+        "operator_type": "scale",
+        "source_refs": ["m04_score_scaling"],
+        "input_refs": ["score_matrix"],
+        "output_refs": ["score_matrix"],
+        "technical_meaning": "Divide scores by sqrt(d_k) to prevent over-sharp logits.",
+        "visual_operation_hint": "Cool heatmap intensity while the scale term appears."
+      },
+      {
+        "id": "op_softmax",
+        "label": "Softmax normalization",
+        "operator_type": "normalize",
+        "source_refs": ["m05_weight_normalization"],
+        "input_refs": ["score_matrix"],
+        "output_refs": ["attention_weights"],
+        "technical_meaning": "Convert scaled scores into non-negative proportions.",
+        "visual_operation_hint": "Transform raw bars into normalized bars with a sum-to-one marker."
+      },
+      {
+        "id": "op_weighted_sum",
+        "label": "Weighted value sum",
+        "operator_type": "aggregate",
+        "source_refs": ["m06_value_aggregation"],
+        "input_refs": ["attention_weights", "value_vectors"],
+        "output_refs": ["context_vector"],
+        "technical_meaning": "Scale values by attention weights and merge them.",
+        "visual_operation_hint": "Route value streams with thickness proportional to weights into the context vector."
+      }
+    ],
+    "states": [
+      {
+        "id": "state_tokens_ready",
+        "label": "Tokens ready",
+        "source_refs": ["m01_token_context_question"],
+        "represented_quantities": ["token positions"],
+        "description": "A sentence strip with one active token asking for context."
+      },
+      {
+        "id": "state_roles_ready",
+        "label": "Q/K/V roles ready",
+        "source_refs": ["m02_role_projection"],
+        "represented_quantities": ["Q", "K", "V"],
+        "description": "Each token has stable query, key, and value role cards."
+      },
+      {
+        "id": "state_raw_scores",
+        "label": "Raw pairwise scores",
+        "source_refs": ["m03_pairwise_scores"],
+        "represented_quantities": ["QK^T"],
+        "description": "A heatmap contains illustrative query-key relevance scores."
+      },
+      {
+        "id": "state_scaled_scores",
+        "label": "Scaled scores",
+        "source_refs": ["m04_score_scaling"],
+        "represented_quantities": ["QK^T / sqrt(d_k)"],
+        "description": "The score field is visually cooled after scaling."
+      },
+      {
+        "id": "state_weights",
+        "label": "Attention weights",
+        "source_refs": ["m05_weight_normalization"],
+        "represented_quantities": ["softmax(QK^T / sqrt(d_k))"],
+        "description": "Bars represent a normalized distribution over source tokens."
+      },
+      {
+        "id": "state_context_output",
+        "label": "Context output",
+        "source_refs": ["m06_value_aggregation"],
+        "represented_quantities": ["softmax(QK^T / sqrt(d_k))V"],
+        "description": "Weighted value streams have merged into a context vector."
+      }
+    ],
+    "relations": [
+      {
+        "id": "rel_token_to_roles",
+        "relation_type": "transforms_to",
+        "from_ref": "tokens",
+        "to_ref": "query_vectors",
+        "source_refs": ["m02_role_projection"],
+        "meaning": "Queries are role projections from token representations."
+      },
+      {
+        "id": "rel_query_key_scores",
+        "relation_type": "compares",
+        "from_ref": "query_vectors",
+        "to_ref": "key_vectors",
+        "source_refs": ["m03_pairwise_scores"],
+        "meaning": "Query-key comparisons populate the score matrix."
+      },
+      {
+        "id": "rel_scores_to_weights",
+        "relation_type": "normalizes",
+        "from_ref": "score_matrix",
+        "to_ref": "attention_weights",
+        "source_refs": ["m05_weight_normalization"],
+        "meaning": "Softmax normalizes scores into a distribution."
+      },
+      {
+        "id": "rel_values_to_context",
+        "relation_type": "aggregates",
+        "from_ref": "value_vectors",
+        "to_ref": "context_vector",
+        "source_refs": ["m06_value_aggregation"],
+        "meaning": "Values are aggregated according to attention weights."
+      }
+    ],
+    "invariants": [
+      {
+        "id": "inv_color_roles",
+        "statement": "Q, K, V, scores, softmax, and context use stable colors across all beats.",
+        "source_refs": ["symbol_ledger"],
+        "visual_test": "No scene swaps the role colors."
+      },
+      {
+        "id": "inv_weights_sum",
+        "statement": "Attention weights should be shown as proportions that sum to one after softmax.",
+        "source_refs": ["m05_weight_normalization"],
+        "visual_test": "The normalized bar scene includes a sum-to-one cue."
+      },
+      {
+        "id": "inv_multiple_weights",
+        "statement": "Attention is not a hard selection of one token.",
+        "source_refs": ["misconceptions"],
+        "visual_test": "Multiple nonzero arcs, bars, and value streams remain visible."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "asm_toy_values",
+        "statement": "All displayed numeric scores and weights are illustrative toy values.",
+        "impact_on_visualization": "Numerical labels may be shown only as pedagogical examples, not source model outputs."
+      },
+      {
+        "id": "asm_single_query_focus",
+        "statement": "The explanation focuses on one query position at a time.",
+        "impact_on_visualization": "The full matrix is introduced through one active row before generalizing."
+      }
+    ]
+  },
+  "visual_model": {
+    "spaces": [
+      {
+        "id": "space_sentence_strip",
+        "dimensionality": "2d",
+        "coordinate_system": "left-to-right token strip",
+        "purpose": "Introduce tokens and active query source.",
+        "depth_semantics": "No depth meaning."
+      },
+      {
+        "id": "space_role_board",
+        "dimensionality": "2d",
+        "coordinate_system": "rows for Q, K, and V roles",
+        "purpose": "Show same-token role projection.",
+        "depth_semantics": "No depth meaning."
+      },
+      {
+        "id": "space_score_grid",
+        "dimensionality": "2d",
+        "coordinate_system": "query rows by key columns",
+        "purpose": "Preserve pairwise comparison structure.",
+        "depth_semantics": "No depth meaning."
+      },
+      {
+        "id": "space_value_flow",
+        "dimensionality": "2_5d",
+        "coordinate_system": "left-to-right stream convergence",
+        "purpose": "Show weighted values merging into output context.",
+        "depth_semantics": "Depth is only used to separate overlapping streams, not as a model dimension."
+      }
+    ],
+    "objects": [
+      {
+        "id": "obj_token_tiles",
+        "object_type": "symbol",
+        "entity_refs": ["tokens"],
+        "source_refs": ["m01_token_context_question"],
+        "label_policy": "optional",
+        "exactness": "pedagogical_simplification",
+        "visual_form": "rectangular token tiles with one active query tile",
+        "space_ref": "space_sentence_strip",
+        "layer_role": "exact_overlay",
+        "persistent": true,
+        "state_variables": ["active", "position"],
+        "allowed_transformations": ["appear", "highlight", "trace"],
+        "renderer_notes": "Manim can render labels; AI video base layer must remain text-free."
+      },
+      {
+        "id": "obj_qkv_cards",
+        "object_type": "vector",
+        "entity_refs": ["query_vectors", "key_vectors", "value_vectors"],
+        "source_refs": ["m02_role_projection"],
+        "label_policy": "required",
+        "exactness": "symbolic_exact",
+        "visual_form": "role cards colored by Q, K, and V",
+        "space_ref": "space_role_board",
+        "layer_role": "exact_overlay",
+        "persistent": true,
+        "state_variables": ["role", "source_token"],
+        "allowed_transformations": ["split", "align", "highlight"],
+        "renderer_notes": "Use deterministic text rendering for Q, K, and V labels."
+      },
+      {
+        "id": "obj_attention_heatmap",
+        "object_type": "matrix",
+        "entity_refs": ["score_matrix"],
+        "source_refs": ["m03_pairwise_scores", "m04_score_scaling"],
+        "label_policy": "required",
+        "exactness": "pedagogical_simplification",
+        "visual_form": "query-key heatmap with stable row/column semantics",
+        "space_ref": "space_score_grid",
+        "layer_role": "exact_overlay",
+        "persistent": true,
+        "state_variables": ["raw_intensity", "scaled_intensity"],
+        "allowed_transformations": ["compare", "filter", "highlight"],
+        "renderer_notes": "Heatmap values should be deterministic toy values."
+      },
+      {
+        "id": "obj_weight_bars",
+        "object_type": "distribution",
+        "entity_refs": ["attention_weights"],
+        "source_refs": ["m05_weight_normalization"],
+        "label_policy": "required",
+        "exactness": "numeric_exact",
+        "visual_form": "normalized bar chart with sum-to-one label",
+        "space_ref": "space_score_grid",
+        "layer_role": "exact_overlay",
+        "persistent": false,
+        "state_variables": ["weight_value"],
+        "allowed_transformations": ["normalize", "align", "highlight"],
+        "renderer_notes": "Use toy weights that sum to one exactly."
+      },
+      {
+        "id": "obj_value_streams",
+        "object_type": "vector",
+        "entity_refs": ["value_vectors", "context_vector"],
+        "source_refs": ["m06_value_aggregation"],
+        "label_policy": "optional",
+        "exactness": "qualitative",
+        "visual_form": "colored value streams with thickness tied to attention weights",
+        "space_ref": "space_value_flow",
+        "layer_role": "exact_overlay",
+        "persistent": false,
+        "state_variables": ["weight", "contribution"],
+        "allowed_transformations": ["aggregate", "converge", "merge"],
+        "renderer_notes": "Manim stream thickness should follow weight ordering; cinematic base can be text-free."
+      },
+      {
+        "id": "obj_formula",
+        "object_type": "equation",
+        "entity_refs": ["query_vectors", "key_vectors", "value_vectors", "attention_weights", "context_vector"],
+        "source_refs": ["scaled_dot_product_attention"],
+        "label_policy": "required",
+        "exactness": "symbolic_exact",
+        "visual_form": "Attention(Q,K,V)=softmax(QK^T/sqrt(d_k))V",
+        "space_ref": "space_score_grid",
+        "layer_role": "exact_overlay",
+        "persistent": true,
+        "state_variables": ["active_subexpression"],
+        "allowed_transformations": ["highlight", "reveal", "transform"],
+        "renderer_notes": "Never delegate formula rendering to AI video."
+      }
+    ],
+    "encodings": [
+      {
+        "id": "enc_role_color",
+        "channel": "color",
+        "maps": "Q/K/V and formula roles",
+        "domain": ["Q", "K", "V", "scores", "scale", "softmax", "context"],
+        "range": ["#7DD3FC", "#A7F3D0", "#F9A8D4", "#FBBF24", "#FCA5A5", "#C4B5FD", "#37D67A"],
+        "object_refs": ["obj_qkv_cards", "obj_attention_heatmap", "obj_weight_bars", "obj_value_streams", "obj_formula"],
+        "stability": "global",
+        "risk_note": "Color drift would break symbol consistency."
+      },
+      {
+        "id": "enc_heat_intensity",
+        "channel": "opacity",
+        "maps": "relative query-key score strength",
+        "domain": ["low score", "high score"],
+        "range": ["low opacity", "high opacity"],
+        "object_refs": ["obj_attention_heatmap"],
+        "stability": "scene_local",
+        "risk_note": "Should be presented as toy values, not measured activations."
+      },
+      {
+        "id": "enc_weight_thickness",
+        "channel": "thickness",
+        "maps": "attention weight contribution",
+        "domain": ["small weight", "large weight"],
+        "range": ["thin stream", "thick stream"],
+        "object_refs": ["obj_value_streams"],
+        "stability": "scene_local",
+        "risk_note": "Thicker stream means larger contribution, not causal importance beyond this query."
+      }
+    ],
+    "layout_constraints": [
+      {
+        "id": "layout_read_left_to_right",
+        "constraint_type": "reading_order",
+        "object_refs": ["obj_token_tiles", "obj_qkv_cards", "obj_attention_heatmap", "obj_weight_bars", "obj_value_streams"],
+        "rule": "Each scene reads from source/input on the left toward output/payoff on the right or center."
+      },
+      {
+        "id": "layout_qkv_same_origin",
+        "constraint_type": "grouping",
+        "object_refs": ["obj_token_tiles", "obj_qkv_cards"],
+        "rule": "Q, K, and V cards must appear as role projections from the same token origins."
+      },
+      {
+        "id": "layout_heatmap_matrix_semantics",
+        "constraint_type": "matrix_dimensions",
+        "object_refs": ["obj_attention_heatmap"],
+        "rule": "Rows represent queries and columns represent keys; do not rotate or relabel this relationship."
+      },
+      {
+        "id": "layout_label_readability",
+        "constraint_type": "label_readability",
+        "object_refs": ["obj_qkv_cards", "obj_formula", "obj_weight_bars"],
+        "rule": "Hold camera still while labels and formula fragments are introduced."
+      }
+    ]
+  },
+  "dynamic_model": {
+    "beats": [
+      {
+        "id": "db01_context_question",
+        "scene_hint": "s01",
+        "teaching_goal": "Introduce attention as a context question before formulas.",
+        "source_refs": ["m01_token_context_question"],
+        "object_refs": ["obj_token_tiles"],
+        "viewer_question": "Which other tokens matter to the active token?",
+        "duration_hint_s": 7,
+        "insight_moment": false
+      },
+      {
+        "id": "db02_role_split",
+        "scene_hint": "s02",
+        "teaching_goal": "Show Q, K, and V as roles from the same token representations.",
+        "source_refs": ["m02_role_projection"],
+        "object_refs": ["obj_token_tiles", "obj_qkv_cards"],
+        "viewer_question": "What do Q, K, and V each do?",
+        "duration_hint_s": 10,
+        "insight_moment": false
+      },
+      {
+        "id": "db03_compare_and_scale",
+        "scene_hint": "s03",
+        "teaching_goal": "Show query-key comparison and scaling as score-field transformations.",
+        "source_refs": ["m03_pairwise_scores", "m04_score_scaling"],
+        "object_refs": ["obj_qkv_cards", "obj_attention_heatmap", "obj_formula"],
+        "viewer_question": "How do queries and keys become relevance scores?",
+        "duration_hint_s": 16,
+        "insight_moment": true
+      },
+      {
+        "id": "db04_normalize",
+        "scene_hint": "s04",
+        "teaching_goal": "Show softmax as normalization into proportions.",
+        "source_refs": ["m05_weight_normalization"],
+        "object_refs": ["obj_weight_bars", "obj_formula"],
+        "viewer_question": "How do scores become weights?",
+        "duration_hint_s": 10,
+        "insight_moment": true
+      },
+      {
+        "id": "db05_aggregate_values",
+        "scene_hint": "s05",
+        "teaching_goal": "Show weighted values merging into a context vector.",
+        "source_refs": ["m06_value_aggregation"],
+        "object_refs": ["obj_value_streams", "obj_formula"],
+        "viewer_question": "What does the formula output?",
+        "duration_hint_s": 13,
+        "insight_moment": true
+      }
+    ],
+    "states": [
+      {
+        "id": "ds01_tokens_visible",
+        "beat_ref": "db01_context_question",
+        "semantic_state_ref": "state_tokens_ready",
+        "object_states": [
+          {
+            "object_ref": "obj_token_tiles",
+            "state": "sentence strip visible; one token active; neighbor relevance arcs absent initially"
+          }
+        ]
+      },
+      {
+        "id": "ds02_roles_visible",
+        "beat_ref": "db02_role_split",
+        "semantic_state_ref": "state_roles_ready",
+        "object_states": [
+          {
+            "object_ref": "obj_qkv_cards",
+            "state": "Q, K, and V cards aligned by source token"
+          }
+        ]
+      },
+      {
+        "id": "ds03_scores_visible",
+        "beat_ref": "db03_compare_and_scale",
+        "semantic_state_ref": "state_raw_scores",
+        "object_states": [
+          {
+            "object_ref": "obj_attention_heatmap",
+            "state": "raw score heatmap populated by comparison traces"
+          }
+        ]
+      },
+      {
+        "id": "ds04_scaled_scores_visible",
+        "beat_ref": "db03_compare_and_scale",
+        "semantic_state_ref": "state_scaled_scores",
+        "object_states": [
+          {
+            "object_ref": "obj_attention_heatmap",
+            "state": "heatmap intensity cooled after scaling"
+          },
+          {
+            "object_ref": "obj_formula",
+            "state": "scale term active"
+          }
+        ]
+      },
+      {
+        "id": "ds05_weights_visible",
+        "beat_ref": "db04_normalize",
+        "semantic_state_ref": "state_weights",
+        "object_states": [
+          {
+            "object_ref": "obj_weight_bars",
+            "state": "normalized bars visible with sum-to-one cue"
+          }
+        ]
+      },
+      {
+        "id": "ds06_context_visible",
+        "beat_ref": "db05_aggregate_values",
+        "semantic_state_ref": "state_context_output",
+        "object_states": [
+          {
+            "object_ref": "obj_value_streams",
+            "state": "weighted streams converge into context vector"
+          },
+          {
+            "object_ref": "obj_formula",
+            "state": "full attention formula reassembled"
+          }
+        ]
+      }
+    ],
+    "transitions": [
+      {
+        "id": "tr01_activate_context_arcs",
+        "from_state_ref": "ds01_tokens_visible",
+        "to_state_ref": "ds01_tokens_visible",
+        "motion_primitive_refs": ["mp_highlight_active_token", "mp_trace_context_arcs"],
+        "technical_event": "The active token asks which other tokens matter.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_token_tiles",
+            "after_object_ref": "obj_token_tiles",
+            "correspondence_note": "Token identity persists while arcs are added."
+          }
+        ],
+        "composition": "concat",
+        "narrative_relation": "setup",
+        "timing_note": "Highlight first, then draw arcs."
+      },
+      {
+        "id": "tr02_split_roles",
+        "from_state_ref": "ds01_tokens_visible",
+        "to_state_ref": "ds02_roles_visible",
+        "motion_primitive_refs": ["mp_split_qkv", "mp_align_roles"],
+        "technical_event": "Tokens become Q, K, and V role cards.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_token_tiles",
+            "after_object_ref": "obj_qkv_cards",
+            "correspondence_note": "Each role card should visibly originate from its token."
+          }
+        ],
+        "composition": "stagger",
+        "narrative_relation": "transformation",
+        "timing_note": "Stagger by role: Q then K then V."
+      },
+      {
+        "id": "tr03_fill_scores",
+        "from_state_ref": "ds02_roles_visible",
+        "to_state_ref": "ds03_scores_visible",
+        "motion_primitive_refs": ["mp_compare_qk", "mp_reveal_heatmap"],
+        "technical_event": "Queries compare against keys to populate scores.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_qkv_cards",
+            "after_object_ref": "obj_attention_heatmap",
+            "correspondence_note": "Comparison traces terminate in heatmap cells."
+          }
+        ],
+        "composition": "parallel_groups",
+        "narrative_relation": "derivation",
+        "timing_note": "Trace a few cells explicitly, then reveal the remaining grid."
+      },
+      {
+        "id": "tr04_scale_scores",
+        "from_state_ref": "ds03_scores_visible",
+        "to_state_ref": "ds04_scaled_scores_visible",
+        "motion_primitive_refs": ["mp_filter_scale", "mp_highlight_scale_term"],
+        "technical_event": "Scores are divided by sqrt(d_k).",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_attention_heatmap",
+            "after_object_ref": "obj_attention_heatmap",
+            "correspondence_note": "The matrix remains the same semantic object while values are scaled."
+          }
+        ],
+        "composition": "sync",
+        "narrative_relation": "transformation",
+        "timing_note": "Cool heatmap intensity while the scale term appears."
+      },
+      {
+        "id": "tr05_softmax_normalize",
+        "from_state_ref": "ds04_scaled_scores_visible",
+        "to_state_ref": "ds05_weights_visible",
+        "motion_primitive_refs": ["mp_normalize_bars"],
+        "technical_event": "Softmax converts scores into proportions.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_attention_heatmap",
+            "after_object_ref": "obj_weight_bars",
+            "correspondence_note": "One score row becomes one distribution over source tokens."
+          }
+        ],
+        "composition": "concat",
+        "narrative_relation": "derivation",
+        "timing_note": "Transform raw bars into normalized bars, then reveal sum-to-one."
+      },
+      {
+        "id": "tr06_weighted_value_merge",
+        "from_state_ref": "ds05_weights_visible",
+        "to_state_ref": "ds06_context_visible",
+        "motion_primitive_refs": ["mp_route_values", "mp_aggregate_context"],
+        "technical_event": "Attention weights scale value vectors and merge them.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_weight_bars",
+            "after_object_ref": "obj_value_streams",
+            "correspondence_note": "Bar magnitudes correspond to stream thickness."
+          }
+        ],
+        "composition": "sync",
+        "narrative_relation": "payoff",
+        "timing_note": "Route streams with proportional thickness and merge into context vector."
+      }
+    ],
+    "motion_primitives": [
+      {
+        "id": "mp_highlight_active_token",
+        "primitive": "highlight",
+        "technical_meaning": "Mark the query source token.",
+        "object_refs": ["obj_token_tiles"],
+        "parameter_or_condition": "active token only",
+        "duration_s": 1.2,
+        "easing": "ease_in_out",
+        "required_invariant_ref": "inv_color_roles",
+        "misread_risk": "Viewer may think attention starts after choosing one fixed token only."
+      },
+      {
+        "id": "mp_trace_context_arcs",
+        "primitive": "trace",
+        "technical_meaning": "Show multiple candidate context relations.",
+        "object_refs": ["obj_token_tiles"],
+        "duration_s": 3,
+        "easing": "ease_out",
+        "required_invariant_ref": "inv_multiple_weights",
+        "misread_risk": "A single arc would suggest hard selection."
+      },
+      {
+        "id": "mp_split_qkv",
+        "primitive": "split",
+        "technical_meaning": "Represent role projections from each token.",
+        "object_refs": ["obj_token_tiles", "obj_qkv_cards"],
+        "from_object_ref": "obj_token_tiles",
+        "to_object_ref": "obj_qkv_cards",
+        "duration_s": 6,
+        "easing": "ease_in_out",
+        "stagger_by": "role",
+        "required_invariant_ref": "inv_color_roles",
+        "misread_risk": "Viewer may think Q, K, and V are different input tokens."
+      },
+      {
+        "id": "mp_align_roles",
+        "primitive": "align",
+        "technical_meaning": "Keep same-token role cards visually grouped.",
+        "object_refs": ["obj_qkv_cards"],
+        "duration_s": 1,
+        "easing": "linear",
+        "misread_risk": "Misalignment can hide same-origin relationship."
+      },
+      {
+        "id": "mp_compare_qk",
+        "primitive": "compare",
+        "technical_meaning": "Map query-key comparisons to heatmap cells.",
+        "object_refs": ["obj_qkv_cards", "obj_attention_heatmap"],
+        "duration_s": 5,
+        "easing": "ease_in_out",
+        "misread_risk": "Comparison lines must not imply causal flow from keys to queries."
+      },
+      {
+        "id": "mp_reveal_heatmap",
+        "primitive": "reveal",
+        "technical_meaning": "Expose the full score field after examples.",
+        "object_refs": ["obj_attention_heatmap"],
+        "duration_s": 2,
+        "easing": "ease_out",
+        "misread_risk": "Full matrix should preserve query-row and key-column semantics."
+      },
+      {
+        "id": "mp_filter_scale",
+        "primitive": "filter",
+        "technical_meaning": "Represent scaling by sqrt(d_k) as reduced score sharpness.",
+        "object_refs": ["obj_attention_heatmap"],
+        "duration_s": 3,
+        "easing": "ease_in_out",
+        "misread_risk": "Scaling may look cosmetic unless paired with formula highlight."
+      },
+      {
+        "id": "mp_highlight_scale_term",
+        "primitive": "highlight",
+        "technical_meaning": "Connect visual cooling to the sqrt(d_k) formula term.",
+        "object_refs": ["obj_formula"],
+        "duration_s": 1.5,
+        "easing": "ease_in_out",
+        "misread_risk": "Do not show scale as changing matrix shape."
+      },
+      {
+        "id": "mp_normalize_bars",
+        "primitive": "normalize",
+        "technical_meaning": "Show softmax producing weights that sum to one.",
+        "object_refs": ["obj_weight_bars", "obj_formula"],
+        "duration_s": 4,
+        "easing": "ease_in_out",
+        "required_invariant_ref": "inv_weights_sum",
+        "misread_risk": "Viewer may think raw score differences are preserved linearly."
+      },
+      {
+        "id": "mp_route_values",
+        "primitive": "route",
+        "technical_meaning": "Send value contributions toward output with weight-coded thickness.",
+        "object_refs": ["obj_value_streams"],
+        "duration_s": 4,
+        "easing": "ease_in_out",
+        "misread_risk": "Streams are weighted contributions, not physical particles."
+      },
+      {
+        "id": "mp_aggregate_context",
+        "primitive": "aggregate",
+        "technical_meaning": "Merge weighted values into the context vector.",
+        "object_refs": ["obj_value_streams", "obj_formula"],
+        "duration_s": 3,
+        "easing": "ease_out",
+        "required_invariant_ref": "inv_multiple_weights",
+        "misread_risk": "Do not collapse into one selected value."
+      }
+    ],
+    "complexity_budget": {
+      "max_new_objects_per_beat": 4,
+      "max_simultaneous_motion_tracks": 3,
+      "hold_during_dense_labels": true,
+      "notes": "Introduce one conceptual operation per beat; formula fragments should appear only when their visual operation is active."
+    }
+  },
+  "camera_model": {
+    "shots": [
+      {
+        "id": "shot_s01_context",
+        "beat_refs": ["db01_context_question"],
+        "framing": "wide",
+        "movement": "static",
+        "focus_targets": ["obj_token_tiles"],
+        "hold_reason": "Viewer must parse sentence strip and active token.",
+        "depth_usage": "None.",
+        "avoid_motion_during": ["token labels", "context arcs"]
+      },
+      {
+        "id": "shot_s02_roles",
+        "beat_refs": ["db02_role_split"],
+        "framing": "medium",
+        "movement": "static",
+        "focus_targets": ["obj_qkv_cards"],
+        "hold_reason": "Q/K/V labels need stable reading.",
+        "depth_usage": "None.",
+        "avoid_motion_during": ["role labels"]
+      },
+      {
+        "id": "shot_s03_scores",
+        "beat_refs": ["db03_compare_and_scale"],
+        "framing": "overview_to_detail",
+        "movement": "push_in",
+        "focus_targets": ["obj_attention_heatmap", "obj_formula"],
+        "hold_reason": "Hold once heatmap labels are readable.",
+        "depth_usage": "None.",
+        "avoid_motion_during": ["formula highlight", "heatmap label readout"]
+      },
+      {
+        "id": "shot_s04_weights",
+        "beat_refs": ["db04_normalize"],
+        "framing": "medium",
+        "movement": "static",
+        "focus_targets": ["obj_weight_bars", "obj_formula"],
+        "hold_reason": "Softmax and sum-to-one cue require stable layout.",
+        "depth_usage": "None.",
+        "avoid_motion_during": ["numeric bar labels"]
+      },
+      {
+        "id": "shot_s05_context",
+        "beat_refs": ["db05_aggregate_values"],
+        "framing": "wide",
+        "movement": "push_in",
+        "focus_targets": ["obj_value_streams"],
+        "hold_reason": "Use slight push only after stream directions are clear.",
+        "depth_usage": "2.5D stream separation only; no scientific depth claim.",
+        "avoid_motion_during": ["full formula reassembly"]
+      }
+    ],
+    "camera_intents": [
+      {
+        "id": "cam_keep_labels_readable",
+        "intent": "Do not move camera while introducing readable math or labels.",
+        "beat_refs": ["db02_role_split", "db03_compare_and_scale", "db04_normalize"]
+      },
+      {
+        "id": "cam_overview_to_payoff",
+        "intent": "Use slight push-in only to move from mechanism overview to payoff.",
+        "beat_refs": ["db03_compare_and_scale", "db05_aggregate_values"]
+      }
+    ],
+    "readability_constraints": [
+      "Formula labels must be rendered by deterministic code.",
+      "Heatmap row and column semantics must remain visible.",
+      "Do not rotate text-heavy scenes.",
+      "2.5D depth in value streams is only a separation device."
+    ]
+  },
+  "exactness_policy": {
+    "exact_required": [
+      {
+        "object_or_claim_ref": "obj_formula",
+        "exactness": "symbolic_exact",
+        "reason": "The formula is the source anchor.",
+        "recommended_renderer": "manim"
+      },
+      {
+        "object_or_claim_ref": "obj_qkv_cards",
+        "exactness": "symbolic_exact",
+        "reason": "Q/K/V labels and colors define the symbol ledger.",
+        "recommended_renderer": "manim"
+      },
+      {
+        "object_or_claim_ref": "obj_weight_bars",
+        "exactness": "numeric_exact",
+        "reason": "Toy softmax weights should sum to one exactly.",
+        "recommended_renderer": "manim"
+      }
+    ],
+    "metaphor_allowed": [
+      {
+        "layer_or_object_ref": "obj_value_streams",
+        "allowed_scope": "Stream visuals may make aggregation easier to see.",
+        "boundary": "Streams are weighted contributions, not physical flow."
+      },
+      {
+        "layer_or_object_ref": "layer_cinematic_support",
+        "allowed_scope": "Text-free spotlight or convergence backgrounds may support focus.",
+        "boundary": "No readable formula, labels, token text, or fake symbols."
+      }
+    ],
+    "ai_video_forbidden": [
+      "Readable equations",
+      "Q/K/V labels",
+      "Heatmap values",
+      "Numeric weights",
+      "Token text",
+      "Claims about training or multi-head attention"
+    ],
+    "simplifications": [
+      {
+        "id": "simp_toy_values",
+        "statement": "Scores and weights use toy values.",
+        "source_refs": [],
+        "assumption_refs": ["asm_toy_values"],
+        "impact": "The animation teaches relationships, not a real model trace.",
+        "disclosure_or_guardrail": "Avoid wording that implies values came from a trained model."
+      },
+      {
+        "id": "simp_single_query",
+        "statement": "The video focuses on one query position.",
+        "source_refs": [],
+        "assumption_refs": ["asm_single_query_focus"],
+        "impact": "The full attention matrix is introduced through a representative row.",
+        "disclosure_or_guardrail": "Narration should say this is one token's attention question."
+      }
+    ]
+  },
+  "renderer_plan": {
+    "candidate_renderers": [
+      {
+        "renderer": "manim",
+        "fit": "primary",
+        "responsibilities": [
+          "Render formulas and labels.",
+          "Render token cards, role splits, heatmap, softmax bars, and value streams.",
+          "Preserve deterministic object identity across transformations."
+        ],
+        "required_inputs": ["mechanism_spec.json", "dynamic_scene_model.json", "scene_specs/*.json"],
+        "reason": "The sample depends on readable formulas, labels, matrices, and deterministic transformations.",
+        "risks": ["Dense text can become unreadable if camera moves during labels."]
+      },
+      {
+        "renderer": "remotion",
+        "fit": "support",
+        "responsibilities": ["Assemble rendered layers, subtitles, and audio timing."],
+        "required_inputs": ["rendered scene clips", "audio manifest"],
+        "reason": "Timeline composition is separate from visual reasoning.",
+        "risks": ["Must not alter math-layer timing enough to desync narration."]
+      },
+      {
+        "renderer": "ffmpeg",
+        "fit": "support",
+        "responsibilities": ["Mux, transcode, and export final files."],
+        "required_inputs": ["scene clips", "audio tracks"],
+        "reason": "Export is delivery infrastructure.",
+        "risks": ["Alpha and frame-rate handling must be checked."]
+      },
+      {
+        "renderer": "ai_video_provider",
+        "fit": "support",
+        "responsibilities": ["Generate optional text-free cinematic base layers or transitions."],
+        "required_inputs": ["keyframes", "negative prompts", "must_not_include list"],
+        "reason": "Can improve focus and atmosphere without owning exact math.",
+        "risks": ["May generate fake text or symbols if prompts are not constrained."]
+      },
+      {
+        "renderer": "threejs",
+        "fit": "fallback",
+        "responsibilities": ["Prototype a 2.5D value-flow scene if needed."],
+        "required_inputs": ["visual object graph", "camera plan"],
+        "reason": "Useful if the attention sample later becomes interactive.",
+        "risks": ["Overkill for current deterministic 2D/2.5D demo."]
+      },
+      {
+        "renderer": "blender",
+        "fit": "fallback",
+        "responsibilities": ["Polished 3D value-flow or abstract token space only if a 3D demo is required."],
+        "required_inputs": ["scene graph", "camera path", "materials"],
+        "reason": "Current sample does not require true 3D geometry.",
+        "risks": ["May introduce decorative 3D that implies nonexistent geometry."]
+      }
+    ],
+    "layer_plan": [
+      {
+        "layer_id": "layer_exact_manim",
+        "layer_role": "exact_overlay",
+        "renderer": "manim",
+        "object_refs": ["obj_token_tiles", "obj_qkv_cards", "obj_attention_heatmap", "obj_weight_bars", "obj_value_streams", "obj_formula"],
+        "contains_exactness_levels": ["symbolic_exact", "numeric_exact", "qualitative", "pedagogical_simplification"],
+        "exactness_by_object": [
+          {
+            "object_ref": "obj_token_tiles",
+            "exactness": "pedagogical_simplification"
+          },
+          {
+            "object_ref": "obj_qkv_cards",
+            "exactness": "symbolic_exact"
+          },
+          {
+            "object_ref": "obj_attention_heatmap",
+            "exactness": "pedagogical_simplification"
+          },
+          {
+            "object_ref": "obj_weight_bars",
+            "exactness": "numeric_exact"
+          },
+          {
+            "object_ref": "obj_value_streams",
+            "exactness": "qualitative"
+          },
+          {
+            "object_ref": "obj_formula",
+            "exactness": "symbolic_exact"
+          }
+        ],
+        "layer_exactness_overrides": [],
+        "output_target_hint": "examples/attention/outputs/scenes/*.webm"
+      },
+      {
+        "layer_id": "layer_cinematic_support",
+        "layer_role": "cinematic_base",
+        "renderer": "ai_video_provider",
+        "object_refs": ["obj_token_tiles", "obj_value_streams"],
+        "contains_exactness_levels": ["metaphor", "pedagogical_simplification", "qualitative"],
+        "exactness_by_object": [
+          {
+            "object_ref": "obj_token_tiles",
+            "exactness": "pedagogical_simplification"
+          },
+          {
+            "object_ref": "obj_value_streams",
+            "exactness": "qualitative"
+          }
+        ],
+        "layer_exactness_overrides": [
+          {
+            "exactness": "metaphor",
+            "reason": "The AI-generated support layer is a text-free cinematic metaphor even when it references exact-overlay object IDs for continuity."
+          }
+        ],
+        "output_target_hint": "examples/attention/outputs/cinematic/*.mp4"
+      },
+      {
+        "layer_id": "layer_timeline_assembly",
+        "layer_role": "assembly",
+        "renderer": "remotion",
+        "object_refs": ["obj_formula", "obj_value_streams"],
+        "contains_exactness_levels": ["symbolic_exact", "qualitative"],
+        "exactness_by_object": [
+          {
+            "object_ref": "obj_formula",
+            "exactness": "symbolic_exact"
+          },
+          {
+            "object_ref": "obj_value_streams",
+            "exactness": "qualitative"
+          }
+        ],
+        "layer_exactness_overrides": [],
+        "output_target_hint": "examples/attention/outputs/attention-demo.mp4"
+      }
+    ],
+    "fallbacks": [
+      {
+        "if_renderer_unavailable": "ai_video_provider",
+        "fallback_renderer": "manim",
+        "tradeoff": "Use flat deterministic backgrounds and transitions; scientific content remains intact."
+      },
+      {
+        "if_renderer_unavailable": "remotion",
+        "fallback_renderer": "ffmpeg",
+        "tradeoff": "Use simpler assembly and captions."
+      },
+      {
+        "if_renderer_unavailable": "blender",
+        "fallback_renderer": "manim",
+        "tradeoff": "Use schematic 2.5D value streams instead of polished 3D."
+      }
+    ]
+  },
+  "handoff": {
+    "storyboard_beat_refs": [
+      {
+        "beat_ref": "db01_context_question",
+        "scene_hint": "s01",
+        "storyboard_note": "Start with the context question before introducing Q/K/V."
+      },
+      {
+        "beat_ref": "db02_role_split",
+        "scene_hint": "s02",
+        "storyboard_note": "Emphasize that Q/K/V are roles from the same token representations."
+      },
+      {
+        "beat_ref": "db03_compare_and_scale",
+        "scene_hint": "s03",
+        "storyboard_note": "Use heatmap as the bridge from comparison to scores, then scale."
+      },
+      {
+        "beat_ref": "db04_normalize",
+        "scene_hint": "s04",
+        "storyboard_note": "Make softmax visible as normalization rather than magic."
+      },
+      {
+        "beat_ref": "db05_aggregate_values",
+        "scene_hint": "s05",
+        "storyboard_note": "End with the context vector as payoff."
+      }
+    ],
+    "enriched_scene_spec_hints": [
+      {
+        "scene_id": "s01",
+        "visual_object_refs": ["obj_token_tiles"],
+        "motion_primitive_refs": ["mp_highlight_active_token", "mp_trace_context_arcs"],
+        "renderer_hints": ["manim", "ai_video_provider"],
+        "notes": "AI support must be text-free; Manim owns token tiles and arcs."
+      },
+      {
+        "scene_id": "s02",
+        "visual_object_refs": ["obj_qkv_cards"],
+        "motion_primitive_refs": ["mp_split_qkv", "mp_align_roles"],
+        "renderer_hints": ["manim"],
+        "notes": "No AI video layer needed because labels are exact."
+      },
+      {
+        "scene_id": "s03",
+        "visual_object_refs": ["obj_attention_heatmap", "obj_formula"],
+        "motion_primitive_refs": ["mp_compare_qk", "mp_reveal_heatmap", "mp_filter_scale", "mp_highlight_scale_term"],
+        "renderer_hints": ["manim", "ai_video_provider"],
+        "notes": "Keep heatmap and scale term deterministic; AI support only as abstract transition."
+      },
+      {
+        "scene_id": "s04",
+        "visual_object_refs": ["obj_weight_bars", "obj_formula"],
+        "motion_primitive_refs": ["mp_normalize_bars"],
+        "renderer_hints": ["manim"],
+        "notes": "Use deterministic toy weights that sum to one."
+      },
+      {
+        "scene_id": "s05",
+        "visual_object_refs": ["obj_value_streams", "obj_formula"],
+        "motion_primitive_refs": ["mp_route_values", "mp_aggregate_context"],
+        "renderer_hints": ["manim", "ai_video_provider"],
+        "notes": "Value streams are metaphorical flow but thickness ordering should match weights."
+      }
+    ],
+    "downstream_tasks": [
+      "Update storyboard scenes to reference dynamic beat IDs.",
+      "Move rendered outputs from site/public/videos to examples/attention/outputs.",
+      "Use exactness policy when generating provider-neutral AI video jobs."
+    ]
+  },
+  "qa_contract": {
+    "source_fidelity_checks": [
+      "Every Q/K/V visual object traces to the symbol ledger.",
+      "Scaling is connected to sqrt(d_k), not treated as decorative cooling.",
+      "Softmax is shown as normalization into weights.",
+      "Value aggregation uses multiple value contributions."
+    ],
+    "visual_readability_checks": [
+      "Q/K/V labels are readable and stable.",
+      "Heatmap row/column semantics remain clear.",
+      "Formula fragments are not rotated or placed in moving backgrounds.",
+      "Camera holds during dense labels."
+    ],
+    "misconception_checks": [
+      "Attention is not presented as hard selection.",
+      "Q/K/V are not presented as different input tokens.",
+      "AI-generated layers do not contain fake formulas or labels.",
+      "Toy scores are not implied to be real model activations."
+    ],
+    "renderer_acceptance_checks": [
+      "Manim renders exact math and labels.",
+      "Any AI video output is text-free and non-symbolic.",
+      "Assembly preserves scene order and beat timing.",
+      "Fallback without AI video still explains the mechanism."
+    ]
+  },
+  "open_questions": [
+    {
+      "id": "oq_real_values",
+      "question": "Should a future version compute toy Q/K/V vectors to generate real softmax values for the demo?",
+      "blocks_execution": false
+    }
+  ],
+  "known_risks": [
+    {
+      "id": "risk_attention_specificity",
+      "risk": "The sample could bias future schemas toward attention-specific heatmaps.",
+      "mitigation": "Keep Q/K/V as instances of generic entities/operators/transitions and test the schema on a second non-attention mechanism."
+    },
+    {
+      "id": "risk_decorative_3d",
+      "risk": "2.5D value streams could imply physical depth that does not exist in the formula.",
+      "mitigation": "State depth is only for separation and keep formula/weights in exact 2D layers."
+    },
+    {
+      "id": "risk_ai_fake_text",
+      "risk": "AI video support may generate fake labels or equations.",
+      "mitigation": "Use text-free keyframes, strict negative prompts, and deterministic Manim overlays."
+    }
+  ]
+}

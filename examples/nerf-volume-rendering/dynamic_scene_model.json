@@ -1,0 +1,1069 @@
+{
+  "contract_version": "dynamic-scene-model/v0.1",
+  "demo_id": "nerf-volume-rendering",
+  "source_links": {
+    "mechanism_spec_path": "examples/nerf-volume-rendering/mechanism_spec.json",
+    "source_claim_ids": ["nerf_continuous_field_claim", "nerf_misconceptions"],
+    "formula_ids": ["nerf_field_query", "nerf_volume_rendering", "nerf_transmittance"],
+    "figure_ids": [],
+    "mechanism_step_ids": [
+      "m01_camera_ray",
+      "m02_sample_points",
+      "m03_field_query",
+      "m04_volume_integration"
+    ],
+    "symbol_ids": ["F_Theta", "x", "d", "sigma", "c", "T_t", "C_r"]
+  },
+  "content_profile": {
+    "content_families": ["geometry_topology", "model_architecture", "formula_derivation", "algorithm_execution"],
+    "learning_objective": "Explain how NeRF queries a continuous neural radiance field along camera rays and integrates density, color, and transmittance into a rendered pixel.",
+    "audience_level": "graduate",
+    "visual_thesis": "A camera ray becomes an ordered sequence of sample points; each point queries a continuous field for density and color, and ordered volume integration turns those contributions into a pixel.",
+    "scope": [
+      "Show one camera pixel casting one ray through a 3D volume.",
+      "Show ordered samples along that ray.",
+      "Show F_Theta(x,d) returning density and view-dependent color.",
+      "Show transmittance-weighted color accumulation into one output pixel, then hint at sweeping many rays."
+    ],
+    "out_of_scope": [
+      "Training loss and pose optimization.",
+      "Hierarchical sampling details.",
+      "Full image synthesis implementation."
+    ]
+  },
+  "semantic_units": {
+    "entities": [
+      {
+        "id": "camera_ray",
+        "label": "r(t)",
+        "type": "graph_edge",
+        "source_refs": ["m01_camera_ray"],
+        "technical_role": "Ray passing from a camera pixel through the 3D scene volume.",
+        "meaning": "Defines the ordered path along which the field is sampled.",
+        "state_variables": ["origin", "direction", "near_far_bounds"],
+        "visualization_need": "Needs clear near-to-far ordering.",
+        "claim_boundary": "Single ray explains one pixel, not a full rendered image."
+      },
+      {
+        "id": "sample_positions",
+        "label": "x = r(t)",
+        "type": "particle",
+        "source_refs": ["x", "m02_sample_points"],
+        "technical_role": "3D positions sampled along the camera ray.",
+        "meaning": "Locations where the neural field is queried.",
+        "state_variables": ["depth_order", "position"],
+        "visualization_need": "Must be ordered along the ray.",
+        "claim_boundary": "Sample spacing is pedagogical unless a sampling scheme is specified."
+      },
+      {
+        "id": "view_direction",
+        "label": "d",
+        "type": "vector",
+        "source_refs": ["d", "m01_camera_ray", "m03_field_query"],
+        "technical_role": "Viewing direction input to the radiance field.",
+        "meaning": "Allows emitted color to be view-dependent.",
+        "state_variables": ["direction"],
+        "visualization_need": "Should travel with field queries as a direction cue.",
+        "claim_boundary": "One fixed viewing direction is shown for the selected ray."
+      },
+      {
+        "id": "field_function",
+        "label": "F_Theta",
+        "type": "layer",
+        "source_refs": ["F_Theta", "m03_field_query", "nerf_field_query"],
+        "technical_role": "Neural radiance field mapping position and direction to density and color.",
+        "meaning": "A continuous function queried at sample points, not an explicit voxel table.",
+        "state_variables": ["query_input", "output_density", "output_color"],
+        "visualization_need": "Must counter the voxel-grid misconception.",
+        "claim_boundary": "Rendered as a module to avoid implying stored voxels."
+      },
+      {
+        "id": "density_sigma",
+        "label": "sigma",
+        "type": "scalar",
+        "source_refs": ["sigma", "m03_field_query", "m04_volume_integration"],
+        "technical_role": "Volume density output at a sample point.",
+        "meaning": "Controls opacity and contribution probability along the ray.",
+        "state_variables": ["density_value"],
+        "visualization_need": "Needs opacity or size encoding.",
+        "claim_boundary": "Values are qualitative without a toy table."
+      },
+      {
+        "id": "emitted_color",
+        "label": "c",
+        "type": "vector",
+        "source_refs": ["c", "m03_field_query", "m04_volume_integration"],
+        "technical_role": "View-dependent color output at a sample point.",
+        "meaning": "Color contribution that may enter the rendered pixel.",
+        "state_variables": ["color", "weighted_contribution"],
+        "visualization_need": "Needs visible color chips tied to sample positions.",
+        "claim_boundary": "Color chips are teaching abstractions."
+      },
+      {
+        "id": "transmittance",
+        "label": "T(t)",
+        "type": "scalar",
+        "source_refs": ["T_t", "nerf_transmittance", "m04_volume_integration"],
+        "technical_role": "Accumulated visibility along the ray before a sample.",
+        "meaning": "Earlier density can reduce later samples' visibility.",
+        "state_variables": ["depth", "visibility"],
+        "visualization_need": "Requires near-to-far fading along the ray.",
+        "claim_boundary": "Ribbon fade is qualitative unless toy densities are supplied."
+      },
+      {
+        "id": "rendered_pixel",
+        "label": "C(r)",
+        "type": "image_patch",
+        "source_refs": ["C_r", "nerf_volume_rendering", "m04_volume_integration"],
+        "technical_role": "Final color for the camera ray after volume rendering.",
+        "meaning": "Weighted accumulation of colors and densities along the ray.",
+        "state_variables": ["color"],
+        "visualization_need": "Needs a payoff target for accumulated color chips.",
+        "claim_boundary": "One pixel is a local explanation before sweeping many rays."
+      }
+    ],
+    "operators": [
+      {
+        "id": "op_cast_ray",
+        "label": "Cast camera ray",
+        "operator_type": "project",
+        "source_refs": ["m01_camera_ray"],
+        "input_refs": ["camera_ray"],
+        "output_refs": ["camera_ray"],
+        "technical_meaning": "Project one camera pixel into a ray through the 3D scene volume.",
+        "visual_operation_hint": "A yellow ray leaves the image plane and cuts through the volume."
+      },
+      {
+        "id": "op_sample_ray",
+        "label": "Sample along ray",
+        "operator_type": "sample",
+        "source_refs": ["m02_sample_points"],
+        "input_refs": ["camera_ray"],
+        "output_refs": ["sample_positions"],
+        "technical_meaning": "Choose ordered 3D locations along the ray.",
+        "visual_operation_hint": "Blue beads appear in near-to-far order along the ray."
+      },
+      {
+        "id": "op_query_field",
+        "label": "Query radiance field",
+        "operator_type": "transform",
+        "source_refs": ["m03_field_query", "nerf_field_query"],
+        "input_refs": ["sample_positions", "view_direction", "field_function"],
+        "output_refs": ["density_sigma", "emitted_color"],
+        "technical_meaning": "Evaluate F_Theta at each sample position and viewing direction to obtain density and color.",
+        "visual_operation_hint": "Each sample sends a query to the field module and receives opacity plus color."
+      },
+      {
+        "id": "op_integrate_volume",
+        "label": "Volume integration",
+        "operator_type": "integrate",
+        "source_refs": ["m04_volume_integration", "nerf_volume_rendering", "nerf_transmittance"],
+        "input_refs": ["density_sigma", "emitted_color", "transmittance"],
+        "output_refs": ["rendered_pixel"],
+        "technical_meaning": "Integrate color contributions weighted by density and accumulated transmittance along the ray.",
+        "visual_operation_hint": "Color chips stack into the output pixel while the visibility ribbon fades with depth."
+      }
+    ],
+    "states": [
+      {
+        "id": "state_ray_ready",
+        "label": "Ray ready",
+        "source_refs": ["m01_camera_ray"],
+        "represented_quantities": ["r(t)", "d"],
+        "description": "One camera ray passes through the 3D volume from near to far."
+      },
+      {
+        "id": "state_samples_ready",
+        "label": "Samples ready",
+        "source_refs": ["m02_sample_points"],
+        "represented_quantities": ["x = r(t)"],
+        "description": "Ordered sample points are placed along the ray."
+      },
+      {
+        "id": "state_field_outputs_ready",
+        "label": "Field outputs ready",
+        "source_refs": ["m03_field_query"],
+        "represented_quantities": ["F_Theta(x,d)", "sigma", "c"],
+        "description": "Each sample has a density and emitted color output from the field."
+      },
+      {
+        "id": "state_pixel_accumulated",
+        "label": "Pixel accumulated",
+        "source_refs": ["m04_volume_integration"],
+        "represented_quantities": ["T(t)", "C(r)"],
+        "description": "Transmittance-weighted color contributions have accumulated into one pixel."
+      }
+    ],
+    "relations": [
+      {
+        "id": "rel_ray_contains_samples",
+        "relation_type": "contains",
+        "from_ref": "camera_ray",
+        "to_ref": "sample_positions",
+        "source_refs": ["m02_sample_points"],
+        "meaning": "Sample positions lie along the selected ray."
+      },
+      {
+        "id": "rel_field_maps_to_outputs",
+        "relation_type": "maps_to",
+        "from_ref": "field_function",
+        "to_ref": "density_sigma",
+        "source_refs": ["m03_field_query"],
+        "meaning": "The field maps query inputs to density and color outputs."
+      },
+      {
+        "id": "rel_transmittance_to_pixel",
+        "relation_type": "conditions_on",
+        "from_ref": "transmittance",
+        "to_ref": "rendered_pixel",
+        "source_refs": ["m04_volume_integration"],
+        "meaning": "Accumulated transmittance modulates how much later samples affect the final pixel."
+      }
+    ],
+    "invariants": [
+      {
+        "id": "inv_continuous_not_voxel",
+        "statement": "NeRF is represented as a continuous queried field, not an explicit voxel grid.",
+        "source_refs": ["nerf_misconceptions"],
+        "visual_test": "The field is shown as a function module queried by beads, not as a fixed voxel table."
+      },
+      {
+        "id": "inv_near_far_order",
+        "statement": "Samples retain near-to-far order along the camera ray.",
+        "source_refs": ["m02_sample_points", "m04_volume_integration"],
+        "visual_test": "Sample IDs and transmittance fade move monotonically along ray depth."
+      },
+      {
+        "id": "inv_density_transmittance_weighting",
+        "statement": "Sample contributions are modulated by density and transmittance, not all weighted equally.",
+        "source_refs": ["m04_volume_integration", "nerf_transmittance"],
+        "visual_test": "Color chip opacity or thickness changes with density and visibility."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "asm_single_ray_focus",
+        "statement": "The main explanation follows one ray to explain one pixel before hinting at many rays.",
+        "impact_on_visualization": "Avoid implying a single ray explains the whole image."
+      },
+      {
+        "id": "asm_toy_samples",
+        "statement": "Sample values, densities, and colors are schematic unless a toy table is supplied.",
+        "impact_on_visualization": "Do not display exact numeric weights without explicit toy values."
+      }
+    ]
+  },
+  "visual_model": {
+    "spaces": [
+      {
+        "id": "space_camera_volume",
+        "dimensionality": "3d",
+        "coordinate_system": "camera image plane plus 3D scene volume",
+        "purpose": "Show ray geometry and sample ordering in the scene volume.",
+        "depth_semantics": "Depth is ray depth from near to far."
+      },
+      {
+        "id": "space_field_query_panel",
+        "dimensionality": "2d",
+        "coordinate_system": "sample query inputs to field outputs",
+        "purpose": "Show F_Theta(x,d) returning sigma and c.",
+        "depth_semantics": "No depth meaning."
+      },
+      {
+        "id": "space_formula_panel",
+        "dimensionality": "2d",
+        "coordinate_system": "static formula overlay",
+        "purpose": "Keep volume rendering and transmittance formulas readable.",
+        "depth_semantics": "No depth meaning."
+      }
+    ],
+    "objects": [
+      {
+        "id": "obj_image_plane",
+        "object_type": "plane",
+        "entity_refs": ["camera_ray"],
+        "source_refs": ["m01_camera_ray"],
+        "label_policy": "optional",
+        "exactness": "qualitative",
+        "visual_form": "camera image plane with one highlighted pixel",
+        "space_ref": "space_camera_volume",
+        "layer_role": "spatial_scene",
+        "persistent": true,
+        "state_variables": ["selected_pixel"],
+        "allowed_transformations": ["appear", "highlight"],
+        "renderer_notes": "Keep the selected pixel visible as the ray origin."
+      },
+      {
+        "id": "obj_camera_ray",
+        "object_type": "graph_edge",
+        "entity_refs": ["camera_ray", "view_direction"],
+        "source_refs": ["m01_camera_ray", "d"],
+        "label_policy": "required",
+        "exactness": "topology_exact",
+        "visual_form": "yellow ray with direction arrow",
+        "space_ref": "space_camera_volume",
+        "layer_role": "spatial_scene",
+        "persistent": true,
+        "state_variables": ["origin", "direction", "near_far_bounds"],
+        "allowed_transformations": ["trace", "sweep", "highlight"],
+        "renderer_notes": "Do not reverse near and far order."
+      },
+      {
+        "id": "obj_sample_beads",
+        "object_type": "particle",
+        "entity_refs": ["sample_positions"],
+        "source_refs": ["x", "m02_sample_points"],
+        "label_policy": "optional",
+        "exactness": "topology_exact",
+        "visual_form": "ordered blue beads along the ray",
+        "space_ref": "space_camera_volume",
+        "layer_role": "spatial_scene",
+        "persistent": true,
+        "state_variables": ["depth_order", "position"],
+        "allowed_transformations": ["sample", "align", "highlight"],
+        "renderer_notes": "Spacing may be schematic, but order must be exact."
+      },
+      {
+        "id": "obj_field_module",
+        "object_type": "layer",
+        "entity_refs": ["field_function"],
+        "source_refs": ["F_Theta", "m03_field_query"],
+        "label_policy": "required",
+        "exactness": "symbolic_exact",
+        "visual_form": "green F_Theta module receiving x and d",
+        "space_ref": "space_field_query_panel",
+        "layer_role": "exact_overlay",
+        "persistent": true,
+        "state_variables": ["query_input"],
+        "allowed_transformations": ["route", "highlight"],
+        "renderer_notes": "Module label must be deterministic and should not look like a voxel grid."
+      },
+      {
+        "id": "obj_density_beads",
+        "object_type": "scalar",
+        "entity_refs": ["density_sigma"],
+        "source_refs": ["sigma", "m03_field_query"],
+        "label_policy": "required",
+        "exactness": "qualitative",
+        "visual_form": "opacity beads attached to samples",
+        "space_ref": "space_camera_volume",
+        "layer_role": "spatial_scene",
+        "persistent": false,
+        "state_variables": ["density_value"],
+        "allowed_transformations": ["appear", "measure", "highlight"],
+        "renderer_notes": "Opacity means density, not confidence."
+      },
+      {
+        "id": "obj_color_chips",
+        "object_type": "vector",
+        "entity_refs": ["emitted_color"],
+        "source_refs": ["c", "m03_field_query", "m04_volume_integration"],
+        "label_policy": "optional",
+        "exactness": "qualitative",
+        "visual_form": "color chips paired with sample beads",
+        "space_ref": "space_camera_volume",
+        "layer_role": "spatial_scene",
+        "persistent": false,
+        "state_variables": ["color", "weighted_contribution"],
+        "allowed_transformations": ["appear", "aggregate", "route"],
+        "renderer_notes": "Color chips can be illustrative but must keep sample association."
+      },
+      {
+        "id": "obj_transmittance_ribbon",
+        "object_type": "scalar",
+        "entity_refs": ["transmittance"],
+        "source_refs": ["T_t", "nerf_transmittance", "m04_volume_integration"],
+        "label_policy": "required",
+        "exactness": "pedagogical_simplification",
+        "visual_form": "red visibility ribbon fading from near to far",
+        "space_ref": "space_camera_volume",
+        "layer_role": "spatial_scene",
+        "persistent": false,
+        "state_variables": ["visibility", "depth"],
+        "allowed_transformations": ["trace", "filter", "highlight"],
+        "renderer_notes": "Ribbon fade represents accumulated transmittance qualitatively."
+      },
+      {
+        "id": "obj_output_pixel",
+        "object_type": "image_patch",
+        "entity_refs": ["rendered_pixel"],
+        "source_refs": ["C_r", "nerf_volume_rendering", "m04_volume_integration"],
+        "label_policy": "required",
+        "exactness": "qualitative",
+        "visual_form": "final pixel color swatch",
+        "space_ref": "space_camera_volume",
+        "layer_role": "spatial_scene",
+        "persistent": true,
+        "state_variables": ["color"],
+        "allowed_transformations": ["aggregate", "reveal"],
+        "renderer_notes": "Show as one pixel before sweeping to many rays."
+      },
+      {
+        "id": "obj_formula_panel",
+        "object_type": "equation",
+        "entity_refs": ["field_function", "density_sigma", "emitted_color", "transmittance", "rendered_pixel"],
+        "source_refs": ["nerf_field_query", "nerf_volume_rendering", "nerf_transmittance"],
+        "label_policy": "required",
+        "exactness": "symbolic_exact",
+        "visual_form": "F_Theta(x,d)->(c,sigma), T(t), and C(r) integral formulas",
+        "space_ref": "space_formula_panel",
+        "layer_role": "exact_overlay",
+        "persistent": true,
+        "state_variables": ["active_formula"],
+        "allowed_transformations": ["reveal", "highlight"],
+        "renderer_notes": "Readable formulas must be deterministic."
+      }
+    ],
+    "encodings": [
+      {
+        "id": "enc_nerf_colors",
+        "channel": "color",
+        "maps": "NeRF mechanism roles",
+        "domain": ["F_Theta", "x", "d", "sigma", "c", "T_t", "C_r"],
+        "range": ["#A7F3D0", "#7DD3FC", "#FDE68A", "#C4B5FD", "#F9A8D4", "#FCA5A5", "#FFFFFF"],
+        "object_refs": ["obj_camera_ray", "obj_sample_beads", "obj_field_module", "obj_density_beads", "obj_color_chips", "obj_transmittance_ribbon", "obj_output_pixel", "obj_formula_panel"],
+        "stability": "global",
+        "risk_note": "Density, color, and transmittance encodings must remain distinct."
+      },
+      {
+        "id": "enc_density_opacity",
+        "channel": "opacity",
+        "maps": "relative density sigma",
+        "domain": ["low density", "high density"],
+        "range": ["low opacity bead", "high opacity bead"],
+        "object_refs": ["obj_density_beads", "obj_color_chips"],
+        "stability": "scene_local",
+        "risk_note": "Opacity means density-weighted contribution, not confidence."
+      },
+      {
+        "id": "enc_depth_order",
+        "channel": "position",
+        "maps": "near-to-far ray order",
+        "domain": ["near sample", "far sample"],
+        "range": ["near camera", "far through volume"],
+        "object_refs": ["obj_camera_ray", "obj_sample_beads", "obj_transmittance_ribbon"],
+        "stability": "global",
+        "risk_note": "Depth order must not be reversed by camera motion."
+      }
+    ],
+    "layout_constraints": [
+      {
+        "id": "layout_ray_order",
+        "constraint_type": "preserve_topology",
+        "object_refs": ["obj_camera_ray", "obj_sample_beads", "obj_transmittance_ribbon"],
+        "rule": "Sample beads keep near-to-far order along the ray throughout integration."
+      },
+      {
+        "id": "layout_formula_static",
+        "constraint_type": "label_readability",
+        "object_refs": ["obj_field_module", "obj_formula_panel"],
+        "rule": "Hold the formula panel and F_Theta label still during field-query explanations."
+      },
+      {
+        "id": "layout_no_voxel_grid",
+        "constraint_type": "avoid_overlap",
+        "object_refs": ["obj_field_module", "obj_sample_beads"],
+        "rule": "Do not arrange samples as a voxel table; show them as queries into a continuous field."
+      }
+    ]
+  },
+  "dynamic_model": {
+    "beats": [
+      {
+        "id": "db01_cast_ray",
+        "scene_hint": "s01",
+        "teaching_goal": "Show one camera pixel casting one ray through the scene volume.",
+        "source_refs": ["m01_camera_ray"],
+        "object_refs": ["obj_image_plane", "obj_camera_ray", "obj_formula_panel"],
+        "viewer_question": "What does one output pixel query in the 3D scene?",
+        "duration_hint_s": 9,
+        "insight_moment": false
+      },
+      {
+        "id": "db02_sample_ray",
+        "scene_hint": "s02",
+        "teaching_goal": "Show ordered sample points along the ray.",
+        "source_refs": ["m02_sample_points"],
+        "object_refs": ["obj_camera_ray", "obj_sample_beads"],
+        "viewer_question": "Where does NeRF evaluate the field?",
+        "duration_hint_s": 9,
+        "insight_moment": true
+      },
+      {
+        "id": "db03_query_field",
+        "scene_hint": "s03",
+        "teaching_goal": "Show each sample and view direction querying F_Theta for density and color.",
+        "source_refs": ["m03_field_query", "nerf_field_query"],
+        "object_refs": ["obj_sample_beads", "obj_field_module", "obj_density_beads", "obj_color_chips", "obj_formula_panel"],
+        "viewer_question": "What does the neural field return at each sample?",
+        "duration_hint_s": 12,
+        "insight_moment": true
+      },
+      {
+        "id": "db04_integrate_pixel",
+        "scene_hint": "s04",
+        "teaching_goal": "Show transmittance-weighted accumulation into the rendered pixel.",
+        "source_refs": ["m04_volume_integration", "nerf_volume_rendering", "nerf_transmittance"],
+        "object_refs": ["obj_color_chips", "obj_density_beads", "obj_transmittance_ribbon", "obj_output_pixel", "obj_formula_panel"],
+        "viewer_question": "How do sample outputs become one pixel color?",
+        "duration_hint_s": 14,
+        "insight_moment": true
+      }
+    ],
+    "states": [
+      {
+        "id": "ds01_ray_visible",
+        "beat_ref": "db01_cast_ray",
+        "semantic_state_ref": "state_ray_ready",
+        "object_states": [
+          {
+            "object_ref": "obj_image_plane",
+            "state": "one camera pixel highlighted"
+          },
+          {
+            "object_ref": "obj_camera_ray",
+            "state": "ray traced from camera through volume"
+          }
+        ]
+      },
+      {
+        "id": "ds02_samples_visible",
+        "beat_ref": "db02_sample_ray",
+        "semantic_state_ref": "state_samples_ready",
+        "object_states": [
+          {
+            "object_ref": "obj_sample_beads",
+            "state": "ordered sample beads appear along the ray"
+          }
+        ]
+      },
+      {
+        "id": "ds03_outputs_visible",
+        "beat_ref": "db03_query_field",
+        "semantic_state_ref": "state_field_outputs_ready",
+        "object_states": [
+          {
+            "object_ref": "obj_field_module",
+            "state": "F_Theta receives sample positions and viewing direction"
+          },
+          {
+            "object_ref": "obj_density_beads",
+            "state": "density opacity beads attached to samples"
+          },
+          {
+            "object_ref": "obj_color_chips",
+            "state": "color chips attached to samples"
+          }
+        ]
+      },
+      {
+        "id": "ds04_pixel_visible",
+        "beat_ref": "db04_integrate_pixel",
+        "semantic_state_ref": "state_pixel_accumulated",
+        "object_states": [
+          {
+            "object_ref": "obj_transmittance_ribbon",
+            "state": "visibility ribbon fades from near to far"
+          },
+          {
+            "object_ref": "obj_output_pixel",
+            "state": "color contributions accumulated into final pixel"
+          }
+        ]
+      }
+    ],
+    "transitions": [
+      {
+        "id": "tr01_trace_ray",
+        "from_state_ref": "ds01_ray_visible",
+        "to_state_ref": "ds01_ray_visible",
+        "motion_primitive_refs": ["mp_trace_camera_ray"],
+        "technical_event": "A camera pixel defines a ray through the scene volume.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_image_plane",
+            "after_object_ref": "obj_camera_ray",
+            "correspondence_note": "The highlighted pixel is the origin of the selected ray."
+          }
+        ],
+        "composition": "concat",
+        "narrative_relation": "setup",
+        "timing_note": "Highlight pixel first, then trace ray."
+      },
+      {
+        "id": "tr02_place_samples",
+        "from_state_ref": "ds01_ray_visible",
+        "to_state_ref": "ds02_samples_visible",
+        "motion_primitive_refs": ["mp_sample_along_ray", "mp_align_depth_order"],
+        "technical_event": "The ray is sampled at ordered 3D positions.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_camera_ray",
+            "after_object_ref": "obj_sample_beads",
+            "correspondence_note": "Every bead lies on the selected ray."
+          }
+        ],
+        "composition": "stagger",
+        "narrative_relation": "elaboration",
+        "timing_note": "Place samples from near to far."
+      },
+      {
+        "id": "tr03_query_outputs",
+        "from_state_ref": "ds02_samples_visible",
+        "to_state_ref": "ds03_outputs_visible",
+        "motion_primitive_refs": ["mp_route_queries_to_field", "mp_reveal_density_color"],
+        "technical_event": "Each sample and view direction query F_Theta for sigma and c.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_sample_beads",
+            "after_object_ref": "obj_density_beads",
+            "correspondence_note": "Each density bead remains attached to its originating sample."
+          },
+          {
+            "before_object_ref": "obj_sample_beads",
+            "after_object_ref": "obj_color_chips",
+            "correspondence_note": "Each color chip remains attached to its originating sample."
+          }
+        ],
+        "composition": "parallel_groups",
+        "narrative_relation": "derivation",
+        "timing_note": "Query a few samples explicitly, then reveal outputs for the rest."
+      },
+      {
+        "id": "tr04_integrate_pixel",
+        "from_state_ref": "ds03_outputs_visible",
+        "to_state_ref": "ds04_pixel_visible",
+        "motion_primitive_refs": ["mp_trace_transmittance", "mp_aggregate_color_pixel"],
+        "technical_event": "Density, color, and transmittance are integrated along the ray into C(r).",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_color_chips",
+            "after_object_ref": "obj_output_pixel",
+            "correspondence_note": "Weighted color chips contribute to the final pixel."
+          }
+        ],
+        "composition": "sync",
+        "narrative_relation": "payoff",
+        "timing_note": "Fade transmittance ribbon before moving weighted colors into the pixel."
+      }
+    ],
+    "motion_primitives": [
+      {
+        "id": "mp_trace_camera_ray",
+        "primitive": "trace",
+        "technical_meaning": "Trace the ray corresponding to one camera pixel.",
+        "object_refs": ["obj_image_plane", "obj_camera_ray"],
+        "duration_s": 2,
+        "easing": "ease_out",
+        "required_invariant_ref": "inv_near_far_order",
+        "misread_risk": "The ray should not be confused with a full image render."
+      },
+      {
+        "id": "mp_sample_along_ray",
+        "primitive": "sample",
+        "technical_meaning": "Place sample points along the camera ray.",
+        "object_refs": ["obj_camera_ray", "obj_sample_beads"],
+        "duration_s": 3,
+        "easing": "ease_in_out",
+        "required_invariant_ref": "inv_near_far_order",
+        "misread_risk": "Sample positions should not look like a voxel grid."
+      },
+      {
+        "id": "mp_align_depth_order",
+        "primitive": "align",
+        "technical_meaning": "Keep sample beads ordered by ray depth.",
+        "object_refs": ["obj_sample_beads"],
+        "duration_s": 1,
+        "easing": "linear",
+        "required_invariant_ref": "inv_near_far_order",
+        "misread_risk": "Camera orbit can visually invert order if labels are absent."
+      },
+      {
+        "id": "mp_route_queries_to_field",
+        "primitive": "route",
+        "technical_meaning": "Send sample position and view direction into F_Theta.",
+        "object_refs": ["obj_sample_beads", "obj_camera_ray", "obj_field_module", "obj_formula_panel"],
+        "from_object_ref": "obj_sample_beads",
+        "to_object_ref": "obj_field_module",
+        "duration_s": 3.5,
+        "easing": "ease_in_out",
+        "required_invariant_ref": "inv_continuous_not_voxel",
+        "misread_risk": "The field module must not be drawn as stored voxels."
+      },
+      {
+        "id": "mp_reveal_density_color",
+        "primitive": "reveal",
+        "technical_meaning": "Reveal sigma and c outputs for queried samples.",
+        "object_refs": ["obj_density_beads", "obj_color_chips", "obj_formula_panel"],
+        "duration_s": 3,
+        "easing": "ease_out",
+        "misread_risk": "Density and color must be visually distinct."
+      },
+      {
+        "id": "mp_trace_transmittance",
+        "primitive": "trace",
+        "technical_meaning": "Show accumulated transmittance decreasing along the ray.",
+        "object_refs": ["obj_transmittance_ribbon", "obj_density_beads", "obj_formula_panel"],
+        "duration_s": 3,
+        "easing": "ease_in_out",
+        "required_invariant_ref": "inv_density_transmittance_weighting",
+        "misread_risk": "Fading should mean visibility, not sample deletion."
+      },
+      {
+        "id": "mp_aggregate_color_pixel",
+        "primitive": "aggregate",
+        "technical_meaning": "Accumulate weighted color contributions into the output pixel.",
+        "object_refs": ["obj_color_chips", "obj_output_pixel", "obj_formula_panel"],
+        "duration_s": 4,
+        "easing": "ease_out",
+        "required_invariant_ref": "inv_density_transmittance_weighting",
+        "misread_risk": "Do not make every color chip contribute equally."
+      }
+    ],
+    "complexity_budget": {
+      "max_new_objects_per_beat": 4,
+      "max_simultaneous_motion_tracks": 3,
+      "hold_during_dense_labels": true,
+      "notes": "Keep one selected ray through all beats; only hint at many-ray sweep after the one-pixel mechanism is clear."
+    }
+  },
+  "camera_model": {
+    "shots": [
+      {
+        "id": "shot_s01_ray",
+        "beat_refs": ["db01_cast_ray"],
+        "framing": "wide",
+        "movement": "orbit",
+        "focus_targets": ["obj_image_plane", "obj_camera_ray"],
+        "hold_reason": "Hold after establishing the 3D camera-ray relationship.",
+        "depth_usage": "Depth represents ray traversal through the 3D scene volume.",
+        "avoid_motion_during": ["r(t) label", "direction arrow label"]
+      },
+      {
+        "id": "shot_s02_samples",
+        "beat_refs": ["db02_sample_ray"],
+        "framing": "medium",
+        "movement": "track",
+        "focus_targets": ["obj_sample_beads", "obj_camera_ray"],
+        "hold_reason": "Sample order must remain legible.",
+        "depth_usage": "Track follows near-to-far order.",
+        "avoid_motion_during": ["sample labels"]
+      },
+      {
+        "id": "shot_s03_field",
+        "beat_refs": ["db03_query_field"],
+        "framing": "split_view",
+        "movement": "static",
+        "focus_targets": ["obj_field_module", "obj_formula_panel"],
+        "hold_reason": "F_Theta(x,d)->(c,sigma) must be readable.",
+        "depth_usage": "None in the formula panel.",
+        "avoid_motion_during": ["field query formula"]
+      },
+      {
+        "id": "shot_s04_integral",
+        "beat_refs": ["db04_integrate_pixel"],
+        "framing": "overview_to_detail",
+        "movement": "push_in",
+        "focus_targets": ["obj_transmittance_ribbon", "obj_output_pixel", "obj_formula_panel"],
+        "hold_reason": "Hold on the integral before aggregating chips into the pixel.",
+        "depth_usage": "Depth supports ray-order integration.",
+        "avoid_motion_during": ["C(r) integral formula", "T(t) label"]
+      }
+    ],
+    "camera_intents": [
+      {
+        "id": "cam_depth_for_ray_order",
+        "intent": "Use 3D camera movement only to clarify ray depth and sample ordering.",
+        "beat_refs": ["db01_cast_ray", "db02_sample_ray"]
+      },
+      {
+        "id": "cam_hold_for_formulas",
+        "intent": "Hold camera during F_Theta, T(t), and C(r) formulas.",
+        "beat_refs": ["db03_query_field", "db04_integrate_pixel"]
+      }
+    ],
+    "readability_constraints": [
+      "Do not draw a voxel grid.",
+      "Keep near-to-far sample order readable.",
+      "Use deterministic rendering for formulas and F_Theta labels.",
+      "State that one ray explains one pixel before hinting at many rays."
+    ]
+  },
+  "exactness_policy": {
+    "exact_required": [
+      {
+        "object_or_claim_ref": "obj_formula_panel",
+        "exactness": "symbolic_exact",
+        "reason": "Field query and volume rendering formulas are source anchors.",
+        "recommended_renderer": "manim"
+      },
+      {
+        "object_or_claim_ref": "obj_camera_ray",
+        "exactness": "topology_exact",
+        "reason": "Ray direction and near-to-far ordering must be preserved.",
+        "recommended_renderer": "threejs"
+      },
+      {
+        "object_or_claim_ref": "obj_sample_beads",
+        "exactness": "topology_exact",
+        "reason": "Sample order along the ray is part of the mechanism.",
+        "recommended_renderer": "threejs"
+      },
+      {
+        "object_or_claim_ref": "obj_field_module",
+        "exactness": "symbolic_exact",
+        "reason": "F_Theta must be shown as a continuous queried field.",
+        "recommended_renderer": "manim"
+      }
+    ],
+    "metaphor_allowed": [
+      {
+        "layer_or_object_ref": "layer_spatial_ray",
+        "allowed_scope": "3D ray, sample beads, density opacity, and color chips can make ray integration inspectable.",
+        "boundary": "They are not a voxel grid or exact sample values."
+      }
+    ],
+    "ai_video_forbidden": [
+      "Readable NeRF formulas",
+      "F_Theta, sigma, c, T(t), C(r) labels",
+      "Voxel-grid depiction as the main representation",
+      "Claims about training or hierarchical sampling",
+      "Fake numeric density or transmittance values"
+    ],
+    "simplifications": [
+      {
+        "id": "simp_single_ray",
+        "statement": "The example focuses on one ray and one output pixel.",
+        "source_refs": ["m01_camera_ray", "m04_volume_integration"],
+        "assumption_refs": ["asm_single_ray_focus"],
+        "impact": "It teaches the local rendering mechanism before generalizing to many rays.",
+        "disclosure_or_guardrail": "Narration should say a full image repeats this for many rays."
+      },
+      {
+        "id": "simp_toy_samples",
+        "statement": "Density, color, and transmittance values are schematic.",
+        "source_refs": ["m03_field_query", "m04_volume_integration"],
+        "assumption_refs": ["asm_toy_samples"],
+        "impact": "Opacity and color show dependency structure, not real model outputs.",
+        "disclosure_or_guardrail": "Avoid numeric labels unless a toy table is introduced."
+      }
+    ]
+  },
+  "renderer_plan": {
+    "candidate_renderers": [
+      {
+        "renderer": "threejs",
+        "fit": "primary",
+        "responsibilities": [
+          "Render the 3D camera, ray, scene volume, ordered sample beads, and color accumulation.",
+          "Preserve near-to-far sample ordering during camera movement."
+        ],
+        "required_inputs": ["dynamic_scene_model.json", "toy ray/sample layout"],
+        "reason": "NeRF requires inspectable 3D geometry rather than a flat diagram alone.",
+        "risks": ["Camera motion can hide labels or invert perceived order if uncontrolled."]
+      },
+      {
+        "renderer": "manim",
+        "fit": "primary",
+        "responsibilities": [
+          "Render formulas, labels, field-query diagrams, and exact overlays.",
+          "Provide a fallback 2.5D ray diagram if Three.js is unavailable."
+        ],
+        "required_inputs": ["mechanism_spec.json", "dynamic_scene_model.json"],
+        "reason": "Readable math and labels must be deterministic.",
+        "risks": ["Standalone 2D rendering may under-explain ray depth."]
+      },
+      {
+        "renderer": "blender",
+        "fit": "support",
+        "responsibilities": ["Optional polished 3D ray and volume scene after the exact layout is validated."],
+        "required_inputs": ["approved spatial layout", "camera_model"],
+        "reason": "Useful for final cinematic polish when exact overlays remain separate.",
+        "risks": ["Can become decorative if not constrained by the ray-order contract."]
+      },
+      {
+        "renderer": "ai_video_provider",
+        "fit": "forbidden",
+        "responsibilities": ["No formulas, labels, ray topology, or sample ordering."],
+        "required_inputs": [],
+        "reason": "AI video cannot be trusted with NeRF math or exact ray topology.",
+        "risks": ["May invent voxel grids or fake labels."]
+      }
+    ],
+    "layer_plan": [
+      {
+        "layer_id": "layer_exact_overlay",
+        "layer_role": "exact_overlay",
+        "renderer": "manim",
+        "object_refs": ["obj_field_module", "obj_formula_panel"],
+        "contains_exactness_levels": ["symbolic_exact"],
+        "exactness_by_object": [
+          {
+            "object_ref": "obj_field_module",
+            "exactness": "symbolic_exact"
+          },
+          {
+            "object_ref": "obj_formula_panel",
+            "exactness": "symbolic_exact"
+          }
+        ],
+        "layer_exactness_overrides": [],
+        "output_target_hint": "nerf_formula_overlay.mov"
+      },
+      {
+        "layer_id": "layer_spatial_ray",
+        "layer_role": "spatial_scene",
+        "renderer": "threejs",
+        "object_refs": [
+          "obj_image_plane",
+          "obj_camera_ray",
+          "obj_sample_beads",
+          "obj_density_beads",
+          "obj_color_chips",
+          "obj_transmittance_ribbon",
+          "obj_output_pixel"
+        ],
+        "contains_exactness_levels": ["pedagogical_simplification", "qualitative", "topology_exact"],
+        "exactness_by_object": [
+          {
+            "object_ref": "obj_image_plane",
+            "exactness": "qualitative"
+          },
+          {
+            "object_ref": "obj_camera_ray",
+            "exactness": "topology_exact"
+          },
+          {
+            "object_ref": "obj_sample_beads",
+            "exactness": "topology_exact"
+          },
+          {
+            "object_ref": "obj_density_beads",
+            "exactness": "qualitative"
+          },
+          {
+            "object_ref": "obj_color_chips",
+            "exactness": "qualitative"
+          },
+          {
+            "object_ref": "obj_transmittance_ribbon",
+            "exactness": "pedagogical_simplification"
+          },
+          {
+            "object_ref": "obj_output_pixel",
+            "exactness": "qualitative"
+          }
+        ],
+        "layer_exactness_overrides": [],
+        "output_target_hint": "nerf_ray_volume_scene.mp4"
+      }
+    ],
+    "fallbacks": [
+      {
+        "if_renderer_unavailable": "threejs",
+        "fallback_renderer": "manim",
+        "tradeoff": "Use a 2.5D ray diagram with explicit depth labels instead of an inspectable 3D scene."
+      },
+      {
+        "if_renderer_unavailable": "blender",
+        "fallback_renderer": "threejs",
+        "tradeoff": "Keep web-native 3D scene without final cinematic polish."
+      }
+    ]
+  },
+  "handoff": {
+    "storyboard_beat_refs": [
+      {
+        "beat_ref": "db01_cast_ray",
+        "scene_hint": "s01",
+        "storyboard_note": "Highlight one pixel and trace its ray through a translucent scene volume."
+      },
+      {
+        "beat_ref": "db02_sample_ray",
+        "scene_hint": "s02",
+        "storyboard_note": "Place sample beads near-to-far along the ray."
+      },
+      {
+        "beat_ref": "db03_query_field",
+        "scene_hint": "s03",
+        "storyboard_note": "Route sample positions and viewing direction into F_Theta and reveal sigma plus c."
+      },
+      {
+        "beat_ref": "db04_integrate_pixel",
+        "scene_hint": "s04",
+        "storyboard_note": "Fade transmittance and aggregate weighted colors into one output pixel."
+      }
+    ],
+    "enriched_scene_spec_hints": [
+      {
+        "scene_id": "s01",
+        "visual_object_refs": ["obj_image_plane", "obj_camera_ray", "obj_formula_panel"],
+        "motion_primitive_refs": ["mp_trace_camera_ray"],
+        "renderer_hints": ["threejs", "manim"],
+        "notes": "Establish that this is one pixel and one ray."
+      },
+      {
+        "scene_id": "s02",
+        "visual_object_refs": ["obj_camera_ray", "obj_sample_beads"],
+        "motion_primitive_refs": ["mp_sample_along_ray", "mp_align_depth_order"],
+        "renderer_hints": ["threejs"],
+        "notes": "Preserve near-to-far order."
+      },
+      {
+        "scene_id": "s03",
+        "visual_object_refs": ["obj_sample_beads", "obj_field_module", "obj_density_beads", "obj_color_chips", "obj_formula_panel"],
+        "motion_primitive_refs": ["mp_route_queries_to_field", "mp_reveal_density_color"],
+        "renderer_hints": ["threejs", "manim"],
+        "notes": "Show continuous field query, not voxel lookup."
+      },
+      {
+        "scene_id": "s04",
+        "visual_object_refs": ["obj_color_chips", "obj_density_beads", "obj_transmittance_ribbon", "obj_output_pixel", "obj_formula_panel"],
+        "motion_primitive_refs": ["mp_trace_transmittance", "mp_aggregate_color_pixel"],
+        "renderer_hints": ["threejs", "manim", "remotion"],
+        "notes": "Make density/transmittance modulation visible before final pixel payoff."
+      }
+    ],
+    "downstream_tasks": [
+      "Write storyboard.md for ray, samples, field query, and integration beats.",
+      "Create a toy sample table only if numeric labels are desired.",
+      "Generate a Three.js prototype for ray-order QA."
+    ]
+  },
+  "qa_contract": {
+    "source_fidelity_checks": [
+      "F_Theta is shown as a continuous queried field, not an explicit voxel grid.",
+      "Volume rendering uses density, emitted color, and transmittance.",
+      "The single-ray explanation is framed as one pixel before generalizing."
+    ],
+    "visual_readability_checks": [
+      "Near-to-far sample order remains visible under camera motion.",
+      "F_Theta, sigma, c, T(t), and C(r) labels are deterministic and readable.",
+      "Color chips remain attached to their sample origins until aggregation."
+    ],
+    "misconception_checks": [
+      "The scene does not imply all samples contribute equally.",
+      "The field is not drawn as a voxel grid.",
+      "The single-ray walkthrough is not presented as the whole image."
+    ],
+    "renderer_acceptance_checks": [
+      "Exact formulas are rendered by Manim or equivalent deterministic overlays.",
+      "3D ray scene preserves topology under camera movement.",
+      "AI video providers are not used for labels, formulas, ray topology, or sample ordering."
+    ]
+  },
+  "open_questions": [
+    {
+      "id": "q_toy_density_table",
+      "question": "Should this example include a toy density/color/transmittance table for numeric exactness?",
+      "blocks_execution": false
+    }
+  ],
+  "known_risks": [
+    {
+      "id": "risk_voxel_misread",
+      "risk": "Viewers may assume NeRF stores a voxel grid if the volume is drawn too discretely.",
+      "mitigation": "Show sample beads as queries into F_Theta and avoid grid-like volume cells."
+    }
+  ]
+}

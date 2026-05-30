@@ -43,6 +43,12 @@
             "type": "RoundedRectangle",
             "content": "highlighted current token",
             "color": "query_color"
+          },
+          {
+            "id": "context_arcs",
+            "type": "VGroup",
+            "content": "soft arcs from the active token to related neighbors",
+            "color": "query_color"
           }
         ],
         "animation_sequence": [
@@ -78,7 +84,7 @@
         "prompt": "A clean cinematic educational animation: glowing token tiles in a dark neutral space, one highlighted token emits a soft spotlight sweeping across related token tiles, slow camera push, elegant geometric motion, no readable text.",
         "negative_prompt": "random equations, readable labels, distorted text, extra symbols, noisy background, fast chaotic motion, misleading math",
         "duration_s": 4,
-        "status": "proposed",
+        "status": "generation_ready",
         "video_id": "",
         "output_url": "",
         "local_path": "",
@@ -150,6 +156,12 @@
             "type": "VGroup",
             "content": "V cards",
             "color": "value_color"
+          },
+          {
+            "id": "role_labels",
+            "type": "VGroup",
+            "content": "Q asks, K answers, V carries information labels",
+            "color": "text_color"
           }
         ],
         "animation_sequence": [
@@ -246,10 +258,22 @@
             "color": "key_color"
           },
           {
+            "id": "comparison_lines",
+            "type": "VGroup",
+            "content": "comparison lines from a query vector to each key vector",
+            "color": "score_color"
+          },
+          {
             "id": "attention_heatmap",
             "type": "MatrixGrid",
             "content": "3 by 4 score grid",
             "color": "score_color"
+          },
+          {
+            "id": "sharp_scores",
+            "type": "VGroup",
+            "content": "highest raw score cells before scaling",
+            "color": "scale_color"
           },
           {
             "id": "scale_term",
@@ -303,7 +327,7 @@
         "prompt": "Abstract cinematic transition for an educational video: sharp glowing score peaks gradually cool into a smooth readable attention heatmap, dark neutral background, controlled slow motion, elegant light trails, no readable text.",
         "negative_prompt": "random equations, readable labels, distorted text, extra symbols, noisy background, chaotic motion, incorrect math symbols",
         "duration_s": 4,
-        "status": "proposed",
+        "status": "generation_ready",
         "video_id": "",
         "output_url": "",
         "local_path": "",
@@ -453,6 +477,12 @@
             "color": "value_color"
           },
           {
+            "id": "weighted_streams",
+            "type": "VGroup",
+            "content": "value streams scaled by attention weights",
+            "color": "value_color"
+          },
+          {
             "id": "context_vector",
             "type": "Vector",
             "content": "contextual output vector",
@@ -498,7 +528,7 @@
         "prompt": "Cinematic abstract educational animation: multiple soft colored streams converge into one calm glowing vector-like beam, dark neutral space, slow synthesis motion, no text, no symbols, no equations.",
         "negative_prompt": "readable text, equations, random symbols, distorted labels, chaotic motion, noisy background",
         "duration_s": 4,
-        "status": "proposed",
+        "status": "generation_ready",
         "video_id": "",
         "output_url": "",
         "local_path": "",

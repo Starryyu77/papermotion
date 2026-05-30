@@ -3,72 +3,77 @@ const state = {
   spec: null,
   scenes: [],
   activeSceneId: null,
-  activeToken: "softmax",
-  activePanel: "formula",
-  pixverseRuns: new Map()
+  runTimer: null,
+  running: false,
+  completed: false
 };
 
-const tokenNotes = {
-  Q: {
-    label: "Query",
-    text: "Q is the question a token asks: which other tokens matter to me right now?",
-    sceneId: "s02",
-    boundary: "Manim owns the exact Q role split and labels."
-  },
-  K: {
-    label: "Key",
-    text: "K is what each token offers as an answerable address. Q compares against K to form relevance scores.",
-    sceneId: "s02",
-    boundary: "PixVerse can show atmosphere, but readable key labels stay in Manim."
-  },
-  V: {
-    label: "Value",
-    text: "V carries the information that will be mixed once attention weights are known.",
-    sceneId: "s05",
-    boundary: "The weighted sum is exact Manim; PixVerse can support the convergence mood."
-  },
-  QK: {
-    label: "QK^T",
-    text: "QK^T creates a table of pairwise relevance scores between queries and keys.",
-    sceneId: "s03",
-    boundary: "The heatmap and matrix semantics must be rendered by Manim."
-  },
-  scale: {
-    label: "sqrt(d_k)",
-    text: "Scaling keeps raw scores from becoming too sharp before softmax normalizes them.",
-    sceneId: "s03",
-    boundary: "PixVerse must not invent equations; it may only support the cooling transition."
-  },
-  softmax: {
-    label: "softmax",
-    text: "Softmax turns relevance scores into proportions, so the values can be mixed by weight.",
-    sceneId: "s04",
-    boundary: "The normalization bars and sum-to-one claim stay in Manim."
-  },
-  context: {
-    label: "Context output",
-    text: "The output token carries a weighted blend of value vectors from the tokens it attended to.",
-    sceneId: "s05",
-    boundary: "PixVerse can show convergence; exact vector mixing remains Manim."
-  }
+const presets = {
+  formula: `Explain scaled dot-product attention from this formula for ML students:
+Attention(Q,K,V) = softmax(QK^T / sqrt(d_k))V`,
+  paper: `Create a short visual explainer from this paper excerpt:
+Attention computes weighted values by comparing queries with keys, scaling the scores by sqrt(d_k), normalizing them with softmax, and using those weights to aggregate value vectors.`
 };
+
+const pipelineSteps = [
+  {
+    id: "intake",
+    title: "Research intake",
+    detail: "Normalize the formula, target audience, and learning goal.",
+    artifact: "examples/attention/input.md",
+    log: "Source request normalized into the attention demo run."
+  },
+  {
+    id: "mechanism",
+    title: "Mechanism model",
+    detail: "Extract symbols, assumptions, causal steps, and misconception guardrails.",
+    artifact: "examples/attention/mechanism_spec.json",
+    log: "Q, K, V, scaling, softmax, and weighted values mapped into a symbol ledger."
+  },
+  {
+    id: "storyboard",
+    title: "Storyboard",
+    detail: "Turn teaching beats into five timed scenes.",
+    artifact: "examples/attention/storyboard.md",
+    log: "Five-scene attention storyboard selected for the preview."
+  },
+  {
+    id: "scene-spec",
+    title: "Scene contract",
+    detail: "Freeze timing, layers, narration, QA checks, and output paths.",
+    artifact: "examples/attention/enriched_scene_spec.json",
+    log: "Enriched scene spec loaded as the executable single source of truth."
+  },
+  {
+    id: "exact-render",
+    title: "Manim exact render",
+    detail: "Render formulas, matrices, heatmaps, bars, and labels deterministically.",
+    artifact: "manim/attention_demo.py",
+    log: "Pre-rendered Manim rough pass found at site/public/videos/attention-demo.mp4."
+  },
+  {
+    id: "support",
+    title: "Cinematic support",
+    detail: "Reserve PixVerse for non-exact atmosphere and transitions only.",
+    artifact: "examples/attention/keyframes/",
+    log: "Optional PixVerse support jobs prepared; exact math remains in Manim."
+  },
+  {
+    id: "delivery",
+    title: "Assembly and QA",
+    detail: "Reveal the pre-generated video and linked scene evidence.",
+    artifact: "site/public/videos/attention-demo.mp4",
+    log: "Preview complete. Final demo video unlocked."
+  }
+];
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
 async function loadJson(path) {
   const response = await fetch(path);
-  if (!response.ok) {
-    throw new Error(`Failed to load ${path}: ${response.status}`);
-  }
+  if (!response.ok) throw new Error(`Failed to load ${path}: ${response.status}`);
   return response.json();
-}
-
-function formatTime(seconds = 0) {
-  const whole = Math.max(0, Math.round(seconds));
-  const minutes = String(Math.floor(whole / 60)).padStart(2, "0");
-  const secs = String(whole % 60).padStart(2, "0");
-  return `${minutes}:${secs}`;
 }
 
 function escapeHtml(value) {
@@ -80,320 +85,216 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function formatTime(seconds = 0) {
+  const rounded = Math.max(0, Math.round(Number(seconds) || 0));
+  const minutes = String(Math.floor(rounded / 60)).padStart(2, "0");
+  const secs = String(rounded % 60).padStart(2, "0");
+  return `${minutes}:${secs}`;
+}
+
 function normalizeScenes(manifest, spec) {
-  const manifestById = new Map((manifest.scenes || []).map((scene) => [scene.scene_id, scene]));
-  const storyboardById = new Map((manifest.storyboard?.scenes || []).map((scene) => [scene.scene_id, scene]));
-  const beatsById = new Map((manifest.script?.beats || []).map((beat) => [beat.beat_id, beat]));
-  const jobsById = new Map((manifest.pixverse_jobs || []).map((job) => [job.job_id, job]));
+  const manifestScenes = new Map((manifest.scenes || []).map((scene) => [scene.scene_id, scene]));
+  const storyboardScenes = new Map((manifest.storyboard?.scenes || []).map((scene) => [scene.scene_id, scene]));
 
   return (spec.scenes || []).map((scene, index) => {
-    const manifestScene = manifestById.get(scene.scene_id) || {};
-    const storyboard = storyboardById.get(scene.scene_id) || {};
-    const activeBeats = (scene.linked_beats || []).map((beatId) => beatsById.get(beatId)).filter(Boolean);
-    const manifestPixverse = scene.pixverse?.job_id ? jobsById.get(scene.pixverse.job_id) : null;
+    const manifestScene = manifestScenes.get(scene.scene_id) || {};
+    const storyboardScene = storyboardScenes.get(scene.scene_id) || {};
     return {
       id: scene.scene_id,
       index,
-      title: scene.title || storyboard.title || scene.scene_id,
-      startS: Number(scene.timestamp_start_s || 0),
-      durationS: Number(scene.duration_s || storyboard.duration_seconds || 0),
-      endS: Number(scene.timestamp_start_s || 0) + Number(scene.duration_s || storyboard.duration_seconds || 0),
-      narration: scene.narration || activeBeats.map((beat) => beat.spoken_text).join(" "),
-      subtitle: scene.assembly?.subtitle || "",
+      title: scene.title || storyboardScene.title || scene.scene_id,
+      startS: Number(scene.timestamp_start_s || manifestScene.timestamp_start_s || 0),
+      durationS: Number(scene.duration_s || storyboardScene.duration_seconds || 0),
       visualType: scene.visual_type || "manim",
-      isInsightMoment: Boolean(scene.insight_moment),
-      pacing: scene.pacing || "medium",
-      renderLayers: manifestScene.render_layer || [],
-      manifestStatus: manifestScene.status || "planned",
-      storyboard,
-      activeBeats,
-      manim: scene.manim || null,
-      pixverse: scene.pixverse || null,
-      manifestPixverse,
-      tts: scene.tts || {},
-      musicCue: scene.music_cue || {},
-      assembly: scene.assembly || {},
-      qaChecks: scene.qa_checks || []
+      narration: scene.narration || "",
+      subtitle: scene.assembly?.subtitle || "",
+      manimClass: scene.manim?.scene_class || "planned",
+      pixverseJob: scene.pixverse?.job_id || "",
+      qaChecks: scene.qa_checks || [],
+      status: manifestScene.status || "planned",
+      outputPath: scene.manim?.render?.output_path || ""
     };
   });
 }
 
-function setActivePanel(panelName) {
-  state.activePanel = panelName;
-  $$(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.panel === panelName));
-  $$(".switcher-item").forEach((item) => {
-    item.classList.toggle("active", item.dataset.panel === panelName || (item.dataset.panel === "formula" && panelName === "formula"));
-  });
-  $$(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === `panel-${panelName}`));
-  openInspector();
+function renderPipeline(activeIndex = -1, completed = false) {
+  $("#pipelineList").innerHTML = pipelineSteps
+    .map((step, index) => {
+      let status = "waiting";
+      if (completed || index < activeIndex) status = "done";
+      if (index === activeIndex && !completed) status = "running";
+      const statusLabel = status === "done" ? "Done" : status === "running" ? "Running" : "Waiting";
+      return `
+        <article class="pipeline-step ${status}">
+          <div>
+            <span>${String(index + 1).padStart(2, "0")}</span>
+            <strong>${escapeHtml(step.title)}</strong>
+            <p>${escapeHtml(step.detail)}</p>
+            <code>${escapeHtml(step.artifact)}</code>
+          </div>
+          <em>${statusLabel}</em>
+        </article>
+      `;
+    })
+    .join("");
 }
 
-function openInspector() {
-  const drawer = $("#inspectorDrawer");
-  drawer.classList.add("open");
-  drawer.setAttribute("aria-hidden", "false");
-  drawer.removeAttribute("inert");
-}
-
-function closeInspector() {
-  const drawer = $("#inspectorDrawer");
-  drawer.classList.remove("open");
-  drawer.setAttribute("aria-hidden", "true");
-  drawer.setAttribute("inert", "");
-}
-
-function setActiveToken(token, options = {}) {
-  state.activeToken = token;
-  $$("[data-token]").forEach((button) => button.classList.toggle("active", button.dataset.token === token));
-  const note = tokenNotes[token] || tokenNotes.softmax;
-  $("#formulaNote").textContent = `Manim exact layer - ${note.label}: ${note.text}`;
-  if (options.jumpToLinkedScene && note.sceneId) {
-    setActiveScene(note.sceneId, { preserveToken: true });
-  } else {
-    renderInspector();
-  }
-}
-
-function setActiveScene(sceneId, options = {}) {
-  const scene = state.scenes.find((item) => item.id === sceneId) || state.scenes[0];
-  state.activeSceneId = scene.id;
-  if (!options.preserveToken) {
-    state.activeToken = tokenForScene(scene.id);
-  }
-  render();
-}
-
-function tokenForScene(sceneId) {
-  if (sceneId === "s01") return "Q";
-  if (sceneId === "s02") return "K";
-  if (sceneId === "s03") return "QK";
-  if (sceneId === "s04") return "softmax";
-  if (sceneId === "s05") return "context";
-  return "softmax";
+function renderWorkflowRail() {
+  $("#workflowRail").innerHTML = pipelineSteps
+    .map(
+      (step, index) => `
+        <article class="workflow-step">
+          <span>${String(index + 1).padStart(2, "0")}</span>
+          <h3>${escapeHtml(step.title)}</h3>
+          <p>${escapeHtml(step.detail)}</p>
+          <code>${escapeHtml(step.artifact)}</code>
+        </article>
+      `
+    )
+    .join("");
 }
 
 function activeScene() {
   return state.scenes.find((scene) => scene.id === state.activeSceneId) || state.scenes[0];
 }
 
-function renderChapters() {
-  const rail = $("#chapterRail");
-  rail.innerHTML = state.scenes
+function renderScenes() {
+  const active = activeScene();
+  $("#activeSceneBadge").textContent = active ? `Scene ${String(active.index + 1).padStart(2, "0")}` : "Scene";
+  $("#sceneList").innerHTML = state.scenes
     .map((scene) => {
-      const active = scene.id === state.activeSceneId ? " active" : "";
+      const isActive = scene.id === state.activeSceneId ? " active" : "";
       return `
-        <button class="chapter-button${active}" type="button" data-scene-id="${scene.id}">
-          <small>${String(scene.index + 1).padStart(2, "0")} ${formatTime(scene.startS)}</small>
+        <button class="scene-button${isActive}" type="button" data-scene-id="${escapeHtml(scene.id)}">
+          <span>${String(scene.index + 1).padStart(2, "0")} / ${formatTime(scene.startS)}</span>
           <strong>${escapeHtml(scene.title)}</strong>
+          <small>${escapeHtml(scene.visualType)} · ${escapeHtml(scene.status)}</small>
         </button>
       `;
     })
     .join("");
 
-  $$(".chapter-button").forEach((button) => {
-    button.addEventListener("click", () => setActiveScene(button.dataset.sceneId));
+  $$(".scene-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.activeSceneId = button.dataset.sceneId;
+      renderScenes();
+    });
   });
-}
 
-function renderMain() {
-  const scene = activeScene();
-  if (!scene) return;
-  $("#activeSceneTitle").textContent = scene.title;
-  $("#activeNarration").textContent = scene.narration;
-  $("#sceneTimecode").textContent = `${formatTime(scene.startS)} / ${formatTime(state.spec.total_duration_s)}`;
-  $("#projectStatus").textContent = `${state.manifest.project.status} / ${scene.manifestStatus}`;
-  setActiveToken(state.activeToken, { jumpToLinkedScene: false });
-}
-
-function renderInspector() {
-  const scene = activeScene();
-  if (!scene) return;
-  renderFormulaPanel(scene);
-  renderSpecPanel(scene);
-  renderPixversePanel(scene);
-}
-
-function renderFormulaPanel(scene) {
-  const token = tokenNotes[state.activeToken] || tokenNotes.softmax;
-  $("#panel-formula").innerHTML = `
-    <article class="inspector-card">
-      <span class="mini-label">Active Symbol</span>
-      <h2>${escapeHtml(token.label)}</h2>
-      <p>${escapeHtml(token.text)}</p>
-    </article>
-    <article class="inspector-card">
-      <h3>Linked Scene</h3>
-      <div class="kv-grid">
-        <div class="kv-row"><span>Scene</span><strong>${escapeHtml(scene.id)} - ${escapeHtml(scene.title)}</strong></div>
-        <div class="kv-row"><span>Visual type</span><code>${escapeHtml(scene.visualType)}</code></div>
-        <div class="kv-row"><span>Manim</span><code>${escapeHtml(scene.manim?.scene_class || "planned")}</code></div>
-        <div class="kv-row"><span>Boundary</span><p>${escapeHtml(token.boundary)}</p></div>
-      </div>
-    </article>
-    <article class="inspector-card">
-      <h3>Teaching Beat</h3>
-      <p>${escapeHtml(scene.activeBeats[0]?.spoken_text || scene.narration)}</p>
-    </article>
+  if (!active) return;
+  $("#sceneDetail").innerHTML = `
+    <strong>${escapeHtml(active.title)}</strong>
+    <p>${escapeHtml(active.narration)}</p>
+    <dl>
+      <div><dt>Timing</dt><dd>${formatTime(active.startS)} · ${active.durationS}s</dd></div>
+      <div><dt>Manim</dt><dd>${escapeHtml(active.manimClass)}</dd></div>
+      <div><dt>PixVerse</dt><dd>${escapeHtml(active.pixverseJob || "not used")}</dd></div>
+      <div><dt>Layer</dt><dd>${escapeHtml(active.outputPath || "planned")}</dd></div>
+    </dl>
   `;
 }
 
-function renderSpecPanel(scene) {
-  const objects = (scene.manim?.objects || []).map((object) => object.id || object.type).join(", ") || "planned";
-  const actions = (scene.manim?.animation_sequence || [])
-    .slice(0, 4)
-    .map((action) => `${action.action}: ${action.target || action.description || "step"} (${action.run_time}s)`)
-    .join("\n");
-  $("#panel-spec").innerHTML = `
-    <article class="inspector-card">
-      <span class="mini-label">Scene Contract</span>
-      <h2>${escapeHtml(scene.title)}</h2>
-      <div class="kv-grid">
-        <div class="kv-row"><span>Timing</span><code>${formatTime(scene.startS)} - ${formatTime(scene.endS)} (${scene.durationS}s)</code></div>
-        <div class="kv-row"><span>Narration</span><code>${scene.tts?.pause_before_s ?? 0}s in / ${scene.narration_duration_s || scene.durationS}s voice</code></div>
-        <div class="kv-row"><span>Pacing</span><code>${escapeHtml(scene.pacing)}${scene.isInsightMoment ? " / insight" : ""}</code></div>
-        <div class="kv-row"><span>Objects</span><p>${escapeHtml(objects)}</p></div>
-      </div>
-    </article>
-    <article class="inspector-card">
-      <h3>Animation Sequence</h3>
-      <pre class="code-box">${escapeHtml(actions || "No Manim steps declared yet.")}</pre>
-    </article>
-    <article class="inspector-card">
-      <h3>QA Checks</h3>
-      <div class="badge-row">
-        ${scene.qaChecks.map((check) => `<span class="badge blue">${escapeHtml(check)}</span>`).join("") || '<span class="badge amber">QA pending</span>'}
-      </div>
-    </article>
-  `;
+function renderDataSummary() {
+  const totalDuration = state.spec?.total_duration_s || state.scenes.reduce((sum, scene) => sum + scene.durationS, 0);
+  $("#presetTitle").textContent = state.manifest?.project?.title || "Scaled Dot-Product Attention";
+  $("#sceneCount").textContent = `${state.scenes.length || 5} scenes`;
+  $("#durationLabel").textContent = `${totalDuration}s scene plan`;
+  $("#manifestSummary").textContent =
+    `${state.manifest?.project?.title || "Attention demo"} tracks source intent, storyboard scenes, PixVerse jobs, asset paths, and edit decisions.`;
+  $("#specSummary").textContent =
+    `${state.scenes.length} scene contracts define timing, narration, Manim classes, optional PixVerse jobs, assembly hints, and QA checks.`;
 }
 
-function renderPixversePanel(scene) {
-  const pixverse = scene.pixverse;
-  const run = pixverse?.job_id ? state.pixverseRuns.get(pixverse.job_id) : null;
-  if (!pixverse) {
-    $("#panel-pixverse").innerHTML = `
-      <article class="inspector-card">
-        <span class="mini-label">PixVerse Boundary</span>
-        <h2>Not used in this scene</h2>
-        <p>This scene relies on the Manim exact layer. PixVerse is reserved for cinematic support, transitions, and atmosphere.</p>
-      </article>
-    `;
-    return;
-  }
-
-  const status = run?.status || pixverse.status || scene.manifestPixverse?.status || "proposed";
-  const stateClass = status === "generating" || status === "polling" ? "generating" : "";
-  $("#panel-pixverse").innerHTML = `
-    <article class="inspector-card">
-      <span class="mini-label">Support Shot</span>
-      <h2>${escapeHtml(pixverse.job_id)}</h2>
-      <div class="kv-grid">
-        <div class="kv-row"><span>Mode</span><code>${escapeHtml(pixverse.mode)}</code></div>
-        <div class="kv-row"><span>Duration</span><code>${pixverse.duration_s || scene.manifestPixverse?.duration_seconds || 4}s</code></div>
-        <div class="kv-row"><span>Status</span><strong>${escapeHtml(status)}</strong></div>
-      </div>
-      <div class="queue-state ${stateClass}">
-        <strong>${escapeHtml(run?.video_id || "No video ID yet")}</strong>
-        <span>${escapeHtml(run?.message || "Ready to request a cinematic support clip.")}</span>
-      </div>
-      <button class="generate-button" type="button" data-generate-job="${escapeHtml(pixverse.job_id)}">
-        Generate Support Shot
-      </button>
-    </article>
-    <article class="inspector-card">
-      <h3>Prompt</h3>
-      <pre class="code-box">${escapeHtml(pixverse.prompt)}</pre>
-    </article>
-    <article class="inspector-card">
-      <h3>Must Not Include</h3>
-      <div class="badge-row">
-        ${(pixverse.must_not_include || []).map((item) => `<span class="badge amber">${escapeHtml(item)}</span>`).join("")}
-      </div>
-    </article>
-  `;
-
-  const button = $("[data-generate-job]");
-  button?.addEventListener("click", () => generatePixverse(scene));
+function appendLog(message) {
+  const log = $("#consoleLog");
+  const row = document.createElement("div");
+  row.textContent = `[${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}] ${message}`;
+  log.append(row);
+  log.scrollTop = log.scrollHeight;
 }
 
-async function generatePixverse(scene) {
-  const pixverse = scene.pixverse;
-  if (!pixverse) return;
-  state.pixverseRuns.set(pixverse.job_id, {
-    status: "generating",
-    video_id: "pending",
-    message: "Queued through local server adapter."
-  });
-  renderPixversePanel(scene);
-
-  try {
-    const response = await fetch("/api/pixverse/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ scene_id: scene.id, job: pixverse })
-    });
-    const result = await response.json();
-    state.pixverseRuns.set(pixverse.job_id, {
-      status: "polling",
-      video_id: result.video_id,
-      message: result.message || "Generation submitted. Polling mock status."
-    });
-    renderPixversePanel(scene);
-
-    setTimeout(async () => {
-      const statusResponse = await fetch(`/api/pixverse/status/${encodeURIComponent(result.video_id)}`);
-      const status = await statusResponse.json();
-      state.pixverseRuns.set(pixverse.job_id, {
-        status: status.status,
-        video_id: status.video_id,
-        message: status.message || "Mock clip ready for preview wiring."
-      });
-      renderPixversePanel(activeScene());
-    }, 900);
-  } catch (error) {
-    state.pixverseRuns.set(pixverse.job_id, {
-      status: "failed",
-      video_id: "local-error",
-      message: error.message
-    });
-    renderPixversePanel(scene);
-  }
+function resetRun() {
+  window.clearTimeout(state.runTimer);
+  state.running = false;
+  state.completed = false;
+  $("#generateButton").disabled = false;
+  $("#generateButton").textContent = "Start simulated generation";
+  $("#runState").textContent = "Ready";
+  $("#pipelineStatus").textContent = "Waiting for input";
+  $("#outputStatus").textContent = "Locked until run completes";
+  $("#resultShell").classList.remove("complete");
+  $("#resultShell").classList.remove("playing");
+  $("#consoleLog").innerHTML = "";
+  const video = $("#finalVideo");
+  video.pause();
+  video.currentTime = 0;
+  renderPipeline();
 }
 
-function render() {
-  renderMain();
-  renderChapters();
-  renderInspector();
+function completeRun() {
+  state.running = false;
+  state.completed = true;
+  $("#generateButton").disabled = false;
+  $("#generateButton").textContent = "Run simulation again";
+  $("#runState").textContent = "Complete";
+  $("#pipelineStatus").textContent = "All preset stages complete";
+  $("#outputStatus").textContent = "Pre-rendered demo unlocked";
+  $("#resultShell").classList.add("complete");
+  renderPipeline(pipelineSteps.length, true);
+  const video = $("#finalVideo");
+  video.pause();
+  video.currentTime = 0;
 }
 
-function wireStaticControls() {
-  $$(".tab").forEach((tab) => {
-    tab.addEventListener("click", () => setActivePanel(tab.dataset.panel));
-  });
-  $$(".switcher-item").forEach((item) => {
-    item.addEventListener("click", () => setActivePanel(item.dataset.panel));
-  });
-  $$("[data-token]").forEach((button) => {
-    button.addEventListener("click", () => setActiveToken(button.dataset.token, { jumpToLinkedScene: true }));
-  });
-  $("#inspectButton")?.addEventListener("click", () => openInspector());
-  $("#openInspectorFromStrip")?.addEventListener("click", () => openInspector());
-  $("#openInspectorHero")?.addEventListener("click", () => setActivePanel("spec"));
-  $("#openPixverseHero")?.addEventListener("click", () => setActivePanel("pixverse"));
-  $("#closeInspector")?.addEventListener("click", () => closeInspector());
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeInspector();
-  });
-  const clock = $("#clock");
-  const updateClock = () => {
-    clock.textContent = new Intl.DateTimeFormat([], { hour: "2-digit", minute: "2-digit" }).format(new Date());
+function startRun() {
+  if (state.running) return;
+  resetRun();
+  state.running = true;
+  $("#generateButton").disabled = true;
+  $("#generateButton").textContent = "Simulating...";
+  $("#runState").textContent = "Running";
+  appendLog(`Input accepted: ${$("#sourceInput").value.trim().slice(0, 90)}...`);
+
+  let index = 0;
+  const tick = () => {
+    const step = pipelineSteps[index];
+    if (!step) {
+      completeRun();
+      appendLog("Pre-rendered attention demo is now available.");
+      return;
+    }
+
+    $("#pipelineStatus").textContent = step.title;
+    renderPipeline(index);
+    appendLog(step.log);
+    index += 1;
+    state.runTimer = window.setTimeout(tick, index === pipelineSteps.length ? 720 : 620);
   };
-  updateClock();
-  setInterval(updateClock, 30000);
+
+  tick();
+}
+
+function wireControls() {
+  $("#generateButton")?.addEventListener("click", startRun);
+  $("#resultCover")?.addEventListener("click", () => {
+    const video = $("#finalVideo");
+    $("#resultShell").classList.add("playing");
+    video.currentTime = 0;
+    video.play();
+  });
+  $$("[data-preset]").forEach((button) => {
+    button.addEventListener("click", () => {
+      $("#sourceInput").value = presets[button.dataset.preset] || presets.formula;
+      $("#sourceInput").focus();
+    });
+  });
 }
 
 async function init() {
-  wireStaticControls();
+  wireControls();
+  renderPipeline();
+  renderWorkflowRail();
+
   try {
     const [manifest, spec] = await Promise.all([
       loadJson("./data/production_manifest.json"),
@@ -403,11 +304,11 @@ async function init() {
     state.spec = spec;
     state.scenes = normalizeScenes(manifest, spec);
     state.activeSceneId = state.scenes[0]?.id;
-    state.activeToken = tokenForScene(state.activeSceneId);
-    render();
+    renderDataSummary();
+    renderScenes();
   } catch (error) {
-    $("#activeSceneTitle").textContent = "Data load failed";
-    $("#activeNarration").textContent = error.message;
+    $("#pipelineStatus").textContent = "Data load failed";
+    appendLog(error.message);
   }
 }
 

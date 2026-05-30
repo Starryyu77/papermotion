@@ -1,0 +1,139 @@
+{
+  "scene_id": "s05",
+  "title": "Weighted Values Become Context",
+  "linked_beats": ["b06"],
+  "duration_seconds": 13,
+  "render_layers": ["manim_exact", "pixverse_cinematic"],
+  "learning_goal": "Show how attention weights scale and merge value vectors into a single contextual output vector.",
+  "coordinate_system": {
+    "canvas": "16:9",
+    "origin": "center",
+    "safe_margin": 0.6,
+    "regions": {
+      "value_streams_left": { "x": -4.2, "y": 0, "w": 1.2, "h": 5.0 },
+      "arrow_field": { "x": -1.5, "y": 0, "w": 4.0, "h": 5.0 },
+      "context_right": { "x": 2.8, "y": 0, "w": 1.2, "h": 3.5 },
+      "formula_bottom": { "x": 0, "y": -3.4, "w": 12.0, "h": 0.8 }
+    }
+  },
+  "style_tokens": {
+    "background": "#101217",
+    "query_color": "#7DD3FC",
+    "key_color": "#A7F3D0",
+    "value_color": "#F9A8D4",
+    "softmax_color": "#C4B5FD",
+    "context_color": "#37D67A",
+    "text_color": "#E5E7EB"
+  },
+  "weights": [0.55, 0.20, 0.08, 0.17],
+  "manim_objects": [
+    {
+      "id": "value_streams",
+      "type": "VGroup",
+      "content": "Four vertical Rectangle bars, height proportional to attention weight. Left-side labels show w=0.xx; right-side labels show v1–v4.",
+      "region": "value_streams_left",
+      "color_policy": { "fill": "value_color", "fill_opacity": 0.60 }
+    },
+    {
+      "id": "weighted_arrows",
+      "type": "VGroup",
+      "content": "Four Arrow objects from each value bar's right edge to the merge x-position. Stroke width ∝ weight.",
+      "region": "arrow_field",
+      "color_policy": { "stroke": "value_color", "stroke_opacity": "proportional" }
+    },
+    {
+      "id": "context_vector",
+      "type": "Rectangle",
+      "content": "Tall context output vector at merge point.",
+      "region": "context_right",
+      "color_policy": { "stroke": "context_color", "fill": "context_color", "fill_opacity": 0.32 }
+    },
+    {
+      "id": "context_label",
+      "type": "Text",
+      "content": "'context'",
+      "region": "context_right",
+      "color_policy": { "fill": "context_color" }
+    },
+    {
+      "id": "full_formula",
+      "type": "MathTex",
+      "content": "\\mathrm{Attention}(Q,K,V)=\\mathrm{softmax}\\!\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V",
+      "region": "formula_bottom",
+      "color_policy": {
+        "default": "text_color",
+        "Q": "query_color",
+        "K": "key_color",
+        "V": "value_color"
+      }
+    }
+  ],
+  "animation_sequence": [
+    {
+      "time_start": 0.0,
+      "duration": 2.0,
+      "action": "FadeIn all four value stream bars with weight/value labels.",
+      "manim_hint": "self.play(FadeIn(value_group, lag_ratio=0.18), run_time=2.0)"
+    },
+    {
+      "time_start": 2.0,
+      "duration": 4.0,
+      "action": "LaggedStart creating weighted arrows from each bar toward merge point.",
+      "manim_hint": "self.play(LaggedStart(*[Create(a) for a in arrows], lag_ratio=0.2), run_time=4.0)"
+    },
+    {
+      "time_start": 6.0,
+      "duration": 4.0,
+      "action": "Context vector FadeIn and 'context' label Write — building up as if streams converge.",
+      "manim_hint": "self.play(FadeIn(ctx_rect), Write(ctx_lbl), run_time=4.0)"
+    },
+    {
+      "time_start": 10.0,
+      "duration": 3.0,
+      "action": "Write the complete attention formula at the bottom.",
+      "manim_hint": "self.play(Write(full_formula), run_time=3.0)"
+    },
+    {
+      "time_start": 13.0,
+      "duration": 0.0,
+      "action": "Hold for conceptual payoff.",
+      "manim_hint": "End at the declared 13 second scene boundary; the enriched scene wait_after_s handles assembly pacing."
+    }
+  ],
+  "pixverse_support": [
+    {
+      "asset_id": "asset_value_streams",
+      "usage": "4-second cinematic clip of converging coloured streams as base layer. Manim overlaid transparent.",
+      "must_preserve": [
+        "No readable text or formulas",
+        "No letter labels on streams",
+        "Only abstract motion towards a merge point"
+      ]
+    }
+  ],
+  "voiceover_timing": [
+    {
+      "beat_id": "b06",
+      "start_seconds": 0.3,
+      "target_duration_seconds": 10.4
+    }
+  ],
+  "music_sfx_cues": [
+    {
+      "time_seconds": 6.0,
+      "cue": "soft_merge",
+      "purpose": "Accent the moment weighted streams converge into the context vector."
+    },
+    {
+      "time_seconds": 10.0,
+      "cue": "crescendo_then_settle",
+      "purpose": "Resolve on the full formula reveal — conceptual payoff moment."
+    }
+  ],
+  "acceptance_checks": [
+    "Arrow stroke widths are visibly proportional to weights (v1 thickest at 0.55).",
+    "Context vector appears at the merge point, not mid-arrow.",
+    "Full formula includes Q, K, V in correct colours.",
+    "PixVerse layer contains no readable text, labels, or formulas."
+  ]
+}

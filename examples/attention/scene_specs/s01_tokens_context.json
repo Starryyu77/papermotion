@@ -1,0 +1,109 @@
+{
+  "scene_id": "s01",
+  "title": "Tokens Ask For Context",
+  "linked_beats": ["b01"],
+  "duration_seconds": 7,
+  "render_layers": ["manim_exact", "pixverse_cinematic"],
+  "learning_goal": "Establish that a token does not process the full sentence at once — it selects which neighbours matter.",
+  "coordinate_system": {
+    "canvas": "16:9",
+    "origin": "center",
+    "safe_margin": 0.6,
+    "regions": {
+      "token_strip": { "x": 0, "y": 0, "w": 11.0, "h": 0.9 },
+      "arc_field": { "x": 0, "y": 0.6, "w": 11.0, "h": 2.5 }
+    }
+  },
+  "style_tokens": {
+    "background": "#101217",
+    "token_border": "#E5E7EB",
+    "active_token": "#7DD3FC",
+    "arc_color": "#7DD3FC",
+    "text_color": "#E5E7EB"
+  },
+  "manim_objects": [
+    {
+      "id": "sentence_tokens",
+      "type": "VGroup",
+      "content": "RoundedRectangle tiles for ['The', 'cat', 'sat', 'on', 'mat']",
+      "region": "token_strip",
+      "note": "Arranged LEFT→RIGHT with buff=0.38. Each tile width=1.4, height=0.65."
+    },
+    {
+      "id": "active_token_highlight",
+      "type": "RoundedRectangle",
+      "content": "Glow frame around 'cat' (index 1)",
+      "region": "token_strip",
+      "color_policy": { "stroke": "active_token", "fill_opacity": 0.18 }
+    },
+    {
+      "id": "context_arcs",
+      "type": "VGroup",
+      "content": "CurvedArrow from 'cat' to every other token",
+      "region": "arc_field",
+      "color_policy": { "stroke": "arc_color", "stroke_opacity": 0.55 }
+    }
+  ],
+  "animation_sequence": [
+    {
+      "time_start": 0.0,
+      "duration": 1.5,
+      "action": "FadeIn sentence_tokens with lag_ratio=0.15",
+      "manim_hint": "self.play(FadeIn(tiles, lag_ratio=0.15), run_time=1.5)"
+    },
+    {
+      "time_start": 1.5,
+      "duration": 1.2,
+      "action": "Create highlight frame around the active token.",
+      "manim_hint": "self.play(Create(highlight), run_time=1.2)"
+    },
+    {
+      "time_start": 2.7,
+      "duration": 3.0,
+      "action": "LaggedStart creating arcs from active token to every other token.",
+      "manim_hint": "self.play(LaggedStart(*[Create(a) for a in arcs], lag_ratio=0.25), run_time=3.0)"
+    },
+    {
+      "time_start": 5.7,
+      "duration": 0.4,
+      "action": "Hold for voiceover tail.",
+      "manim_hint": "self.wait(0.4)"
+    }
+  ],
+  "pixverse_support": [
+    {
+      "asset_id": "asset_attention_spotlight",
+      "usage": "4-second cinematic intro clip of glowing token tiles. Plays as base layer; Manim overlaid as transparent.",
+      "must_preserve": [
+        "No readable word labels",
+        "No fake formula symbols",
+        "Only soft spotlight and tile-like shapes"
+      ]
+    }
+  ],
+  "voiceover_timing": [
+    {
+      "beat_id": "b01",
+      "start_seconds": 0.3,
+      "target_duration_seconds": 6.2
+    }
+  ],
+  "music_sfx_cues": [
+    {
+      "time_seconds": 0.0,
+      "cue": "soft_enter",
+      "purpose": "Opening ambient swell as tiles appear."
+    },
+    {
+      "time_seconds": 2.7,
+      "cue": "subtle_token_focus",
+      "purpose": "Accent when active token is highlighted."
+    }
+  ],
+  "acceptance_checks": [
+    "Sentence token tiles are readable and evenly spaced.",
+    "Active token is visually distinct with QUERY_COLOR border.",
+    "Arcs communicate selective attention without defining Q/K/V yet.",
+    "PixVerse layer contains no readable text or formulas."
+  ]
+}

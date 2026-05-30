@@ -3,7 +3,7 @@
     "demo_id": "attention",
     "title": "Scaled Dot-Product Attention",
     "source_type": "formula",
-    "status": "planning",
+    "status": "person_a_scene_layers_rendered",
     "owner": "PaperMotion"
   },
   "intent": {
@@ -199,7 +199,7 @@
       "timestamp_start_s": 0,
       "duration_seconds": 7,
       "render_layer": ["manim_exact", "pixverse_cinematic"],
-      "status": "planned"
+      "status": "rendered_scene_layer_ready"
     },
     {
       "scene_id": "s02",
@@ -209,7 +209,7 @@
       "timestamp_start_s": 7,
       "duration_seconds": 10,
       "render_layer": ["manim_exact"],
-      "status": "planned"
+      "status": "rendered_scene_layer_ready"
     },
     {
       "scene_id": "s03",
@@ -219,7 +219,7 @@
       "timestamp_start_s": 17,
       "duration_seconds": 16,
       "render_layer": ["manim_exact", "pixverse_cinematic"],
-      "status": "planned"
+      "status": "rendered_scene_layer_ready"
     },
     {
       "scene_id": "s04",
@@ -229,7 +229,7 @@
       "timestamp_start_s": 33,
       "duration_seconds": 10,
       "render_layer": ["manim_exact"],
-      "status": "planned"
+      "status": "rendered_scene_layer_ready"
     },
     {
       "scene_id": "s05",
@@ -239,7 +239,7 @@
       "timestamp_start_s": 43,
       "duration_seconds": 13,
       "render_layer": ["manim_exact", "pixverse_cinematic"],
-      "status": "planned"
+      "status": "rendered_scene_layer_ready"
     }
   ],
   "visual_asset_requests": [
@@ -250,7 +250,7 @@
       "asset_type": "pixverse_clip",
       "prompt_intent": "A cinematic metaphor clip where a highlighted token emits a soft spotlight across related token tiles.",
       "duration_seconds": 4,
-      "status": "proposed",
+      "status": "generation_ready",
       "risk_note": "No readable formulas; use as intro atmosphere only."
     },
     {
@@ -260,7 +260,7 @@
       "asset_type": "pixverse_clip",
       "prompt_intent": "A smooth abstract transition from sharp glowing score spikes into a calm readable heatmap field.",
       "duration_seconds": 4,
-      "status": "proposed",
+      "status": "generation_ready",
       "risk_note": "Must not replace exact Manim heatmap; only transition around it."
     },
     {
@@ -270,7 +270,7 @@
       "asset_type": "pixverse_clip",
       "prompt_intent": "A cinematic metaphor clip where multiple soft value streams converge into one calm contextual output.",
       "duration_seconds": 4,
-      "status": "proposed",
+      "status": "generation_ready",
       "risk_note": "No labels or formulas; Manim remains responsible for the exact weighted sum."
     }
   ],
@@ -358,6 +358,97 @@
       "local_path": ""
     }
   ],
-  "asset_manifest": [],
-  "edit_decision_list": []
+  "asset_manifest": [
+    {
+      "asset_id": "input_attention_formula",
+      "kind": "source_artifact",
+      "path_or_url": "examples/attention/input.md",
+      "status": "ready",
+      "usage": "Person A source input for the attention demo."
+    },
+    {
+      "asset_id": "mechanism_spec_attention",
+      "kind": "mechanism_spec",
+      "path_or_url": "examples/attention/mechanism_spec.json",
+      "status": "ready",
+      "usage": "Symbol ledger, causal steps, and misconception guardrails."
+    },
+    {
+      "asset_id": "storyboard_attention",
+      "kind": "storyboard",
+      "path_or_url": "examples/attention/storyboard.md",
+      "status": "ready",
+      "usage": "Clickable five-scene explainer storyboard."
+    },
+    {
+      "asset_id": "manim_attention_script",
+      "kind": "manim_script",
+      "path_or_url": "manim/attention_demo.py",
+      "status": "rendered_low_quality",
+      "usage": "Exact formula and geometry render layer for all five scenes."
+    },
+    {
+      "asset_id": "manim_scene_layers",
+      "kind": "rendered_scene_layers",
+      "path_or_url": "site/public/videos/scenes/",
+      "status": "ready",
+      "usage": "Low-quality transparent WebM scene layers exported by Person A."
+    },
+    {
+      "asset_id": "attention_demo_rough_pass",
+      "kind": "rough_video",
+      "path_or_url": "site/public/videos/attention-demo.mp4",
+      "status": "ready",
+      "usage": "Single-file low-quality Manim rough pass before PixVerse/audio assembly."
+    },
+    {
+      "asset_id": "pixverse_keyframes",
+      "kind": "keyframe_pngs",
+      "path_or_url": "examples/attention/keyframes/",
+      "status": "ready",
+      "usage": "Text-free PNG inputs for PixVerse image-to-video jobs."
+    }
+  ],
+  "edit_decision_list": [
+    {
+      "order": 1,
+      "scene_id": "s01",
+      "source": "site/public/videos/assembled/s01.mp4",
+      "start_seconds": 0,
+      "duration_seconds": 7,
+      "audio_layers": ["voiceover_b01", "music_opening_question", "sfx_subtle_token_focus"]
+    },
+    {
+      "order": 2,
+      "scene_id": "s02",
+      "source": "site/public/videos/assembled/s02.mp4",
+      "start_seconds": 7,
+      "duration_seconds": 10,
+      "audio_layers": ["voiceover_b02", "music_definition", "sfx_soft_split"]
+    },
+    {
+      "order": 3,
+      "scene_id": "s03",
+      "source": "site/public/videos/assembled/s03.mp4",
+      "start_seconds": 17,
+      "duration_seconds": 16,
+      "audio_layers": ["voiceover_b03_b04", "music_insight", "sfx_soft_hit_on_heatmap_reveal", "sfx_gentle_filter_sweep"]
+    },
+    {
+      "order": 4,
+      "scene_id": "s04",
+      "source": "site/public/videos/assembled/s04.mp4",
+      "start_seconds": 33,
+      "duration_seconds": 10,
+      "audio_layers": ["voiceover_b05", "music_normalization", "sfx_soft_normalize_click"]
+    },
+    {
+      "order": 5,
+      "scene_id": "s05",
+      "source": "site/public/videos/assembled/s05.mp4",
+      "start_seconds": 43,
+      "duration_seconds": 13,
+      "audio_layers": ["voiceover_b06", "music_synthesis", "sfx_soft_merge"]
+    }
+  ]
 }

@@ -1,0 +1,123 @@
+{
+  "scene_id": "s02",
+  "title": "Q K V Roles",
+  "linked_beats": ["b02"],
+  "duration_seconds": 10,
+  "render_layers": ["manim_exact"],
+  "learning_goal": "Establish the three functional roles each token adopts: Query (asks), Key (answers), Value (carries info).",
+  "coordinate_system": {
+    "canvas": "16:9",
+    "origin": "center",
+    "safe_margin": 0.6,
+    "regions": {
+      "source_strip": { "x": 0, "y": 2.5, "w": 8.0, "h": 0.8 },
+      "q_row": { "x": 0, "y": 0.9, "w": 8.0, "h": 0.7 },
+      "k_row": { "x": 0, "y": -0.1, "w": 8.0, "h": 0.7 },
+      "v_row": { "x": 0, "y": -1.1, "w": 8.0, "h": 0.7 },
+      "label_left": { "x": -5.5, "y": 0, "w": 2.0, "h": 3.0 }
+    }
+  },
+  "style_tokens": {
+    "background": "#101217",
+    "query_color": "#7DD3FC",
+    "key_color": "#A7F3D0",
+    "value_color": "#F9A8D4",
+    "text_color": "#E5E7EB"
+  },
+  "manim_objects": [
+    {
+      "id": "source_tiles",
+      "type": "VGroup",
+      "content": "Three source-token tiles ['bank', 'river', 'flows']",
+      "region": "source_strip",
+      "color_policy": { "border": "text_color" }
+    },
+    {
+      "id": "q_cards",
+      "type": "VGroup",
+      "content": "Three 'Q' role cards, one per source token",
+      "region": "q_row",
+      "color_policy": { "border": "query_color", "fill_opacity": 0.22 }
+    },
+    {
+      "id": "k_cards",
+      "type": "VGroup",
+      "content": "Three 'K' role cards, one per source token",
+      "region": "k_row",
+      "color_policy": { "border": "key_color", "fill_opacity": 0.22 }
+    },
+    {
+      "id": "v_cards",
+      "type": "VGroup",
+      "content": "Three 'V' role cards, one per source token",
+      "region": "v_row",
+      "color_policy": { "border": "value_color", "fill_opacity": 0.22 }
+    },
+    {
+      "id": "role_labels",
+      "type": "VGroup",
+      "content": "Text labels: 'Query — asks', 'Key — answers', 'Value — carries info'",
+      "region": "label_left",
+      "color_policy": { "match_role_colors": true }
+    }
+  ],
+  "animation_sequence": [
+    {
+      "time_start": 0.0,
+      "duration": 1.0,
+      "action": "FadeIn source token tiles with lag_ratio=0.2.",
+      "manim_hint": "self.play(FadeIn(source_row, lag_ratio=0.2), run_time=1.0)"
+    },
+    {
+      "time_start": 1.0,
+      "duration": 2.0,
+      "action": "Q cards appear below each source token (FadeIn with lag_ratio).",
+      "manim_hint": "LaggedStart(*[FadeIn(q_row[i]) for i in range(3)], lag_ratio=0.3)"
+    },
+    {
+      "time_start": 3.0,
+      "duration": 2.0,
+      "action": "K cards appear below Q cards.",
+      "manim_hint": "LaggedStart(*[FadeIn(k_row[i]) for i in range(3)], lag_ratio=0.3)"
+    },
+    {
+      "time_start": 5.0,
+      "duration": 2.0,
+      "action": "V cards appear below K cards.",
+      "manim_hint": "LaggedStart(*[FadeIn(v_row[i]) for i in range(3)], lag_ratio=0.3)"
+    },
+    {
+      "time_start": 7.0,
+      "duration": 2.0,
+      "action": "Write three role labels to the left of each row.",
+      "manim_hint": "self.play(Write(q_lbl), Write(k_lbl), Write(v_lbl), run_time=2.0)"
+    },
+    {
+      "time_start": 9.0,
+      "duration": 0.4,
+      "action": "Hold for voiceover tail.",
+      "manim_hint": "self.wait(0.4)"
+    }
+  ],
+  "pixverse_support": null,
+  "voiceover_timing": [
+    {
+      "beat_id": "b02",
+      "start_seconds": 0.2,
+      "target_duration_seconds": 8.8
+    }
+  ],
+  "music_sfx_cues": [
+    {
+      "time_seconds": 1.0,
+      "cue": "soft_split",
+      "purpose": "Accent when Q cards peel off from source tokens."
+    }
+  ],
+  "acceptance_checks": [
+    "Q, K, V colours exactly match the global style tokens.",
+    "Roles are named before any matrix multiplication is shown.",
+    "Labels 'asks / answers / carries info' appear together at the end.",
+    "No PixVerse layer — all geometry is Manim exact."
+  ]
+}
