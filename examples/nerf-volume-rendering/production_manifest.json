@@ -1,0 +1,412 @@
+{
+  "project": {
+    "demo_id": "nerf-volume-rendering",
+    "title": "NeRF Volume Rendering Along a Ray",
+    "source_type": "paper_excerpt",
+    "status": "full_video_rendered",
+    "owner": "PaperMotion"
+  },
+  "intent": {
+    "viewer_goal": "Understand how NeRF turns field queries along a camera ray into a rendered pixel.",
+    "target_audience": "Graduate students or researchers who have seen the NeRF rendering equation but need spatial mechanism intuition.",
+    "learning_objective": "After watching, the viewer should be able to explain ray sampling, F_Theta(x,d), density/color outputs, transmittance, and pixel accumulation.",
+    "scope": [
+      "One camera ray for one pixel",
+      "Ordered samples along the ray",
+      "Continuous field query F_Theta(x,d)",
+      "Density, color, and transmittance-weighted integration",
+      "Many-ray sweep as the bridge to a full view"
+    ],
+    "out_of_scope": [
+      "Training loss",
+      "Pose optimization",
+      "Hierarchical sampling details",
+      "Full image synthesis implementation"
+    ]
+  },
+  "prerequisite_graph": {
+    "nodes": [
+      {
+        "id": "camera_ray",
+        "label": "Camera ray",
+        "is_blocker": true,
+        "explain_policy": "brief_before_use"
+      },
+      {
+        "id": "continuous_field",
+        "label": "Continuous neural field",
+        "is_blocker": true,
+        "explain_policy": "core"
+      },
+      {
+        "id": "transmittance",
+        "label": "Transmittance",
+        "is_blocker": true,
+        "explain_policy": "just_in_time"
+      }
+    ],
+    "edges": [
+      {
+        "from": "camera_ray",
+        "to": "continuous_field",
+        "reason": "Sample positions along the ray query the field."
+      },
+      {
+        "from": "continuous_field",
+        "to": "transmittance",
+        "reason": "Field density controls visibility and contribution weights."
+      }
+    ]
+  },
+  "curriculum_plan": {
+    "concept_order": [
+      "one pixel one ray",
+      "sample positions",
+      "field query",
+      "transmittance weighting",
+      "many rays form view"
+    ],
+    "just_in_time_insertions": [
+      {
+        "concept_id": "continuous_field",
+        "insert_before_beat": "b03",
+        "one_sentence_explanation": "NeRF stores a learned function that can be queried at coordinates, not a fixed voxel table."
+      },
+      {
+        "concept_id": "transmittance",
+        "insert_before_beat": "b04",
+        "one_sentence_explanation": "Transmittance is accumulated visibility: dense near samples reduce the influence of later samples."
+      }
+    ]
+  },
+  "script": {
+    "style_guide": "Spatial research explainer: preserve near-to-far order and keep every formula deterministic.",
+    "beats": [
+      {
+        "beat_id": "b00",
+        "spoken_text": "NeRF volume rendering turns field queries along a camera ray into one pixel color.",
+        "teaching_intent": "intro",
+        "visual_need": "Show the video title and volume rendering equation.",
+        "pacing_intent": "opening_hold",
+        "linked_prerequisites": []
+      },
+      {
+        "beat_id": "b01",
+        "spoken_text": "One camera pixel casts one ordered ray through the scene volume.",
+        "teaching_intent": "setup",
+        "visual_need": "Show camera, image-plane pixel, volume, ray r(t), and direction d.",
+        "pacing_intent": "medium",
+        "linked_prerequisites": ["camera_ray"]
+      },
+      {
+        "beat_id": "b02",
+        "spoken_text": "NeRF samples positions along that ray from near to far.",
+        "teaching_intent": "sampling",
+        "visual_need": "Reveal ordered sample beads along the ray.",
+        "pacing_intent": "medium",
+        "linked_prerequisites": []
+      },
+      {
+        "beat_id": "b03",
+        "spoken_text": "Each sample queries a continuous field with position and viewing direction.",
+        "teaching_intent": "field_query",
+        "visual_need": "Route sample beads into F_Theta and show sigma/color outputs.",
+        "pacing_intent": "slow_reveal",
+        "linked_prerequisites": ["continuous_field"]
+      },
+      {
+        "beat_id": "b04",
+        "spoken_text": "The rendered pixel is a transmittance-weighted accumulation of those color contributions.",
+        "teaching_intent": "integration",
+        "visual_need": "Show fading visibility ribbon and weighted color aggregation into C(r).",
+        "pacing_intent": "slow_down",
+        "linked_prerequisites": ["transmittance"]
+      },
+      {
+        "beat_id": "b05",
+        "spoken_text": "A full image repeats the same process over many camera rays.",
+        "teaching_intent": "synthesis",
+        "visual_need": "Sweep additional rays from the camera plane.",
+        "pacing_intent": "resolve",
+        "linked_prerequisites": []
+      }
+    ]
+  },
+  "storyboard": {
+    "scenes": [
+      {
+        "scene_id": "s00_intro",
+        "title": "Formula Intro",
+        "beat_ids": ["b00"],
+        "duration_seconds": 3.7,
+        "high_level_visual": "Title card and volume rendering equation introduce the one-ray mechanism.",
+        "pacing_intent": "opening_hold"
+      },
+      {
+        "scene_id": "s01_camera_ray",
+        "title": "One Pixel, One Ray",
+        "beat_ids": ["b01"],
+        "duration_seconds": 4.5,
+        "high_level_visual": "A highlighted pixel casts a ray through a translucent volume.",
+        "pacing_intent": "medium"
+      },
+      {
+        "scene_id": "s02_sample_points",
+        "title": "Sample Along The Ray",
+        "beat_ids": ["b02"],
+        "duration_seconds": 3.6,
+        "high_level_visual": "Blue sample beads appear in near-to-far order along the ray.",
+        "pacing_intent": "medium"
+      },
+      {
+        "scene_id": "s03_field_query",
+        "title": "Query The Field",
+        "beat_ids": ["b03"],
+        "duration_seconds": 4.5,
+        "high_level_visual": "Each sample queries F_Theta and receives density plus color.",
+        "pacing_intent": "slow_reveal"
+      },
+      {
+        "scene_id": "s04_volume_integration",
+        "title": "Transmittance-Weighted Integration",
+        "beat_ids": ["b04"],
+        "duration_seconds": 5.6,
+        "high_level_visual": "A fading transmittance ribbon weights color contributions into C(r).",
+        "pacing_intent": "slow_down"
+      },
+      {
+        "scene_id": "s05_many_rays",
+        "title": "From Pixel To View",
+        "beat_ids": ["b05"],
+        "duration_seconds": 5.63,
+        "high_level_visual": "Multiple faint rays show how one-pixel rendering scales to a full view.",
+        "pacing_intent": "resolve"
+      }
+    ]
+  },
+  "scene_spec_contract": {
+    "contract_version": "enriched-scene-spec/v0.1",
+    "source_of_truth": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+    "schema_path": "contracts/enriched_scene_spec.schema.json",
+    "manifest_role": "Project-level registry for the NeRF video run.",
+    "scene_spec_role": "Scene-level executable contract for the rendered Manim rough pass."
+  },
+  "scenes": [
+    {
+      "scene_id": "s00_intro",
+      "scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_ref": "s00_intro",
+      "timestamp_start_s": 0,
+      "duration_seconds": 3.7,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s01_camera_ray",
+      "scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_ref": "s01_camera_ray",
+      "timestamp_start_s": 3.7,
+      "duration_seconds": 4.5,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s02_sample_points",
+      "scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_ref": "s02_sample_points",
+      "timestamp_start_s": 8.2,
+      "duration_seconds": 3.6,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s03_field_query",
+      "scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_ref": "s03_field_query",
+      "timestamp_start_s": 11.8,
+      "duration_seconds": 4.5,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s04_volume_integration",
+      "scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_ref": "s04_volume_integration",
+      "timestamp_start_s": 16.3,
+      "duration_seconds": 5.6,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s05_many_rays",
+      "scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/nerf-volume-rendering/enriched_scene_spec.json",
+      "enriched_scene_ref": "s05_many_rays",
+      "timestamp_start_s": 21.9,
+      "duration_seconds": 5.63,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    }
+  ],
+  "visual_asset_requests": [],
+  "rhythm_map": [
+    {
+      "beat_id": "b00",
+      "scene_id": "s00_intro",
+      "time_intent": "intro",
+      "target_duration_seconds": 3.7,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Establish the rendering equation before the spatial ray mechanism starts."
+    },
+    {
+      "beat_id": "b01",
+      "scene_id": "s01_camera_ray",
+      "time_intent": "spatial setup",
+      "target_duration_seconds": 4.5,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Establish one ray before adding samples."
+    },
+    {
+      "beat_id": "b02",
+      "scene_id": "s02_sample_points",
+      "time_intent": "ordered sampling",
+      "target_duration_seconds": 3.6,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Keep near-to-far order readable."
+    },
+    {
+      "beat_id": "b03",
+      "scene_id": "s03_field_query",
+      "time_intent": "function query",
+      "target_duration_seconds": 4.5,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Make F_Theta read as a continuous function."
+    },
+    {
+      "beat_id": "b04",
+      "scene_id": "s04_volume_integration",
+      "time_intent": "integration payoff",
+      "target_duration_seconds": 5.6,
+      "music_energy": "medium",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Show non-equal transmittance-weighted contributions."
+    },
+    {
+      "beat_id": "b05",
+      "scene_id": "s05_many_rays",
+      "time_intent": "resolve",
+      "target_duration_seconds": 5.63,
+      "music_energy": "medium",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Close with many-ray intuition without expanding scope."
+    }
+  ],
+  "audio_manifest": {
+    "voiceover": [],
+    "music": [],
+    "sfx": []
+  },
+  "pixverse_jobs": [],
+  "asset_manifest": [
+    {
+      "asset_id": "asset_nerf_input",
+      "kind": "source",
+      "path_or_url": "examples/nerf-volume-rendering/input.md",
+      "status": "ready",
+      "usage": "Source task brief."
+    },
+    {
+      "asset_id": "asset_nerf_dsm",
+      "kind": "contract",
+      "path_or_url": "examples/nerf-volume-rendering/dynamic_scene_model.json",
+      "status": "ready",
+      "usage": "Mechanism-to-dynamic-scene model."
+    },
+    {
+      "asset_id": "asset_nerf_renderer",
+      "kind": "manim_source",
+      "path_or_url": "manim/research_video_demos.py",
+      "status": "ready",
+      "usage": "Contains NeRFVolumeRenderingDemo."
+    },
+    {
+      "asset_id": "asset_nerf_video",
+      "kind": "mp4",
+      "path_or_url": "site/public/videos/nerf-volume-rendering-demo.mp4",
+      "status": "rendered",
+      "usage": "Final rough-pass video."
+    },
+    {
+      "asset_id": "asset_nerf_poster",
+      "kind": "poster",
+      "path_or_url": "site/public/videos/nerf-volume-rendering-demo-poster.jpg",
+      "status": "rendered",
+      "usage": "Preview image for docs and demo surfaces."
+    }
+  ],
+  "edit_decision_list": [
+    {
+      "order": 1,
+      "scene_id": "s00_intro",
+      "source": "site/public/videos/nerf-volume-rendering-demo.mp4",
+      "start_seconds": 0,
+      "duration_seconds": 3.7,
+      "audio_layers": []
+    },
+    {
+      "order": 2,
+      "scene_id": "s01_camera_ray",
+      "source": "site/public/videos/nerf-volume-rendering-demo.mp4",
+      "start_seconds": 3.7,
+      "duration_seconds": 4.5,
+      "audio_layers": []
+    },
+    {
+      "order": 3,
+      "scene_id": "s02_sample_points",
+      "source": "site/public/videos/nerf-volume-rendering-demo.mp4",
+      "start_seconds": 8.2,
+      "duration_seconds": 3.6,
+      "audio_layers": []
+    },
+    {
+      "order": 4,
+      "scene_id": "s03_field_query",
+      "source": "site/public/videos/nerf-volume-rendering-demo.mp4",
+      "start_seconds": 11.8,
+      "duration_seconds": 4.5,
+      "audio_layers": []
+    },
+    {
+      "order": 5,
+      "scene_id": "s04_volume_integration",
+      "source": "site/public/videos/nerf-volume-rendering-demo.mp4",
+      "start_seconds": 16.3,
+      "duration_seconds": 5.6,
+      "audio_layers": []
+    },
+    {
+      "order": 6,
+      "scene_id": "s05_many_rays",
+      "source": "site/public/videos/nerf-volume-rendering-demo.mp4",
+      "start_seconds": 21.9,
+      "duration_seconds": 5.63,
+      "audio_layers": []
+    }
+  ]
+}

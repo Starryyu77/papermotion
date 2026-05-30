@@ -1,0 +1,497 @@
+{
+  "contract_version": "enriched-scene-spec/v0.1",
+  "demo_id": "nerf-volume-rendering",
+  "source_manifest": "examples/nerf-volume-rendering/production_manifest.json",
+  "total_duration_s": 27.53,
+  "global_style_tokens": {
+    "background": "#101217",
+    "ray_color": "#FBBF24",
+    "sample_color": "#60A5FA",
+    "field_color": "#C4B5FD",
+    "transmittance_color": "#37D67A",
+    "pixel_color": "#37D67A",
+    "text_color": "#E5E7EB"
+  },
+  "scenes": [
+    {
+      "scene_id": "s00_intro",
+      "title": "Formula Intro",
+      "linked_beats": ["b00"],
+      "timestamp_start_s": 0,
+      "duration_s": 3.7,
+      "narration": "NeRF volume rendering turns field queries along a camera ray into one pixel color.",
+      "narration_duration_s": 3.1,
+      "pacing": "opening hold",
+      "insight_moment": false,
+      "wait_after_s": 0.2,
+      "visual_type": "manim",
+      "manim": {
+        "scene_class": "NeRFVolumeRenderingDemo",
+        "camera_type": "Scene",
+        "camera_action": "title card and formula hold",
+        "objects": [
+          {
+            "id": "title",
+            "type": "Text",
+            "content": "NeRF Volume Rendering",
+            "color": "text_color"
+          },
+          {
+            "id": "volume_rendering_formula",
+            "type": "MathTex",
+            "content": "C(r)=int T(t) sigma(r(t)) c(r(t),d) dt",
+            "color": "ray_color"
+          }
+        ],
+        "animation_sequence": [
+          {
+            "action": "Write",
+            "target": "title",
+            "description": "Introduce the demo topic.",
+            "run_time": 2.2
+          },
+          {
+            "action": "FadeOut",
+            "target": "title",
+            "description": "Leave the rendering equation as the fixed top reference.",
+            "run_time": 1.0
+          }
+        ],
+        "render": {
+          "transparent_background": false,
+          "output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+        }
+      },
+      "pixverse": null,
+      "tts": {
+        "text": "NeRF volume rendering turns field queries along a camera ray into one pixel color.",
+        "pause_before_s": 0,
+        "pause_after_s": 0.2,
+        "voice": "calm_research_explainer",
+        "output_path": "",
+        "actual_duration_s": 0
+      },
+      "music_cue": {
+        "type": "opening_formula",
+        "energy": "low",
+        "transition": "soft_enter",
+        "volume_relative": 0.12,
+        "sfx": []
+      },
+      "assembly": {
+        "base_layer": "site/public/videos/nerf-volume-rendering-demo.mp4",
+        "overlay_layers": [],
+        "subtitle": "NeRF integrates field samples along one ray.",
+        "expected_output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+      },
+      "qa_checks": [
+        "The intro is represented explicitly in the production timeline.",
+        "The equation is deterministic Manim text.",
+        "No mechanism beat is assigned to the intro timestamp."
+      ]
+    },
+    {
+      "scene_id": "s01_camera_ray",
+      "title": "One Pixel, One Ray",
+      "linked_beats": ["b01"],
+      "timestamp_start_s": 3.7,
+      "duration_s": 4.5,
+      "narration": "One camera pixel casts one ordered ray through the scene volume.",
+      "narration_duration_s": 5.2,
+      "pacing": "spatial setup",
+      "insight_moment": false,
+      "wait_after_s": 0.2,
+      "visual_type": "manim",
+      "manim": {
+        "scene_class": "NeRFVolumeRenderingDemo",
+        "camera_type": "Scene",
+        "camera_action": "static 2.5D camera and volume",
+        "objects": [
+          {
+            "id": "camera_pixel",
+            "type": "Square",
+            "content": "highlighted camera pixel",
+            "color": "ray_color"
+          },
+          {
+            "id": "camera_ray",
+            "type": "Arrow",
+            "content": "ray r(t) through the volume",
+            "color": "ray_color"
+          },
+          {
+            "id": "view_direction",
+            "type": "Arrow",
+            "content": "view direction d",
+            "color": "sample_color"
+          }
+        ],
+        "animation_sequence": [
+          {
+            "action": "FadeIn",
+            "target": "camera_pixel",
+            "description": "Highlight one image-plane pixel.",
+            "run_time": 1.0
+          },
+          {
+            "action": "GrowArrow",
+            "target": "camera_ray",
+            "description": "Trace a yellow ray through the volume.",
+            "run_time": 2.1
+          }
+        ],
+        "render": {
+          "transparent_background": false,
+          "output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+        }
+      },
+      "pixverse": null,
+      "tts": {
+        "text": "One camera pixel casts one ordered ray through the scene volume.",
+        "pause_before_s": 0,
+        "pause_after_s": 0.2,
+        "voice": "calm_research_explainer",
+        "output_path": "",
+        "actual_duration_s": 0
+      },
+      "music_cue": {
+        "type": "spatial_setup",
+        "energy": "low",
+        "transition": "soft_enter",
+        "volume_relative": 0.12,
+        "sfx": []
+      },
+      "assembly": {
+        "base_layer": "site/public/videos/nerf-volume-rendering-demo.mp4",
+        "overlay_layers": [],
+        "subtitle": "One camera pixel casts one ray.",
+        "expected_output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+      },
+      "qa_checks": [
+        "The scene explains one pixel, not a whole image.",
+        "The ray has a stable near-to-far direction.",
+        "Labels r(t) and d are deterministic Manim text."
+      ]
+    },
+    {
+      "scene_id": "s02_sample_points",
+      "title": "Sample Along The Ray",
+      "linked_beats": ["b02"],
+      "timestamp_start_s": 8.2,
+      "duration_s": 3.6,
+      "narration": "NeRF samples positions along that ray from near to far.",
+      "narration_duration_s": 4.8,
+      "pacing": "ordered sampling",
+      "insight_moment": true,
+      "wait_after_s": 0.2,
+      "visual_type": "manim",
+      "manim": {
+        "scene_class": "NeRFVolumeRenderingDemo",
+        "camera_type": "Scene",
+        "camera_action": "static ray close-up",
+        "objects": [
+          {
+            "id": "sample_points",
+            "type": "VGroup",
+            "content": "blue beads x_i along the ray",
+            "color": "sample_color"
+          },
+          {
+            "id": "depth_order_brace",
+            "type": "Brace",
+            "content": "near-to-far order cue",
+            "color": "text_color"
+          }
+        ],
+        "animation_sequence": [
+          {
+            "action": "LaggedStart",
+            "target": "sample_points",
+            "description": "Reveal ordered samples along the camera ray.",
+            "run_time": 2.6
+          },
+          {
+            "action": "FadeIn",
+            "target": "depth_order_brace",
+            "description": "Label the near-to-far sampling order.",
+            "run_time": 0.8
+          }
+        ],
+        "render": {
+          "transparent_background": false,
+          "output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+        }
+      },
+      "pixverse": null,
+      "tts": {
+        "text": "NeRF samples positions along that ray from near to far.",
+        "pause_before_s": 0,
+        "pause_after_s": 0.2,
+        "voice": "calm_research_explainer",
+        "output_path": "",
+        "actual_duration_s": 0
+      },
+      "music_cue": {
+        "type": "sampling",
+        "energy": "low",
+        "transition": "steady",
+        "volume_relative": 0.12,
+        "sfx": []
+      },
+      "assembly": {
+        "base_layer": "site/public/videos/nerf-volume-rendering-demo.mp4",
+        "overlay_layers": [],
+        "subtitle": "Samples stay ordered along the ray.",
+        "expected_output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+      },
+      "qa_checks": [
+        "Sample points appear on one ray rather than a voxel grid.",
+        "Near-to-far order is visible.",
+        "No sampling-strategy numeric claim is made."
+      ]
+    },
+    {
+      "scene_id": "s03_field_query",
+      "title": "Query The Field",
+      "linked_beats": ["b03"],
+      "timestamp_start_s": 11.8,
+      "duration_s": 4.5,
+      "narration": "Each sample queries a continuous field with position and viewing direction.",
+      "narration_duration_s": 5.8,
+      "pacing": "function query",
+      "insight_moment": true,
+      "wait_after_s": 0.2,
+      "visual_type": "manim",
+      "manim": {
+        "scene_class": "NeRFVolumeRenderingDemo",
+        "camera_type": "Scene",
+        "camera_action": "static split view",
+        "objects": [
+          {
+            "id": "field_module",
+            "type": "RoundedRectangle",
+            "content": "continuous field F_Theta",
+            "color": "field_color"
+          },
+          {
+            "id": "query_lines",
+            "type": "VGroup",
+            "content": "sample-to-field query lines",
+            "color": "sample_color"
+          },
+          {
+            "id": "density_color_outputs",
+            "type": "VGroup",
+            "content": "sigma and color chips",
+            "color": "field_color"
+          }
+        ],
+        "animation_sequence": [
+          {
+            "action": "FadeIn",
+            "target": "field_module",
+            "description": "Introduce F_Theta as a continuous queried function.",
+            "run_time": 1.0
+          },
+          {
+            "action": "LaggedStart",
+            "target": "query_lines",
+            "description": "Route ordered sample points into the field module.",
+            "run_time": 3.0
+          }
+        ],
+        "render": {
+          "transparent_background": false,
+          "output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+        }
+      },
+      "pixverse": null,
+      "tts": {
+        "text": "Each sample queries a continuous field with position and viewing direction.",
+        "pause_before_s": 0,
+        "pause_after_s": 0.2,
+        "voice": "calm_research_explainer",
+        "output_path": "",
+        "actual_duration_s": 0
+      },
+      "music_cue": {
+        "type": "field_query",
+        "energy": "low",
+        "transition": "hold",
+        "volume_relative": 0.12,
+        "sfx": []
+      },
+      "assembly": {
+        "base_layer": "site/public/videos/nerf-volume-rendering-demo.mp4",
+        "overlay_layers": [],
+        "subtitle": "F_Theta maps (x,d) to density and color.",
+        "expected_output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+      },
+      "qa_checks": [
+        "F_Theta is represented as a function module, not a voxel lookup table.",
+        "Density and color outputs are visually distinct.",
+        "Formula labels are deterministic Manim text."
+      ]
+    },
+    {
+      "scene_id": "s04_volume_integration",
+      "title": "Transmittance-Weighted Integration",
+      "linked_beats": ["b04"],
+      "timestamp_start_s": 16.3,
+      "duration_s": 5.6,
+      "narration": "The rendered pixel is a transmittance-weighted accumulation of those color contributions.",
+      "narration_duration_s": 6.0,
+      "pacing": "integration payoff",
+      "insight_moment": true,
+      "wait_after_s": 0.2,
+      "visual_type": "manim",
+      "manim": {
+        "scene_class": "NeRFVolumeRenderingDemo",
+        "camera_type": "Scene",
+        "camera_action": "static accumulation view",
+        "objects": [
+          {
+            "id": "transmittance_ribbon",
+            "type": "VGroup",
+            "content": "fading green visibility ribbon",
+            "color": "transmittance_color"
+          },
+          {
+            "id": "contribution_arrows",
+            "type": "VGroup",
+            "content": "weighted color contribution arrows",
+            "color": "pixel_color"
+          },
+          {
+            "id": "rendered_pixel",
+            "type": "Square",
+            "content": "output pixel C(r)",
+            "color": "pixel_color"
+          }
+        ],
+        "animation_sequence": [
+          {
+            "action": "Create",
+            "target": "transmittance_ribbon",
+            "description": "Show accumulated visibility fading with depth.",
+            "run_time": 2.3
+          },
+          {
+            "action": "LaggedStart",
+            "target": "contribution_arrows",
+            "description": "Aggregate non-equal color contributions into the output pixel.",
+            "run_time": 2.2
+          }
+        ],
+        "render": {
+          "transparent_background": false,
+          "output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+        }
+      },
+      "pixverse": null,
+      "tts": {
+        "text": "The rendered pixel is a transmittance-weighted accumulation of those color contributions.",
+        "pause_before_s": 0,
+        "pause_after_s": 0.2,
+        "voice": "calm_research_explainer",
+        "output_path": "",
+        "actual_duration_s": 0
+      },
+      "music_cue": {
+        "type": "integration",
+        "energy": "medium",
+        "transition": "resolve",
+        "volume_relative": 0.16,
+        "sfx": []
+      },
+      "assembly": {
+        "base_layer": "site/public/videos/nerf-volume-rendering-demo.mp4",
+        "overlay_layers": [],
+        "subtitle": "Density and transmittance weight the color contributions.",
+        "expected_output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+      },
+      "qa_checks": [
+        "The visibility ribbon fades in near-to-far order.",
+        "Color contributions are not equal-weighted.",
+        "The output pixel is labeled C(r)."
+      ]
+    },
+    {
+      "scene_id": "s05_many_rays",
+      "title": "From Pixel To View",
+      "linked_beats": ["b05"],
+      "timestamp_start_s": 21.9,
+      "duration_s": 5.63,
+      "narration": "A full image repeats the same process over many camera rays.",
+      "narration_duration_s": 2.3,
+      "pacing": "resolve",
+      "insight_moment": false,
+      "wait_after_s": 0.4,
+      "visual_type": "manim",
+      "manim": {
+        "scene_class": "NeRFVolumeRenderingDemo",
+        "camera_type": "Scene",
+        "camera_action": "static many-ray hint",
+        "objects": [
+          {
+            "id": "many_rays",
+            "type": "VGroup",
+            "content": "additional faint camera rays",
+            "color": "ray_color"
+          },
+          {
+            "id": "summary_text",
+            "type": "Text",
+            "content": "One ray explains one pixel.",
+            "color": "text_color"
+          }
+        ],
+        "animation_sequence": [
+          {
+            "action": "LaggedStart",
+            "target": "many_rays",
+            "description": "Sweep several faint rays from the camera plane.",
+            "run_time": 1.4
+          },
+          {
+            "action": "FadeIn",
+            "target": "summary_text",
+            "description": "Close with the one-ray to many-ray synthesis.",
+            "run_time": 1.0
+          }
+        ],
+        "render": {
+          "transparent_background": false,
+          "output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+        }
+      },
+      "pixverse": null,
+      "tts": {
+        "text": "A full image repeats the same process over many camera rays.",
+        "pause_before_s": 0,
+        "pause_after_s": 0.4,
+        "voice": "calm_research_explainer",
+        "output_path": "",
+        "actual_duration_s": 0
+      },
+      "music_cue": {
+        "type": "closing",
+        "energy": "medium",
+        "transition": "resolve",
+        "volume_relative": 0.16,
+        "sfx": []
+      },
+      "assembly": {
+        "base_layer": "site/public/videos/nerf-volume-rendering-demo.mp4",
+        "overlay_layers": [],
+        "subtitle": "Repeat for many rays to form a view.",
+        "expected_output_path": "site/public/videos/nerf-volume-rendering-demo.mp4"
+      },
+      "qa_checks": [
+        "The closure does not enter training loss or hierarchical sampling.",
+        "Many rays are a conceptual scale-up from the same one-ray mechanism.",
+        "The final summary preserves the one-pixel explanation."
+      ]
+    }
+  ]
+}

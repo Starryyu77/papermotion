@@ -23,12 +23,22 @@ PaperMotion 给 Trae Solo 增加三类能力：
 
 ## Demo Preview
 
-点击下图查看 attention 示例视频：
+点击下图查看当前四个可播放示例视频：
 
-[![PaperMotion attention demo poster](site/public/videos/attention-demo-poster.jpg)](site/public/videos/attention-demo.mp4)
+| Attention | Adam Optimizer |
+| --- | --- |
+| [![PaperMotion attention demo poster](site/public/videos/attention-demo-poster.jpg)](site/public/videos/attention-demo.mp4) | [![PaperMotion Adam optimizer demo poster](site/public/videos/adam-optimizer-demo-poster.jpg)](site/public/videos/adam-optimizer-demo.mp4) |
+
+| DDPM Denoising | NeRF Volume Rendering |
+| --- | --- |
+| [![PaperMotion DDPM denoising demo poster](site/public/videos/ddpm-denoising-demo-poster.jpg)](site/public/videos/ddpm-denoising-demo.mp4) | [![PaperMotion NeRF volume rendering demo poster](site/public/videos/nerf-volume-rendering-demo-poster.jpg)](site/public/videos/nerf-volume-rendering-demo.mp4) |
 
 视频文件：
-[site/public/videos/attention-demo.mp4](site/public/videos/attention-demo.mp4)
+
+- [site/public/videos/attention-demo.mp4](site/public/videos/attention-demo.mp4)
+- [site/public/videos/adam-optimizer-demo.mp4](site/public/videos/adam-optimizer-demo.mp4)
+- [site/public/videos/ddpm-denoising-demo.mp4](site/public/videos/ddpm-denoising-demo.mp4)
+- [site/public/videos/nerf-volume-rendering-demo.mp4](site/public/videos/nerf-volume-rendering-demo.mp4)
 
 ## Product Flow
 
@@ -181,9 +191,26 @@ skills/papermotion-research-video/SKILL.md
 | Example | Source | What It Tests | Status |
 | --- | --- | --- | --- |
 | `examples/attention` | Scaled dot-product attention | Q/K/V、score matrix、softmax、weighted value aggregation | Full sample artifacts plus demo video |
-| `examples/adam-optimizer` | Adam optimizer paper | noisy gradient、first moment、second moment、adaptive update | Valid dynamic scene model |
-| `examples/ddpm-denoising` | DDPM paper | fixed forward noising、closed-form x_t、learned reverse denoising | Valid dynamic scene model |
-| `examples/nerf-volume-rendering` | NeRF paper | camera ray、sample points、field query、volume integration | Valid dynamic scene model |
+| `examples/adam-optimizer` | Adam optimizer paper | noisy gradient、first moment、second moment、adaptive update | Full sample artifacts plus demo video |
+| `examples/ddpm-denoising` | DDPM paper | fixed forward noising、closed-form x_t、learned reverse denoising | Full sample artifacts plus demo video |
+| `examples/nerf-volume-rendering` | NeRF paper | camera ray、sample points、field query、volume integration | Full sample artifacts plus demo video |
+
+### Research Video Examples
+
+Adam Optimizer:
+[video](site/public/videos/adam-optimizer-demo.mp4) /
+[storyboard](examples/adam-optimizer/storyboard.md) /
+[QA](examples/adam-optimizer/qa_report.md)
+
+DDPM Denoising:
+[video](site/public/videos/ddpm-denoising-demo.mp4) /
+[storyboard](examples/ddpm-denoising/storyboard.md) /
+[QA](examples/ddpm-denoising/qa_report.md)
+
+NeRF Volume Rendering:
+[video](site/public/videos/nerf-volume-rendering-demo.mp4) /
+[storyboard](examples/nerf-volume-rendering/storyboard.md) /
+[QA](examples/nerf-volume-rendering/qa_report.md)
 
 ### Attention Keyframes
 
@@ -215,6 +242,7 @@ prompts/trae-install-sku.md         # GitHub-link install prompt for Trae Solo
 skills/                             # PaperMotion skill pack
 contracts/                          # JSON schemas
 examples/                           # sample runs and dynamic scene tests
+manim/                              # deterministic video renderers
 scripts/validate_dynamic_scene_model.py
 setup.sh                            # validation backend wrapper
 docs/                               # product direction and design docs

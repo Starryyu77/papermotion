@@ -1,0 +1,372 @@
+{
+  "project": {
+    "demo_id": "adam-optimizer",
+    "title": "Adam Optimizer Adaptive Update",
+    "source_type": "paper_excerpt",
+    "status": "full_video_rendered",
+    "owner": "PaperMotion"
+  },
+  "intent": {
+    "viewer_goal": "Understand how Adam turns noisy gradients into adaptive update steps.",
+    "target_audience": "Graduate machine-learning students who know stochastic gradient descent but want mechanism-level intuition for Adam.",
+    "learning_objective": "After watching, the viewer should be able to explain how first and second moment estimates combine to produce Adam's adaptive parameter step.",
+    "scope": [
+      "Stochastic gradient sampling",
+      "First moment smoothing",
+      "Second moment squared-gradient scale",
+      "Adaptive update step"
+    ],
+    "out_of_scope": [
+      "Full convergence theory",
+      "Bias-correction derivation details",
+      "Real high-dimensional optimizer trajectories"
+    ]
+  },
+  "prerequisite_graph": {
+    "nodes": [
+      {
+        "id": "stochastic_gradient",
+        "label": "Stochastic gradient",
+        "is_blocker": true,
+        "explain_policy": "brief_before_use"
+      },
+      {
+        "id": "exponential_average",
+        "label": "Exponential moving average",
+        "is_blocker": true,
+        "explain_policy": "just_in_time"
+      },
+      {
+        "id": "coordinate_scale",
+        "label": "Coordinate-wise scale",
+        "is_blocker": true,
+        "explain_policy": "just_in_time"
+      }
+    ],
+    "edges": [
+      {
+        "from": "stochastic_gradient",
+        "to": "exponential_average",
+        "reason": "The first moment is an exponential average of gradients."
+      },
+      {
+        "from": "stochastic_gradient",
+        "to": "coordinate_scale",
+        "reason": "The second moment tracks squared-gradient magnitude."
+      }
+    ]
+  },
+  "curriculum_plan": {
+    "concept_order": [
+      "stochastic gradient",
+      "first moment",
+      "second moment",
+      "adaptive update"
+    ],
+    "just_in_time_insertions": [
+      {
+        "concept_id": "exponential_average",
+        "insert_before_beat": "b02",
+        "one_sentence_explanation": "An exponential moving average keeps a memory of previous gradients while still reacting to the current one."
+      },
+      {
+        "concept_id": "coordinate_scale",
+        "insert_before_beat": "b03",
+        "one_sentence_explanation": "Squared-gradient scale is used to damp directions whose gradients have been large or unstable."
+      }
+    ]
+  },
+  "script": {
+    "style_guide": "Research explainer: precise formulas, calm pacing, no claims beyond the toy teaching slice.",
+    "beats": [
+      {
+        "beat_id": "b00",
+        "spoken_text": "Adam combines noisy gradients, moment estimates, and adaptive scaling into one update rule.",
+        "teaching_intent": "intro",
+        "visual_need": "Show the video title and final Adam update formula.",
+        "pacing_intent": "opening_hold",
+        "linked_prerequisites": []
+      },
+      {
+        "beat_id": "b01",
+        "spoken_text": "Adam starts with the same raw material as SGD: a noisy stochastic gradient at the current parameter point.",
+        "teaching_intent": "setup",
+        "visual_need": "Show theta_t on a teaching loss slice and reveal several red gradient arrows.",
+        "pacing_intent": "medium",
+        "linked_prerequisites": ["stochastic_gradient"]
+      },
+      {
+        "beat_id": "b02",
+        "spoken_text": "The first moment smooths those noisy gradients into a steadier direction estimate.",
+        "teaching_intent": "transform",
+        "visual_need": "Transform raw red gradients into a stable blue first-moment arrow.",
+        "pacing_intent": "slow_reveal",
+        "linked_prerequisites": ["exponential_average"]
+      },
+      {
+        "beat_id": "b03",
+        "spoken_text": "The second moment tracks squared-gradient scale, not curvature.",
+        "teaching_intent": "misconception_guardrail",
+        "visual_need": "Show purple scale halos with explicit squared-gradient wording.",
+        "pacing_intent": "slow_down",
+        "linked_prerequisites": ["coordinate_scale"]
+      },
+      {
+        "beat_id": "b04",
+        "spoken_text": "The final Adam step divides the smoothed direction by that scale and moves the parameters.",
+        "teaching_intent": "synthesis",
+        "visual_need": "Route blue direction through purple scale into a green adaptive step.",
+        "pacing_intent": "payoff",
+        "linked_prerequisites": []
+      }
+    ]
+  },
+  "storyboard": {
+    "scenes": [
+      {
+        "scene_id": "s00_intro",
+        "title": "Formula Intro",
+        "beat_ids": ["b00"],
+        "duration_seconds": 3.7,
+        "high_level_visual": "Title card and Adam adaptive update formula introduce the mechanism.",
+        "pacing_intent": "opening_hold"
+      },
+      {
+        "scene_id": "s01_gradient_sample",
+        "title": "Noisy Gradient Sample",
+        "beat_ids": ["b01"],
+        "duration_seconds": 4.9,
+        "high_level_visual": "A parameter point on a 2D teaching loss slice receives noisy red gradient arrows.",
+        "pacing_intent": "medium"
+      },
+      {
+        "scene_id": "s02_first_moment",
+        "title": "First Moment Smoothing",
+        "beat_ids": ["b02"],
+        "duration_seconds": 4.6,
+        "high_level_visual": "Raw gradients blend into a stable blue first-moment direction.",
+        "pacing_intent": "slow_reveal"
+      },
+      {
+        "scene_id": "s03_second_moment",
+        "title": "Second Moment Scale",
+        "beat_ids": ["b03"],
+        "duration_seconds": 3.5,
+        "high_level_visual": "Purple halos encode squared-gradient scale around the parameter point.",
+        "pacing_intent": "slow_down"
+      },
+      {
+        "scene_id": "s04_adaptive_update",
+        "title": "Adaptive Update",
+        "beat_ids": ["b04"],
+        "duration_seconds": 9.9,
+        "high_level_visual": "A green adaptive update moves theta_t to theta_{t+1}.",
+        "pacing_intent": "payoff"
+      }
+    ]
+  },
+  "scene_spec_contract": {
+    "contract_version": "enriched-scene-spec/v0.1",
+    "source_of_truth": "examples/adam-optimizer/enriched_scene_spec.json",
+    "schema_path": "contracts/enriched_scene_spec.schema.json",
+    "manifest_role": "Project-level registry for the Adam video run.",
+    "scene_spec_role": "Scene-level executable contract for the rendered Manim rough pass."
+  },
+  "scenes": [
+    {
+      "scene_id": "s00_intro",
+      "scene_spec_path": "examples/adam-optimizer/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/adam-optimizer/enriched_scene_spec.json",
+      "enriched_scene_ref": "s00_intro",
+      "timestamp_start_s": 0,
+      "duration_seconds": 3.7,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s01_gradient_sample",
+      "scene_spec_path": "examples/adam-optimizer/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/adam-optimizer/enriched_scene_spec.json",
+      "enriched_scene_ref": "s01_gradient_sample",
+      "timestamp_start_s": 3.7,
+      "duration_seconds": 4.9,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s02_first_moment",
+      "scene_spec_path": "examples/adam-optimizer/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/adam-optimizer/enriched_scene_spec.json",
+      "enriched_scene_ref": "s02_first_moment",
+      "timestamp_start_s": 8.6,
+      "duration_seconds": 4.6,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s03_second_moment",
+      "scene_spec_path": "examples/adam-optimizer/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/adam-optimizer/enriched_scene_spec.json",
+      "enriched_scene_ref": "s03_second_moment",
+      "timestamp_start_s": 13.2,
+      "duration_seconds": 3.5,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s04_adaptive_update",
+      "scene_spec_path": "examples/adam-optimizer/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/adam-optimizer/enriched_scene_spec.json",
+      "enriched_scene_ref": "s04_adaptive_update",
+      "timestamp_start_s": 16.7,
+      "duration_seconds": 9.9,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    }
+  ],
+  "visual_asset_requests": [],
+  "rhythm_map": [
+    {
+      "beat_id": "b00",
+      "scene_id": "s00_intro",
+      "time_intent": "intro",
+      "target_duration_seconds": 3.7,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Establish the topic and formula before the mechanism animation starts."
+    },
+    {
+      "beat_id": "b01",
+      "scene_id": "s01_gradient_sample",
+      "time_intent": "setup",
+      "target_duration_seconds": 4.9,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Establish the toy optimization slice and noisy gradient source."
+    },
+    {
+      "beat_id": "b02",
+      "scene_id": "s02_first_moment",
+      "time_intent": "direction smoothing",
+      "target_duration_seconds": 4.6,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Slow enough for the formula and arrow transformation to read."
+    },
+    {
+      "beat_id": "b03",
+      "scene_id": "s03_second_moment",
+      "time_intent": "misconception guardrail",
+      "target_duration_seconds": 3.5,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Hold the squared-gradient wording so it is not mistaken for curvature."
+    },
+    {
+      "beat_id": "b04",
+      "scene_id": "s04_adaptive_update",
+      "time_intent": "payoff",
+      "target_duration_seconds": 9.9,
+      "music_energy": "medium",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Let the viewer see both moments before theta moves."
+    }
+  ],
+  "audio_manifest": {
+    "voiceover": [],
+    "music": [],
+    "sfx": []
+  },
+  "pixverse_jobs": [],
+  "asset_manifest": [
+    {
+      "asset_id": "asset_adam_input",
+      "kind": "source",
+      "path_or_url": "examples/adam-optimizer/input.md",
+      "status": "ready",
+      "usage": "Source task brief."
+    },
+    {
+      "asset_id": "asset_adam_mechanism",
+      "kind": "contract",
+      "path_or_url": "examples/adam-optimizer/mechanism_spec.json",
+      "status": "ready",
+      "usage": "Symbol and mechanism source."
+    },
+    {
+      "asset_id": "asset_adam_dsm",
+      "kind": "contract",
+      "path_or_url": "examples/adam-optimizer/dynamic_scene_model.json",
+      "status": "ready",
+      "usage": "Mechanism-to-dynamic-scene model."
+    },
+    {
+      "asset_id": "asset_adam_renderer",
+      "kind": "manim_source",
+      "path_or_url": "manim/research_video_demos.py",
+      "status": "ready",
+      "usage": "Contains AdamOptimizerDemo."
+    },
+    {
+      "asset_id": "asset_adam_video",
+      "kind": "mp4",
+      "path_or_url": "site/public/videos/adam-optimizer-demo.mp4",
+      "status": "rendered",
+      "usage": "Final rough-pass video."
+    },
+    {
+      "asset_id": "asset_adam_poster",
+      "kind": "poster",
+      "path_or_url": "site/public/videos/adam-optimizer-demo-poster.jpg",
+      "status": "rendered",
+      "usage": "Preview image for docs and demo surfaces."
+    }
+  ],
+  "edit_decision_list": [
+    {
+      "order": 1,
+      "scene_id": "s00_intro",
+      "source": "site/public/videos/adam-optimizer-demo.mp4",
+      "start_seconds": 0,
+      "duration_seconds": 3.7,
+      "audio_layers": []
+    },
+    {
+      "order": 2,
+      "scene_id": "s01_gradient_sample",
+      "source": "site/public/videos/adam-optimizer-demo.mp4",
+      "start_seconds": 3.7,
+      "duration_seconds": 4.9,
+      "audio_layers": []
+    },
+    {
+      "order": 3,
+      "scene_id": "s02_first_moment",
+      "source": "site/public/videos/adam-optimizer-demo.mp4",
+      "start_seconds": 8.6,
+      "duration_seconds": 4.6,
+      "audio_layers": []
+    },
+    {
+      "order": 4,
+      "scene_id": "s03_second_moment",
+      "source": "site/public/videos/adam-optimizer-demo.mp4",
+      "start_seconds": 13.2,
+      "duration_seconds": 3.5,
+      "audio_layers": []
+    },
+    {
+      "order": 5,
+      "scene_id": "s04_adaptive_update",
+      "source": "site/public/videos/adam-optimizer-demo.mp4",
+      "start_seconds": 16.7,
+      "duration_seconds": 9.9,
+      "audio_layers": []
+    }
+  ]
+}

@@ -1,0 +1,402 @@
+{
+  "contract_version": "enriched-scene-spec/v0.1",
+  "demo_id": "ddpm-denoising",
+  "source_manifest": "examples/ddpm-denoising/production_manifest.json",
+  "total_duration_s": 25.73,
+  "global_style_tokens": {
+    "background": "#101217",
+    "clean_color": "#37D67A",
+    "noise_color": "#C4B5FD",
+    "schedule_color": "#FBBF24",
+    "signal_color": "#7DD3FC",
+    "denoiser_color": "#C4B5FD",
+    "text_color": "#E5E7EB"
+  },
+  "scenes": [
+    {
+      "scene_id": "s00_intro",
+      "title": "Formula Intro",
+      "linked_beats": ["b00"],
+      "timestamp_start_s": 0,
+      "duration_s": 3.7,
+      "narration": "DDPMs separate fixed forward corruption from learned iterative reverse denoising.",
+      "narration_duration_s": 3.1,
+      "pacing": "opening hold",
+      "insight_moment": false,
+      "wait_after_s": 0.2,
+      "visual_type": "manim",
+      "manim": {
+        "scene_class": "DDPMDenoisingDemo",
+        "camera_type": "Scene",
+        "camera_action": "title card and formula hold",
+        "objects": [
+          {
+            "id": "title",
+            "type": "Text",
+            "content": "DDPM Denoising",
+            "color": "text_color"
+          },
+          {
+            "id": "closed_form_formula",
+            "type": "MathTex",
+            "content": "q(x_t | x_0)=N(sqrt(alpha_bar_t)x_0,(1-alpha_bar_t)I)",
+            "color": "signal_color"
+          }
+        ],
+        "animation_sequence": [
+          {
+            "action": "Write",
+            "target": "title",
+            "description": "Introduce the demo topic.",
+            "run_time": 2.2
+          },
+          {
+            "action": "FadeOut",
+            "target": "title",
+            "description": "Leave the formula as the fixed top reference.",
+            "run_time": 1.0
+          }
+        ],
+        "render": {
+          "transparent_background": false,
+          "output_path": "site/public/videos/ddpm-denoising-demo.mp4"
+        }
+      },
+      "pixverse": null,
+      "tts": {
+        "text": "DDPMs separate fixed forward corruption from learned iterative reverse denoising.",
+        "pause_before_s": 0,
+        "pause_after_s": 0.2,
+        "voice": "calm_research_explainer",
+        "output_path": "",
+        "actual_duration_s": 0
+      },
+      "music_cue": {
+        "type": "opening_formula",
+        "energy": "low",
+        "transition": "soft_enter",
+        "volume_relative": 0.12,
+        "sfx": []
+      },
+      "assembly": {
+        "base_layer": "site/public/videos/ddpm-denoising-demo.mp4",
+        "overlay_layers": [],
+        "subtitle": "DDPM: fixed forward process, learned reverse process.",
+        "expected_output_path": "site/public/videos/ddpm-denoising-demo.mp4"
+      },
+      "qa_checks": [
+        "The intro is represented explicitly in the production timeline.",
+        "The formula is deterministic Manim text.",
+        "No mechanism beat is assigned to the intro timestamp."
+      ]
+    },
+    {
+      "scene_id": "s01_clean_state",
+      "title": "Clean State",
+      "linked_beats": ["b01"],
+      "timestamp_start_s": 3.7,
+      "duration_s": 2.2,
+      "narration": "A DDPM begins with a clean structured sample, x zero.",
+      "narration_duration_s": 4.8,
+      "pacing": "medium setup",
+      "insight_moment": false,
+      "wait_after_s": 0.2,
+      "visual_type": "manim",
+      "manim": {
+        "scene_class": "DDPMDenoisingDemo",
+        "camera_type": "Scene",
+        "camera_action": "static timeline setup",
+        "objects": [
+          {
+            "id": "clean_tile",
+            "type": "VGroup",
+            "content": "structured x_0 teaching tile",
+            "color": "clean_color"
+          },
+          {
+            "id": "timestep_timeline",
+            "type": "VGroup",
+            "content": "t=0 to t=T timeline",
+            "color": "text_color"
+          }
+        ],
+        "animation_sequence": [
+          {
+            "action": "FadeIn",
+            "target": "timestep_timeline",
+            "description": "Reveal the diffusion timestep chain.",
+            "run_time": 1.0
+          },
+          {
+            "action": "FadeIn",
+            "target": "clean_tile",
+            "description": "Show the structured x_0 state.",
+            "run_time": 0.8
+          }
+        ],
+        "render": {
+          "transparent_background": false,
+          "output_path": "site/public/videos/ddpm-denoising-demo.mp4"
+        }
+      },
+      "pixverse": null,
+      "tts": {
+        "text": "A DDPM begins with a clean structured sample, x zero.",
+        "pause_before_s": 0,
+        "pause_after_s": 0.2,
+        "voice": "calm_research_explainer",
+        "output_path": "",
+        "actual_duration_s": 0
+      },
+      "music_cue": {
+        "type": "mechanism_setup",
+        "energy": "low",
+        "transition": "soft_enter",
+        "volume_relative": 0.12,
+        "sfx": []
+      },
+      "assembly": {
+        "base_layer": "site/public/videos/ddpm-denoising-demo.mp4",
+        "overlay_layers": [],
+        "subtitle": "Start with a clean sample, x_0.",
+        "expected_output_path": "site/public/videos/ddpm-denoising-demo.mp4"
+      },
+      "qa_checks": [
+        "x_0 is readable.",
+        "The clean tile is treated as an abstraction.",
+        "The timeline establishes forward direction."
+      ]
+    },
+    {
+      "scene_id": "s02_forward_noise",
+      "title": "Fixed Forward Noising",
+      "linked_beats": ["b02"],
+      "timestamp_start_s": 5.9,
+      "duration_s": 4.7,
+      "narration": "The forward process is fixed: beta t schedules how much Gaussian noise is added.",
+      "narration_duration_s": 5.7,
+      "pacing": "medium progression",
+      "insight_moment": true,
+      "wait_after_s": 0.2,
+      "visual_type": "manim",
+      "manim": {
+        "scene_class": "DDPMDenoisingDemo",
+        "camera_type": "Scene",
+        "camera_action": "static forward timeline",
+        "objects": [
+          {
+            "id": "noise_clouds",
+            "type": "VGroup",
+            "content": "increasing particle-cloud corruption from x_0 to x_T",
+            "color": "noise_color"
+          },
+          {
+            "id": "beta_fixed",
+            "type": "MathTex",
+            "content": "beta_t is fixed",
+            "color": "schedule_color"
+          }
+        ],
+        "animation_sequence": [
+          {
+            "action": "FadeIn",
+            "target": "beta_fixed",
+            "description": "Label the forward schedule as fixed.",
+            "run_time": 0.8
+          },
+          {
+            "action": "LaggedStart",
+            "target": "noise_clouds",
+            "description": "Reveal progressively noisier states along the timeline.",
+            "run_time": 3.3
+          }
+        ],
+        "render": {
+          "transparent_background": false,
+          "output_path": "site/public/videos/ddpm-denoising-demo.mp4"
+        }
+      },
+      "pixverse": null,
+      "tts": {
+        "text": "The forward process is fixed: beta t schedules how much Gaussian noise is added.",
+        "pause_before_s": 0,
+        "pause_after_s": 0.2,
+        "voice": "calm_research_explainer",
+        "output_path": "",
+        "actual_duration_s": 0
+      },
+      "music_cue": {
+        "type": "forward_process",
+        "energy": "low",
+        "transition": "steady",
+        "volume_relative": 0.12,
+        "sfx": []
+      },
+      "assembly": {
+        "base_layer": "site/public/videos/ddpm-denoising-demo.mp4",
+        "overlay_layers": [],
+        "subtitle": "Forward noising is fixed by beta_t.",
+        "expected_output_path": "site/public/videos/ddpm-denoising-demo.mp4"
+      },
+      "qa_checks": [
+        "beta_t is visually separate from the learned denoiser.",
+        "Forward time moves left to right.",
+        "Particle clouds are not described as exact pixels."
+      ]
+    },
+    {
+      "scene_id": "s03_closed_form",
+      "title": "Closed-Form x_t",
+      "linked_beats": ["b03"],
+      "timestamp_start_s": 10.6,
+      "duration_s": 4.9,
+      "narration": "The closed form uses alpha bar t to jump directly to a noisy state at any chosen timestep.",
+      "narration_duration_s": 5.9,
+      "pacing": "formula link",
+      "insight_moment": true,
+      "wait_after_s": 0.2,
+      "visual_type": "manim",
+      "manim": {
+        "scene_class": "DDPMDenoisingDemo",
+        "camera_type": "Scene",
+        "camera_action": "static split view",
+        "objects": [
+          {
+            "id": "alpha_curve",
+            "type": "VMobject",
+            "content": "schematic signal-retention curve",
+            "color": "signal_color"
+          },
+          {
+            "id": "closed_form_formula",
+            "type": "MathTex",
+            "content": "x_t=sqrt(alpha_bar_t)x_0+sqrt(1-alpha_bar_t)epsilon",
+            "color": "signal_color"
+          }
+        ],
+        "animation_sequence": [
+          {
+            "action": "Create",
+            "target": "alpha_curve",
+            "description": "Draw the cumulative signal-retention curve.",
+            "run_time": 1.2
+          },
+          {
+            "action": "Move",
+            "target": "alpha_slider",
+            "description": "Slide to a chosen timestep and indicate the matching noisy state.",
+            "run_time": 1.4
+          }
+        ],
+        "render": {
+          "transparent_background": false,
+          "output_path": "site/public/videos/ddpm-denoising-demo.mp4"
+        }
+      },
+      "pixverse": null,
+      "tts": {
+        "text": "The closed form uses alpha bar t to jump directly to a noisy state at any chosen timestep.",
+        "pause_before_s": 0,
+        "pause_after_s": 0.2,
+        "voice": "calm_research_explainer",
+        "output_path": "",
+        "actual_duration_s": 0
+      },
+      "music_cue": {
+        "type": "formula_reveal",
+        "energy": "low",
+        "transition": "hold",
+        "volume_relative": 0.12,
+        "sfx": []
+      },
+      "assembly": {
+        "base_layer": "site/public/videos/ddpm-denoising-demo.mp4",
+        "overlay_layers": [],
+        "subtitle": "alpha_bar_t controls signal retention.",
+        "expected_output_path": "site/public/videos/ddpm-denoising-demo.mp4"
+      },
+      "qa_checks": [
+        "The curve is schematic unless a schedule is specified.",
+        "Direct x_t sampling is not shown as a learned model.",
+        "The formula remains deterministic and readable."
+      ]
+    },
+    {
+      "scene_id": "s04_reverse_denoise",
+      "title": "Learned Reverse Denoising",
+      "linked_beats": ["b04"],
+      "timestamp_start_s": 15.5,
+      "duration_s": 10.23,
+      "narration": "Generation runs the learned reverse process repeatedly, moving from noise back toward structure.",
+      "narration_duration_s": 6.2,
+      "pacing": "payoff",
+      "insight_moment": true,
+      "wait_after_s": 0.4,
+      "visual_type": "manim",
+      "manim": {
+        "scene_class": "DDPMDenoisingDemo",
+        "camera_type": "Scene",
+        "camera_action": "static reverse chain",
+        "objects": [
+          {
+            "id": "denoiser_module",
+            "type": "RoundedRectangle",
+            "content": "learned epsilon_theta denoiser",
+            "color": "denoiser_color"
+          },
+          {
+            "id": "reverse_states",
+            "type": "VGroup",
+            "content": "multiple reverse denoising ticks",
+            "color": "signal_color"
+          }
+        ],
+        "animation_sequence": [
+          {
+            "action": "FadeIn",
+            "target": "denoiser_module",
+            "description": "Introduce epsilon_theta as the learned reverse model.",
+            "run_time": 1.0
+          },
+          {
+            "action": "LaggedStart",
+            "target": "reverse_states",
+            "description": "Show several iterative reverse denoising states.",
+            "run_time": 3.0
+          }
+        ],
+        "render": {
+          "transparent_background": false,
+          "output_path": "site/public/videos/ddpm-denoising-demo.mp4"
+        }
+      },
+      "pixverse": null,
+      "tts": {
+        "text": "Generation runs the learned reverse process repeatedly, moving from noise back toward structure.",
+        "pause_before_s": 0,
+        "pause_after_s": 0.4,
+        "voice": "calm_research_explainer",
+        "output_path": "",
+        "actual_duration_s": 0
+      },
+      "music_cue": {
+        "type": "reverse_payoff",
+        "energy": "medium",
+        "transition": "resolve",
+        "volume_relative": 0.16,
+        "sfx": []
+      },
+      "assembly": {
+        "base_layer": "site/public/videos/ddpm-denoising-demo.mp4",
+        "overlay_layers": [],
+        "subtitle": "Reverse denoising is learned and iterative.",
+        "expected_output_path": "site/public/videos/ddpm-denoising-demo.mp4"
+      },
+      "qa_checks": [
+        "epsilon_theta is labeled as learned.",
+        "The reverse process uses multiple ticks, not one jump.",
+        "Forward and reverse time directions stay consistent."
+      ]
+    }
+  ]
+}

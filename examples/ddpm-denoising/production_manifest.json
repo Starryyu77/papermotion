@@ -1,0 +1,366 @@
+{
+  "project": {
+    "demo_id": "ddpm-denoising",
+    "title": "DDPM Forward Noise and Reverse Denoising",
+    "source_type": "paper_excerpt",
+    "status": "full_video_rendered",
+    "owner": "PaperMotion"
+  },
+  "intent": {
+    "viewer_goal": "Understand how DDPM separates fixed forward noising from learned reverse denoising.",
+    "target_audience": "Graduate machine-learning students who know probability basics and want visual intuition for diffusion models.",
+    "learning_objective": "After watching, the viewer should be able to explain x_0, x_t, beta_t, alpha_bar_t, and epsilon_theta in the DDPM sampling story.",
+    "scope": [
+      "Clean state x_0",
+      "Fixed forward noising schedule beta_t",
+      "Closed-form x_t sampling with alpha_bar_t",
+      "Learned iterative reverse denoising"
+    ],
+    "out_of_scope": [
+      "Training loss derivation",
+      "U-Net internals",
+      "Classifier-free guidance",
+      "Exact pixel-space generation"
+    ]
+  },
+  "prerequisite_graph": {
+    "nodes": [
+      {
+        "id": "gaussian_noise",
+        "label": "Gaussian noise",
+        "is_blocker": true,
+        "explain_policy": "brief_before_use"
+      },
+      {
+        "id": "markov_chain",
+        "label": "Timestep chain",
+        "is_blocker": true,
+        "explain_policy": "just_in_time"
+      },
+      {
+        "id": "learned_denoiser",
+        "label": "Learned denoiser",
+        "is_blocker": true,
+        "explain_policy": "just_in_time"
+      }
+    ],
+    "edges": [
+      {
+        "from": "gaussian_noise",
+        "to": "markov_chain",
+        "reason": "The forward process injects scheduled Gaussian noise over timesteps."
+      },
+      {
+        "from": "markov_chain",
+        "to": "learned_denoiser",
+        "reason": "The reverse model learns to step backward along the timestep chain."
+      }
+    ]
+  },
+  "curriculum_plan": {
+    "concept_order": [
+      "clean sample",
+      "fixed beta schedule",
+      "alpha_bar_t direct sample",
+      "learned reverse chain"
+    ],
+    "just_in_time_insertions": [
+      {
+        "concept_id": "markov_chain",
+        "insert_before_beat": "b02",
+        "one_sentence_explanation": "The timestep chain gives the video a stable left-to-right forward direction and right-to-left reverse direction."
+      },
+      {
+        "concept_id": "learned_denoiser",
+        "insert_before_beat": "b04",
+        "one_sentence_explanation": "The learned denoiser predicts how to remove a little noise at each reverse step."
+      }
+    ]
+  },
+  "script": {
+    "style_guide": "Research explainer: emphasize fixed versus learned processes and keep particle clouds schematic.",
+    "beats": [
+      {
+        "beat_id": "b00",
+        "spoken_text": "DDPMs separate fixed forward corruption from learned iterative reverse denoising.",
+        "teaching_intent": "intro",
+        "visual_need": "Show the video title and closed-form q(x_t | x_0) formula.",
+        "pacing_intent": "opening_hold",
+        "linked_prerequisites": []
+      },
+      {
+        "beat_id": "b01",
+        "spoken_text": "A DDPM begins with a clean structured sample, x zero.",
+        "teaching_intent": "setup",
+        "visual_need": "Show a clean tile and a timestep rail at t=0.",
+        "pacing_intent": "medium",
+        "linked_prerequisites": []
+      },
+      {
+        "beat_id": "b02",
+        "spoken_text": "The forward process is fixed: beta t schedules how much Gaussian noise is added.",
+        "teaching_intent": "define_forward",
+        "visual_need": "Diffuse the tile across a left-to-right timeline into a particle cloud.",
+        "pacing_intent": "medium",
+        "linked_prerequisites": ["gaussian_noise", "markov_chain"]
+      },
+      {
+        "beat_id": "b03",
+        "spoken_text": "The closed form uses alpha bar t to jump directly to a noisy state at any chosen timestep.",
+        "teaching_intent": "formula_link",
+        "visual_need": "Show signal-retention curve and slider tied to x_t.",
+        "pacing_intent": "slow_reveal",
+        "linked_prerequisites": []
+      },
+      {
+        "beat_id": "b04",
+        "spoken_text": "Generation runs the learned reverse process repeatedly, moving from noise back toward structure.",
+        "teaching_intent": "synthesis",
+        "visual_need": "Route noisy states through epsilon_theta over several reverse ticks.",
+        "pacing_intent": "payoff",
+        "linked_prerequisites": ["learned_denoiser"]
+      }
+    ]
+  },
+  "storyboard": {
+    "scenes": [
+      {
+        "scene_id": "s00_intro",
+        "title": "Formula Intro",
+        "beat_ids": ["b00"],
+        "duration_seconds": 3.7,
+        "high_level_visual": "Title card and q(x_t | x_0) formula frame the DDPM mechanism.",
+        "pacing_intent": "opening_hold"
+      },
+      {
+        "scene_id": "s01_clean_state",
+        "title": "Clean State",
+        "beat_ids": ["b01"],
+        "duration_seconds": 2.2,
+        "high_level_visual": "A clean x_0 tile appears beside the diffusion timeline.",
+        "pacing_intent": "medium"
+      },
+      {
+        "scene_id": "s02_forward_noise",
+        "title": "Fixed Forward Noising",
+        "beat_ids": ["b02"],
+        "duration_seconds": 4.7,
+        "high_level_visual": "The sample diffuses through scheduled noise to x_T.",
+        "pacing_intent": "medium"
+      },
+      {
+        "scene_id": "s03_closed_form",
+        "title": "Closed-Form x_t",
+        "beat_ids": ["b03"],
+        "duration_seconds": 4.9,
+        "high_level_visual": "A slider on the alpha_bar_t curve selects a direct noisy state.",
+        "pacing_intent": "slow_reveal"
+      },
+      {
+        "scene_id": "s04_reverse_denoise",
+        "title": "Learned Reverse Denoising",
+        "beat_ids": ["b04"],
+        "duration_seconds": 10.23,
+        "high_level_visual": "epsilon_theta iteratively maps noisy states back toward structure.",
+        "pacing_intent": "payoff"
+      }
+    ]
+  },
+  "scene_spec_contract": {
+    "contract_version": "enriched-scene-spec/v0.1",
+    "source_of_truth": "examples/ddpm-denoising/enriched_scene_spec.json",
+    "schema_path": "contracts/enriched_scene_spec.schema.json",
+    "manifest_role": "Project-level registry for the DDPM video run.",
+    "scene_spec_role": "Scene-level executable contract for the rendered Manim rough pass."
+  },
+  "scenes": [
+    {
+      "scene_id": "s00_intro",
+      "scene_spec_path": "examples/ddpm-denoising/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/ddpm-denoising/enriched_scene_spec.json",
+      "enriched_scene_ref": "s00_intro",
+      "timestamp_start_s": 0,
+      "duration_seconds": 3.7,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s01_clean_state",
+      "scene_spec_path": "examples/ddpm-denoising/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/ddpm-denoising/enriched_scene_spec.json",
+      "enriched_scene_ref": "s01_clean_state",
+      "timestamp_start_s": 3.7,
+      "duration_seconds": 2.2,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s02_forward_noise",
+      "scene_spec_path": "examples/ddpm-denoising/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/ddpm-denoising/enriched_scene_spec.json",
+      "enriched_scene_ref": "s02_forward_noise",
+      "timestamp_start_s": 5.9,
+      "duration_seconds": 4.7,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s03_closed_form",
+      "scene_spec_path": "examples/ddpm-denoising/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/ddpm-denoising/enriched_scene_spec.json",
+      "enriched_scene_ref": "s03_closed_form",
+      "timestamp_start_s": 10.6,
+      "duration_seconds": 4.9,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    },
+    {
+      "scene_id": "s04_reverse_denoise",
+      "scene_spec_path": "examples/ddpm-denoising/enriched_scene_spec.json",
+      "enriched_scene_spec_path": "examples/ddpm-denoising/enriched_scene_spec.json",
+      "enriched_scene_ref": "s04_reverse_denoise",
+      "timestamp_start_s": 15.5,
+      "duration_seconds": 10.23,
+      "render_layer": ["manim_exact"],
+      "status": "rendered_in_full_video"
+    }
+  ],
+  "visual_asset_requests": [],
+  "rhythm_map": [
+    {
+      "beat_id": "b00",
+      "scene_id": "s00_intro",
+      "time_intent": "intro",
+      "target_duration_seconds": 3.7,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Establish the fixed-forward and learned-reverse contrast before the mechanism timeline."
+    },
+    {
+      "beat_id": "b01",
+      "scene_id": "s01_clean_state",
+      "time_intent": "setup",
+      "target_duration_seconds": 2.2,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Establish x_0 before corruption."
+    },
+    {
+      "beat_id": "b02",
+      "scene_id": "s02_forward_noise",
+      "time_intent": "forward diffusion",
+      "target_duration_seconds": 4.7,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Make beta_t visibly fixed and left-to-right."
+    },
+    {
+      "beat_id": "b03",
+      "scene_id": "s03_closed_form",
+      "time_intent": "formula link",
+      "target_duration_seconds": 4.9,
+      "music_energy": "low",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Give the slider and formula enough time to read."
+    },
+    {
+      "beat_id": "b04",
+      "scene_id": "s04_reverse_denoise",
+      "time_intent": "reverse process payoff",
+      "target_duration_seconds": 10.23,
+      "music_energy": "medium",
+      "silence_before_seconds": 0,
+      "sfx": [],
+      "reason": "Show multiple reverse ticks rather than one-step generation."
+    }
+  ],
+  "audio_manifest": {
+    "voiceover": [],
+    "music": [],
+    "sfx": []
+  },
+  "pixverse_jobs": [],
+  "asset_manifest": [
+    {
+      "asset_id": "asset_ddpm_input",
+      "kind": "source",
+      "path_or_url": "examples/ddpm-denoising/input.md",
+      "status": "ready",
+      "usage": "Source task brief."
+    },
+    {
+      "asset_id": "asset_ddpm_dsm",
+      "kind": "contract",
+      "path_or_url": "examples/ddpm-denoising/dynamic_scene_model.json",
+      "status": "ready",
+      "usage": "Mechanism-to-dynamic-scene model."
+    },
+    {
+      "asset_id": "asset_ddpm_renderer",
+      "kind": "manim_source",
+      "path_or_url": "manim/research_video_demos.py",
+      "status": "ready",
+      "usage": "Contains DDPMDenoisingDemo."
+    },
+    {
+      "asset_id": "asset_ddpm_video",
+      "kind": "mp4",
+      "path_or_url": "site/public/videos/ddpm-denoising-demo.mp4",
+      "status": "rendered",
+      "usage": "Final rough-pass video."
+    },
+    {
+      "asset_id": "asset_ddpm_poster",
+      "kind": "poster",
+      "path_or_url": "site/public/videos/ddpm-denoising-demo-poster.jpg",
+      "status": "rendered",
+      "usage": "Preview image for docs and demo surfaces."
+    }
+  ],
+  "edit_decision_list": [
+    {
+      "order": 1,
+      "scene_id": "s00_intro",
+      "source": "site/public/videos/ddpm-denoising-demo.mp4",
+      "start_seconds": 0,
+      "duration_seconds": 3.7,
+      "audio_layers": []
+    },
+    {
+      "order": 2,
+      "scene_id": "s01_clean_state",
+      "source": "site/public/videos/ddpm-denoising-demo.mp4",
+      "start_seconds": 3.7,
+      "duration_seconds": 2.2,
+      "audio_layers": []
+    },
+    {
+      "order": 3,
+      "scene_id": "s02_forward_noise",
+      "source": "site/public/videos/ddpm-denoising-demo.mp4",
+      "start_seconds": 5.9,
+      "duration_seconds": 4.7,
+      "audio_layers": []
+    },
+    {
+      "order": 4,
+      "scene_id": "s03_closed_form",
+      "source": "site/public/videos/ddpm-denoising-demo.mp4",
+      "start_seconds": 10.6,
+      "duration_seconds": 4.9,
+      "audio_layers": []
+    },
+    {
+      "order": 5,
+      "scene_id": "s04_reverse_denoise",
+      "source": "site/public/videos/ddpm-denoising-demo.mp4",
+      "start_seconds": 15.5,
+      "duration_seconds": 10.23,
+      "audio_layers": []
+    }
+  ]
+}
