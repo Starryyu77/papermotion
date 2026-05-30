@@ -46,6 +46,19 @@
       "visual_role": "Final merged vector."
     }
   ],
+  "prerequisite_policy": {
+    "assume_known": ["basic linear algebra notation"],
+    "introduce_just_in_time": [
+      {
+        "concept": "dot product similarity",
+        "one_sentence": "点积可以被当作两个向量朝向是否相似的快速打分。"
+      },
+      {
+        "concept": "softmax normalization",
+        "one_sentence": "softmax 会把一排分数变成总和为 1 的注意力比例。"
+      }
+    ]
+  },
   "causal_steps": [
     {
       "id": "m01_token_context_question",
@@ -90,6 +103,28 @@
       "manim_objects": ["attention_weights", "value_vectors", "context_vector", "full_formula"]
     }
   ],
+  "visual_metaphors": [
+    {
+      "id": "vm_roles_as_cards",
+      "meaning": "Q/K/V 是同一 token 表示的三种角色，而不是三种不同 token。",
+      "use_in_steps": ["m02_role_projection"]
+    },
+    {
+      "id": "vm_scores_as_heatmap",
+      "meaning": "QK^T 是一张“query 行 × key 列”的相关性表格。",
+      "use_in_steps": ["m03_pairwise_scores", "m04_score_scaling"]
+    },
+    {
+      "id": "vm_weights_as_proportions",
+      "meaning": "softmax 让权重可解释为比例（非负且和为 1）。",
+      "use_in_steps": ["m05_weight_normalization"]
+    },
+    {
+      "id": "vm_values_as_streams",
+      "meaning": "加权求和可以用多路流按权重汇聚成一个 context 向量来表达。",
+      "use_in_steps": ["m06_value_aggregation"]
+    }
+  ],
   "misconceptions": [
     {
       "risk": "Viewers may think attention chooses only one token.",
@@ -111,5 +146,9 @@
       "risk": "Viewers may think PixVerse is responsible for exact formulas.",
       "animation_guardrail": "Keep every formula, label, heatmap, and bar chart in Manim; use PixVerse only for text-free cinematic support."
     }
+  ],
+  "claim_boundaries": [
+    "本示例只解释 scaled dot-product attention 的机制直觉，不覆盖 multi-head attention、训练过程或完整 Transformer block。",
+    "热力图/权重/数值均为教学用 toy values，不代表任何真实模型在特定输入上的激活。"
   ]
 }

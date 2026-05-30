@@ -8,7 +8,7 @@
   },
   "intent": {
     "viewer_goal": "Understand how the attention formula turns token relationships into weighted value aggregation.",
-    "target_audience": "AI-curious students or developers who have seen the Transformer attention formula but do not yet feel the mechanism.",
+    "target_audience": "机器学习方向研究生：见过 Transformer attention 公式，但还没有形成“Q/K/V 各自干什么、softmax 权重如何把 V 混成 context”的机制直觉。",
     "learning_objective": "After watching, the viewer should be able to explain why QK^T creates relevance scores, why scaling is applied, why softmax creates weights, and how V is mixed into a contextual representation.",
     "scope": [
       "Scaled dot-product attention formula",

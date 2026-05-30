@@ -16,7 +16,7 @@ Formula and mechanism description.
 
 ## Target Audience
 
-AI-curious students or developers who have seen the Transformer attention formula but do not yet feel how the parts produce contextual token representations.
+机器学习方向研究生：见过 Transformer attention 公式，但还没有形成“Q/K/V 各自干什么、softmax 权重如何把 V 混成 context”的机制直觉。
 
 ## Learning Objective
 
