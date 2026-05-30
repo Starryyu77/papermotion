@@ -243,14 +243,17 @@ function renderScenes() {
 }
 
 function renderDataSummary() {
-  const totalDuration = state.spec?.total_duration_s || state.scenes.reduce((sum, scene) => sum + scene.durationS, 0);
-  $("#presetTitle").textContent = state.manifest?.project?.title || "Scaled Dot-Product Attention";
-  $("#sceneCount").textContent = `${state.scenes.length || 5} scenes`;
-  $("#durationLabel").textContent = `${totalDuration}s scene plan`;
-  $("#manifestSummary").textContent =
-    `${state.manifest?.project?.title || "Attention demo"} tracks source intent, storyboard scenes, PixVerse jobs, asset paths, and edit decisions.`;
-  $("#specSummary").textContent =
-    `${state.scenes.length} scene contracts define timing, narration, Manim classes, optional PixVerse jobs, assembly hints, and QA checks.`;
+  const presetTitle = state.manifest?.project?.title || "Attention demo";
+  const manifestSummary = $("#manifestSummary");
+  const specSummary = $("#specSummary");
+  if (manifestSummary) {
+    manifestSummary.textContent =
+      `${presetTitle} tracks source intent, storyboard scenes, PixVerse jobs, asset paths, and edit decisions.`;
+  }
+  if (specSummary) {
+    specSummary.textContent =
+      `${state.scenes.length} scene contracts define timing, narration, Manim classes, optional PixVerse jobs, assembly hints, and QA checks.`;
+  }
 }
 
 function appendLog(message) {
