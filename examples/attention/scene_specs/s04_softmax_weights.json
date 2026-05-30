@@ -1,0 +1,115 @@
+{
+  "scene_id": "s04",
+  "title": "Softmax To Weights",
+  "linked_beats": ["b05"],
+  "duration_seconds": 10,
+  "render_layers": ["manim_exact"],
+  "learning_goal": "Show that softmax converts raw relevance scores into normalised attention weights that sum to one.",
+  "coordinate_system": {
+    "canvas": "16:9",
+    "origin": "center",
+    "safe_margin": 0.6,
+    "regions": {
+      "bar_field": { "x": 0, "y": -0.2, "w": 8.0, "h": 3.5 },
+      "title_top": { "x": 0, "y": 3.1, "w": 10.0, "h": 0.7 },
+      "sum_bottom": { "x": 0, "y": -3.3, "w": 5.0, "h": 0.7 }
+    }
+  },
+  "style_tokens": {
+    "background": "#101217",
+    "score_color": "#FBBF24",
+    "softmax_color": "#C4B5FD",
+    "text_color": "#E5E7EB",
+    "muted_text_color": "#6B7280"
+  },
+  "raw_scores": [3.2, 1.1, 0.4, 2.0],
+  "computed_weights": {
+    "note": "exp(scores) / sum(exp(scores))",
+    "values": [0.587, 0.080, 0.039, 0.294]
+  },
+  "manim_objects": [
+    {
+      "id": "raw_score_bars",
+      "type": "VGroup",
+      "content": "Four bars with heights proportional to raw scores [3.2, 1.1, 0.4, 2.0]",
+      "region": "bar_field",
+      "color_policy": { "fill": "score_color", "fill_opacity": 0.70 }
+    },
+    {
+      "id": "weight_bars",
+      "type": "VGroup",
+      "content": "Four bars with heights proportional to softmax weights",
+      "region": "bar_field",
+      "color_policy": { "fill": "softmax_color", "fill_opacity": 0.70 },
+      "note": "Same x-positions as raw_score_bars; heights differ."
+    },
+    {
+      "id": "raw_title",
+      "type": "Text",
+      "content": "Raw relevance scores",
+      "region": "title_top",
+      "color_policy": { "fill": "muted_text_color" }
+    },
+    {
+      "id": "wt_title",
+      "type": "Text",
+      "content": "Attention weights (softmax)",
+      "region": "title_top",
+      "color_policy": { "fill": "softmax_color" }
+    },
+    {
+      "id": "sum_label",
+      "type": "MathTex",
+      "content": "\\sum_i\\, w_i = 1",
+      "region": "sum_bottom",
+      "color_policy": { "fill": "softmax_color" }
+    }
+  ],
+  "animation_sequence": [
+    {
+      "time_start": 0.0,
+      "duration": 2.0,
+      "action": "FadeIn raw score bars with title. Each bar labelled with score and key index.",
+      "manim_hint": "self.play(FadeIn(raw_bars, lag_ratio=0.18), Write(raw_title), run_time=2.0)"
+    },
+    {
+      "time_start": 2.0,
+      "duration": 4.0,
+      "action": "Transform raw bars into weight bars; transform title to weight title.",
+      "manim_hint": "self.play(Transform(raw_bars, wt_bars), Transform(raw_title, wt_title), run_time=4.0)"
+    },
+    {
+      "time_start": 6.0,
+      "duration": 2.0,
+      "action": "Write sum label at the bottom.",
+      "manim_hint": "self.play(Write(sum_label), run_time=2.0)"
+    },
+    {
+      "time_start": 8.0,
+      "duration": 0.5,
+      "action": "Hold for voiceover tail.",
+      "manim_hint": "self.wait(0.5)"
+    }
+  ],
+  "pixverse_support": null,
+  "voiceover_timing": [
+    {
+      "beat_id": "b05",
+      "start_seconds": 0.2,
+      "target_duration_seconds": 8.0
+    }
+  ],
+  "music_sfx_cues": [
+    {
+      "time_seconds": 2.0,
+      "cue": "soft_normalize_click",
+      "purpose": "Mark the transformation from raw scores into normalised weights."
+    }
+  ],
+  "acceptance_checks": [
+    "The tallest raw bar is k1 (score 3.2); after softmax k1 still dominates but less extremely.",
+    "Weight bar heights are visibly proportional to the computed weights.",
+    "Sum label Σ w_i = 1 appears only after the bars are fully normalised.",
+    "No PixVerse layer — exact geometry only."
+  ]
+}

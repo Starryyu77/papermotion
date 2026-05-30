@@ -1,0 +1,1088 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PaperMotion Dynamic Scene Model",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "demo_id",
+    "source_links",
+    "content_profile",
+    "semantic_units",
+    "visual_model",
+    "dynamic_model",
+    "camera_model",
+    "exactness_policy",
+    "renderer_plan",
+    "handoff",
+    "qa_contract"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "dynamic-scene-model/v0.1"
+    },
+    "demo_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_links": {
+      "$ref": "#/$defs/source_links"
+    },
+    "content_profile": {
+      "$ref": "#/$defs/content_profile"
+    },
+    "semantic_units": {
+      "$ref": "#/$defs/semantic_units"
+    },
+    "visual_model": {
+      "$ref": "#/$defs/visual_model"
+    },
+    "dynamic_model": {
+      "$ref": "#/$defs/dynamic_model"
+    },
+    "camera_model": {
+      "$ref": "#/$defs/camera_model"
+    },
+    "exactness_policy": {
+      "$ref": "#/$defs/exactness_policy"
+    },
+    "renderer_plan": {
+      "$ref": "#/$defs/renderer_plan"
+    },
+    "handoff": {
+      "$ref": "#/$defs/handoff"
+    },
+    "qa_contract": {
+      "$ref": "#/$defs/qa_contract"
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/question"
+      },
+      "default": []
+    },
+    "known_risks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/risk"
+      },
+      "default": []
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_\\-\\.]*$"
+    },
+    "ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "content_family": {
+      "type": "string",
+      "enum": [
+        "formula_derivation",
+        "algorithm_execution",
+        "proof_sketch",
+        "model_architecture",
+        "data_pipeline",
+        "causal_mechanism",
+        "optimization_process",
+        "statistical_result",
+        "geometry_topology",
+        "physical_simulation",
+        "experimental_workflow"
+      ]
+    },
+    "visual_object_type": {
+      "type": "string",
+      "enum": [
+        "symbol",
+        "equation",
+        "matrix",
+        "tensor",
+        "scalar",
+        "vector",
+        "graph_node",
+        "graph_edge",
+        "layer",
+        "plane",
+        "surface",
+        "volume",
+        "field",
+        "particle",
+        "axis_plot",
+        "distribution",
+        "state_machine",
+        "timeline",
+        "image_patch"
+      ]
+    },
+    "relation_type": {
+      "type": "string",
+      "enum": [
+        "maps_to",
+        "depends_on",
+        "causes",
+        "contains",
+        "approximates",
+        "optimizes",
+        "samples_from",
+        "conditions_on",
+        "normalizes",
+        "aggregates",
+        "compares",
+        "updates",
+        "bounds",
+        "flows_to",
+        "transforms_to"
+      ]
+    },
+    "operator_type": {
+      "type": "string",
+      "enum": [
+        "project",
+        "compare",
+        "scale",
+        "normalize",
+        "aggregate",
+        "differentiate",
+        "integrate",
+        "optimize",
+        "sample",
+        "condition",
+        "update",
+        "bound",
+        "solve",
+        "measure",
+        "fit",
+        "transform",
+        "route",
+        "branch",
+        "iterate"
+      ]
+    },
+    "motion_primitive_name": {
+      "type": "string",
+      "enum": [
+        "appear",
+        "disappear",
+        "exit",
+        "highlight",
+        "trace",
+        "transform",
+        "split",
+        "merge",
+        "group",
+        "copy",
+        "aggregate",
+        "filter",
+        "normalize",
+        "project",
+        "route",
+        "rotate",
+        "extrude",
+        "sample",
+        "select",
+        "measure",
+        "fit",
+        "solve",
+        "propagate",
+        "diffuse",
+        "iterate",
+        "loop",
+        "branch",
+        "converge",
+        "collapse",
+        "expand",
+        "reveal",
+        "compare",
+        "align",
+        "sweep"
+      ]
+    },
+    "exactness_level": {
+      "type": "string",
+      "enum": [
+        "symbolic_exact",
+        "numeric_exact",
+        "topology_exact",
+        "qualitative",
+        "pedagogical_simplification",
+        "metaphor",
+        "forbidden"
+      ]
+    },
+    "renderer": {
+      "type": "string",
+      "enum": [
+        "manim",
+        "threejs",
+        "blender",
+        "remotion",
+        "ffmpeg",
+        "static_asset",
+        "ai_video_provider"
+      ]
+    },
+    "renderer_fit": {
+      "type": "string",
+      "enum": ["primary", "support", "fallback", "forbidden"]
+    },
+    "source_links": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mechanism_spec_path"],
+      "properties": {
+        "paper_map_path": {
+          "type": "string"
+        },
+        "mechanism_spec_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_claim_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "default": []
+        },
+        "formula_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "default": []
+        },
+        "figure_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "default": []
+        },
+        "mechanism_step_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "default": []
+        },
+        "symbol_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "default": []
+        }
+      }
+    },
+    "content_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content_families", "learning_objective", "audience_level", "visual_thesis"],
+      "properties": {
+        "content_families": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/content_family" }
+        },
+        "learning_objective": {
+          "type": "string",
+          "minLength": 1
+        },
+        "audience_level": {
+          "type": "string",
+          "enum": ["general_science", "undergraduate", "graduate", "researcher", "domain_expert"]
+        },
+        "visual_thesis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "out_of_scope": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "semantic_units": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entities", "operators", "states", "relations", "invariants", "assumptions"],
+      "properties": {
+        "entities": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/entity" }
+        },
+        "operators": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/operator" }
+        },
+        "states": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/semantic_state" }
+        },
+        "relations": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/relation" }
+        },
+        "invariants": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/invariant" }
+        },
+        "assumptions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assumption" }
+        }
+      }
+    },
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "source_refs", "technical_role"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string" },
+        "type": { "$ref": "#/$defs/visual_object_type" },
+        "source_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "technical_role": { "type": "string" },
+        "meaning": { "type": "string" },
+        "state_variables": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "visualization_need": { "type": "string" },
+        "claim_boundary": { "type": "string" }
+      }
+    },
+    "operator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "operator_type", "source_refs", "input_refs", "output_refs"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string" },
+        "operator_type": { "$ref": "#/$defs/operator_type" },
+        "source_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "input_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "output_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "technical_meaning": { "type": "string" },
+        "visual_operation_hint": { "type": "string" }
+      }
+    },
+    "semantic_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "source_refs"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string" },
+        "source_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "represented_quantities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "description": { "type": "string" }
+      }
+    },
+    "relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "relation_type", "from_ref", "to_ref", "source_refs"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "relation_type": { "$ref": "#/$defs/relation_type" },
+        "from_ref": { "$ref": "#/$defs/ref" },
+        "to_ref": { "$ref": "#/$defs/ref" },
+        "source_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "meaning": { "type": "string" }
+      }
+    },
+    "invariant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "statement": { "type": "string" },
+        "source_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "default": []
+        },
+        "visual_test": { "type": "string" }
+      }
+    },
+    "assumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "statement": { "type": "string" },
+        "impact_on_visualization": { "type": "string" }
+      }
+    },
+    "visual_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spaces", "objects", "encodings", "layout_constraints"],
+      "properties": {
+        "spaces": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/space" }
+        },
+        "objects": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/visual_object" }
+        },
+        "encodings": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/encoding" }
+        },
+        "layout_constraints": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/layout_constraint" }
+        }
+      }
+    },
+    "space": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "dimensionality", "purpose"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "dimensionality": {
+          "type": "string",
+          "enum": ["2d", "2_5d", "3d", "timeline", "abstract"]
+        },
+        "coordinate_system": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "depth_semantics": {
+          "type": "string"
+        }
+      }
+    },
+    "visual_object": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "object_type", "entity_refs", "exactness", "visual_form"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "object_type": { "$ref": "#/$defs/visual_object_type" },
+        "entity_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "source_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "default": []
+        },
+        "label_policy": {
+          "type": "string",
+          "enum": ["required", "optional", "forbidden", "external_caption"]
+        },
+        "exactness": { "$ref": "#/$defs/exactness_level" },
+        "visual_form": {
+          "type": "string"
+        },
+        "space_ref": { "$ref": "#/$defs/ref" },
+        "layer_role": {
+          "type": "string",
+          "enum": ["exact_overlay", "spatial_scene", "cinematic_base", "transition", "background", "caption", "audio"]
+        },
+        "persistent": {
+          "type": "boolean"
+        },
+        "state_variables": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "allowed_transformations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/motion_primitive_name" },
+          "default": []
+        },
+        "renderer_notes": {
+          "type": "string"
+        }
+      }
+    },
+    "encoding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "channel", "maps", "stability"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "channel": {
+          "type": "string",
+          "enum": ["color", "position", "size", "opacity", "thickness", "shape", "texture", "motion", "depth", "camera", "timing", "label"]
+        },
+        "maps": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "range": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "object_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "default": []
+        },
+        "stability": {
+          "type": "string",
+          "enum": ["global", "scene_local", "phase_local"]
+        },
+        "risk_note": {
+          "type": "string"
+        }
+      }
+    },
+    "layout_constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "constraint_type", "rule"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "constraint_type": {
+          "type": "string",
+          "enum": ["reading_order", "grouping", "alignment", "spacing", "depth_order", "avoid_overlap", "preserve_topology", "axis_scale", "matrix_dimensions", "label_readability"]
+        },
+        "object_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "default": []
+        },
+        "rule": { "type": "string" }
+      }
+    },
+    "dynamic_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["beats", "states", "transitions", "motion_primitives", "complexity_budget"],
+      "properties": {
+        "beats": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/beat" }
+        },
+        "states": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/dynamic_state" }
+        },
+        "transitions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/transition" }
+        },
+        "motion_primitives": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/motion_primitive" }
+        },
+        "complexity_budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_new_objects_per_beat": { "type": "integer", "minimum": 1 },
+            "max_simultaneous_motion_tracks": { "type": "integer", "minimum": 1 },
+            "hold_during_dense_labels": { "type": "boolean" },
+            "notes": { "type": "string" }
+          }
+        }
+      }
+    },
+    "beat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "teaching_goal", "source_refs", "object_refs"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "scene_hint": { "$ref": "#/$defs/ref" },
+        "teaching_goal": { "type": "string" },
+        "source_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "object_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "viewer_question": { "type": "string" },
+        "duration_hint_s": { "type": "number", "minimum": 0 },
+        "insight_moment": { "type": "boolean" }
+      }
+    },
+    "dynamic_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "beat_ref", "object_states"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "beat_ref": { "$ref": "#/$defs/ref" },
+        "semantic_state_ref": { "$ref": "#/$defs/ref" },
+        "object_states": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["object_ref", "state"],
+            "properties": {
+              "object_ref": { "$ref": "#/$defs/ref" },
+              "state": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "from_state_ref", "to_state_ref", "motion_primitive_refs", "technical_event"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "from_state_ref": { "$ref": "#/$defs/ref" },
+        "to_state_ref": { "$ref": "#/$defs/ref" },
+        "motion_primitive_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "technical_event": { "type": "string" },
+        "object_correspondence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["before_object_ref", "after_object_ref"],
+            "properties": {
+              "before_object_ref": { "$ref": "#/$defs/ref" },
+              "after_object_ref": { "$ref": "#/$defs/ref" },
+              "correspondence_note": { "type": "string" }
+            }
+          },
+          "default": []
+        },
+        "composition": {
+          "type": "string",
+          "enum": ["sync", "concat", "stagger", "parallel_groups"]
+        },
+        "narrative_relation": {
+          "type": "string",
+          "enum": ["setup", "contrast", "elaboration", "cause_effect", "temporal_sequence", "transformation", "derivation", "payoff"]
+        },
+        "timing_note": { "type": "string" }
+      }
+    },
+    "motion_primitive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "primitive", "technical_meaning", "object_refs"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "primitive": { "$ref": "#/$defs/motion_primitive_name" },
+        "technical_meaning": { "type": "string" },
+        "object_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "from_object_ref": { "$ref": "#/$defs/ref" },
+        "to_object_ref": { "$ref": "#/$defs/ref" },
+        "parameter_or_condition": { "type": "string" },
+        "duration_s": { "type": "number", "minimum": 0 },
+        "easing": { "type": "string" },
+        "stagger_by": { "type": "string" },
+        "required_invariant_ref": { "$ref": "#/$defs/ref" },
+        "misread_risk": { "type": "string" }
+      }
+    },
+    "camera_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shots", "camera_intents", "readability_constraints"],
+      "properties": {
+        "shots": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/shot" }
+        },
+        "camera_intents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "intent"],
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "intent": { "type": "string" },
+              "beat_refs": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/ref" },
+                "default": []
+              }
+            }
+          }
+        },
+        "readability_constraints": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "shot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "beat_refs", "framing", "movement", "focus_targets"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "beat_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "framing": {
+          "type": "string",
+          "enum": ["wide", "medium", "closeup", "macro", "split_view", "overview_to_detail"]
+        },
+        "movement": {
+          "type": "string",
+          "enum": ["static", "push_in", "pull_back", "pan", "track", "orbit", "rack_focus", "cut"]
+        },
+        "focus_targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "hold_reason": { "type": "string" },
+        "depth_usage": { "type": "string" },
+        "avoid_motion_during": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "exactness_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exact_required", "metaphor_allowed", "ai_video_forbidden", "simplifications"],
+      "properties": {
+        "exact_required": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/exactness_item" }
+        },
+        "metaphor_allowed": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/metaphor_item" }
+        },
+        "ai_video_forbidden": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "simplifications": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/simplification" }
+        }
+      }
+    },
+    "exactness_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["object_or_claim_ref", "exactness", "reason"],
+      "properties": {
+        "object_or_claim_ref": { "$ref": "#/$defs/ref" },
+        "exactness": { "$ref": "#/$defs/exactness_level" },
+        "reason": { "type": "string" },
+        "recommended_renderer": { "$ref": "#/$defs/renderer" }
+      }
+    },
+    "metaphor_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layer_or_object_ref", "allowed_scope", "boundary"],
+      "properties": {
+        "layer_or_object_ref": { "$ref": "#/$defs/ref" },
+        "allowed_scope": { "type": "string" },
+        "boundary": { "type": "string" }
+      }
+    },
+    "simplification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "impact", "disclosure_or_guardrail"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "statement": { "type": "string" },
+        "source_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "default": []
+        },
+        "assumption_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" },
+          "default": []
+        },
+        "impact": { "type": "string" },
+        "disclosure_or_guardrail": { "type": "string" }
+      }
+    },
+    "renderer_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_renderers", "layer_plan", "fallbacks"],
+      "properties": {
+        "candidate_renderers": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/candidate_renderer" }
+        },
+        "layer_plan": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/layer_plan" }
+        },
+        "fallbacks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/fallback" }
+        }
+      }
+    },
+    "candidate_renderer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renderer", "fit", "responsibilities", "reason"],
+      "properties": {
+        "renderer": { "$ref": "#/$defs/renderer" },
+        "fit": { "$ref": "#/$defs/renderer_fit" },
+        "responsibilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "required_inputs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "reason": { "type": "string" },
+        "risks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "layer_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layer_id", "layer_role", "renderer", "object_refs", "contains_exactness_levels", "exactness_by_object"],
+      "properties": {
+        "layer_id": { "$ref": "#/$defs/id" },
+        "layer_role": {
+          "type": "string",
+          "enum": ["exact_overlay", "spatial_scene", "cinematic_base", "transition", "background", "caption", "audio", "assembly"]
+        },
+        "renderer": { "$ref": "#/$defs/renderer" },
+        "object_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "contains_exactness_levels": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/exactness_level" },
+          "uniqueItems": true
+        },
+        "exactness_by_object": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["object_ref", "exactness"],
+            "properties": {
+              "object_ref": { "$ref": "#/$defs/ref" },
+              "exactness": { "$ref": "#/$defs/exactness_level" }
+            }
+          },
+          "default": []
+        },
+        "layer_exactness_overrides": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["exactness", "reason"],
+            "properties": {
+              "exactness": { "$ref": "#/$defs/exactness_level" },
+              "reason": { "type": "string" }
+            }
+          },
+          "default": []
+        },
+        "output_target_hint": { "type": "string" }
+      }
+    },
+    "fallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["if_renderer_unavailable", "fallback_renderer", "tradeoff"],
+      "properties": {
+        "if_renderer_unavailable": { "$ref": "#/$defs/renderer" },
+        "fallback_renderer": { "$ref": "#/$defs/renderer" },
+        "tradeoff": { "type": "string" }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["storyboard_beat_refs", "enriched_scene_spec_hints"],
+      "properties": {
+        "storyboard_beat_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["beat_ref", "scene_hint"],
+            "properties": {
+              "beat_ref": { "$ref": "#/$defs/ref" },
+              "scene_hint": { "$ref": "#/$defs/ref" },
+              "storyboard_note": { "type": "string" }
+            }
+          }
+        },
+        "enriched_scene_spec_hints": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["scene_id", "visual_object_refs", "motion_primitive_refs", "renderer_hints"],
+            "properties": {
+              "scene_id": { "$ref": "#/$defs/ref" },
+              "visual_object_refs": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#/$defs/ref" }
+              },
+              "motion_primitive_refs": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#/$defs/ref" }
+              },
+              "renderer_hints": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#/$defs/renderer" }
+              },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        "downstream_tasks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "qa_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_fidelity_checks", "visual_readability_checks", "misconception_checks", "renderer_acceptance_checks"],
+      "properties": {
+        "source_fidelity_checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "visual_readability_checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "misconception_checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "renderer_acceptance_checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "question", "blocks_execution"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "question": { "type": "string" },
+        "blocks_execution": { "type": "boolean" }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "risk", "mitigation"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "risk": { "type": "string" },
+        "mitigation": { "type": "string" }
+      }
+    }
+  }
+}

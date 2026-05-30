@@ -1,0 +1,90 @@
+{
+  "sku_version": "papermotion-skill-pack/v0.1",
+  "name": "PaperMotion",
+  "artifact_type": "trae_skill_pack",
+  "description": "Trae Solo skill workflow for turning research material into dynamic scientific explainer videos.",
+  "default_install_prompt": "prompts/trae-install-sku.md",
+  "skill_pack": {
+    "root_skill": "skills/papermotion-research-video/SKILL.md",
+    "install_mode": "Import, register, or load the exact SKILL.md files listed in papermotion.sku.json.skills[] into Trae's skill system; if native skill import is unavailable, keep this repo as the active skill workspace and load those listed files on demand.",
+    "post_install_validation": "./setup.sh --check-only"
+  },
+  "skill_registry": {
+    "authority": "papermotion.sku.json.skills[]",
+    "registration_metadata": "For each listed SKILL.md, read frontmatter name and description and use those values when registering or loading the Trae skill.",
+    "install_complete_when": "Every path in skills[] is registered or loadable and skill_pack.root_skill is available."
+  },
+  "setup": {
+    "role": "post_install_validation_backend_for_the_skill_pack",
+    "entrypoint": "./setup.sh",
+    "default_command": "./setup.sh --check-only",
+    "check_command": "./setup.sh --check-only",
+    "create_local_validation_env": "./setup.sh",
+    "optional_commands": {
+      "with_manim": "./setup.sh --with-manim",
+      "with_site": "./setup.sh --with-site"
+    }
+  },
+  "entry_docs": [
+    "README.md",
+    "docs/install.md",
+    "docs/execution-summary.md",
+    "docs/dynamic-scene-model.md",
+    "docs/research-video-skill-suite.md",
+    "examples/README.md",
+    "solo/task-board.md",
+    "memory/active/current.md"
+  ],
+  "skills": [
+    "skills/papermotion-research-video/SKILL.md",
+    "skills/research-video-orchestrator/SKILL.md",
+    "skills/dynamic-visual-reasoning/SKILL.md",
+    "skills/paper-to-visual-brief/SKILL.md",
+    "skills/math-storyboard-director/SKILL.md",
+    "skills/manim-exact-layer/SKILL.md",
+    "skills/ai-cinematic-support/SKILL.md",
+    "skills/research-video-qa/SKILL.md"
+  ],
+  "contracts": [
+    "contracts/dynamic_scene_model.schema.json",
+    "contracts/enriched_scene_spec.schema.json",
+    "contracts/production_manifest.schema.json"
+  ],
+  "validation": [
+    "./setup.sh --check-only"
+  ],
+  "developer_validation_note": "Use scripts/validate_dynamic_scene_model.py for a single file only with a Python runtime that can import jsonschema; ./setup.sh --check-only is the canonical post-install validation path.",
+  "example_roots": [
+    "examples/attention",
+    "examples/adam-optimizer",
+    "examples/ddpm-denoising",
+    "examples/nerf-volume-rendering"
+  ],
+  "validated_dynamic_scene_examples": [
+    {
+      "id": "attention",
+      "root": "examples/attention",
+      "source": "Scaled dot-product attention formula",
+      "available_artifacts": ["input.md", "mechanism_spec.json", "dynamic_scene_model.json", "storyboard.md", "enriched_scene_spec.json", "production_manifest.json"]
+    },
+    {
+      "id": "adam-optimizer",
+      "root": "examples/adam-optimizer",
+      "source": "Adam optimizer paper",
+      "available_artifacts": ["input.md", "mechanism_spec.json", "dynamic_scene_model.json"]
+    },
+    {
+      "id": "ddpm-denoising",
+      "root": "examples/ddpm-denoising",
+      "source": "Denoising Diffusion Probabilistic Models paper",
+      "available_artifacts": ["input.md", "mechanism_spec.json", "dynamic_scene_model.json"]
+    },
+    {
+      "id": "nerf-volume-rendering",
+      "root": "examples/nerf-volume-rendering",
+      "source": "NeRF paper",
+      "available_artifacts": ["input.md", "mechanism_spec.json", "dynamic_scene_model.json"]
+    }
+  ],
+  "post_install_next_step": "Read docs/execution-summary.md, then use skills/dynamic-visual-reasoning/SKILL.md to create or repair examples/<demo>/dynamic_scene_model.json."
+}

@@ -1,0 +1,937 @@
+{
+  "contract_version": "dynamic-scene-model/v0.1",
+  "demo_id": "ddpm-denoising",
+  "source_links": {
+    "mechanism_spec_path": "examples/ddpm-denoising/mechanism_spec.json",
+    "source_claim_ids": ["ddpm_latent_chain_claim", "ddpm_misconceptions"],
+    "formula_ids": ["ddpm_forward_step", "ddpm_closed_form", "ddpm_reverse_step"],
+    "figure_ids": [],
+    "mechanism_step_ids": [
+      "m01_clean_data",
+      "m02_forward_noise",
+      "m03_closed_form_noisy_state",
+      "m04_reverse_denoise"
+    ],
+    "symbol_ids": ["x_0", "x_t", "beta_t", "alpha_bar_t", "epsilon_theta"]
+  },
+  "content_profile": {
+    "content_families": ["algorithm_execution", "statistical_result", "causal_mechanism", "model_architecture"],
+    "learning_objective": "Explain how DDPMs define a fixed forward noising process and learn a reverse denoising process over many timesteps.",
+    "audience_level": "graduate",
+    "visual_thesis": "The video shows a clean sample moving along a timestep chain into noise, then a learned denoiser repeatedly steps the noisy state back toward structure.",
+    "scope": [
+      "Show x_0 as a clean sample on a data manifold abstraction.",
+      "Show beta_t as a fixed forward noise schedule.",
+      "Show alpha_bar_t as cumulative signal retention for direct sampling of x_t.",
+      "Show epsilon_theta guiding a gradual reverse process rather than a one-shot jump."
+    ],
+    "out_of_scope": [
+      "Training loss derivation.",
+      "U-Net architecture internals.",
+      "Exact pixel-space image generation."
+    ]
+  },
+  "semantic_units": {
+    "entities": [
+      {
+        "id": "clean_sample",
+        "label": "x_0",
+        "type": "image_patch",
+        "source_refs": ["x_0", "m01_clean_data"],
+        "technical_role": "Clean data sample at the start of the forward process.",
+        "meaning": "The structured source state before noise is added.",
+        "state_variables": ["structure", "timestep"],
+        "visualization_need": "Provides the before-state that viewers compare against noisy and reconstructed states.",
+        "claim_boundary": "Shown as a simple teaching tile, not a real training image."
+      },
+      {
+        "id": "noisy_state",
+        "label": "x_t",
+        "type": "particle",
+        "source_refs": ["x_t", "m02_forward_noise", "m03_closed_form_noisy_state"],
+        "technical_role": "Latent state after adding noise at timestep t.",
+        "meaning": "The sample after partial or near-complete corruption by Gaussian noise.",
+        "state_variables": ["timestep", "signal_strength", "noise_level"],
+        "visualization_need": "Needs a stable identity across forward and reverse chains.",
+        "claim_boundary": "Particle-cloud form is a low-dimensional teaching abstraction."
+      },
+      {
+        "id": "noise_schedule",
+        "label": "beta_t",
+        "type": "timeline",
+        "source_refs": ["beta_t", "m02_forward_noise", "ddpm_forward_step"],
+        "technical_role": "Fixed variance schedule for the forward noising steps.",
+        "meaning": "Controls how much Gaussian noise is injected over time.",
+        "state_variables": ["timestep", "variance"],
+        "visualization_need": "Must be visually separate from the learned reverse model.",
+        "claim_boundary": "The curve shape is illustrative unless a concrete schedule is chosen."
+      },
+      {
+        "id": "signal_retention",
+        "label": "alpha_bar_t",
+        "type": "axis_plot",
+        "source_refs": ["alpha_bar_t", "m03_closed_form_noisy_state", "ddpm_closed_form"],
+        "technical_role": "Cumulative signal retention used for direct sampling of x_t from x_0.",
+        "meaning": "Shows how clean signal fades as timestep increases.",
+        "state_variables": ["timestep", "retained_signal"],
+        "visualization_need": "Links the direct closed-form expression to a visible slider.",
+        "claim_boundary": "Curve is schematic unless backed by a chosen beta schedule."
+      },
+      {
+        "id": "denoiser",
+        "label": "epsilon_theta",
+        "type": "layer",
+        "source_refs": ["epsilon_theta", "m04_reverse_denoise", "ddpm_reverse_step"],
+        "technical_role": "Learned network used in the reverse denoising process.",
+        "meaning": "Predicts noise or guides the reverse transition.",
+        "state_variables": ["input_timestep", "predicted_noise"],
+        "visualization_need": "Must be marked as learned, unlike the forward schedule.",
+        "claim_boundary": "Rendered as a module, not a full U-Net architecture."
+      },
+      {
+        "id": "reverse_sample",
+        "label": "x_{t-1}",
+        "type": "particle",
+        "source_refs": ["m04_reverse_denoise", "ddpm_reverse_step"],
+        "technical_role": "Previous timestep sample produced by one learned reverse step.",
+        "meaning": "A slightly less noisy state after denoising.",
+        "state_variables": ["timestep", "structure", "noise_level"],
+        "visualization_need": "Makes gradual reverse iteration visible.",
+        "claim_boundary": "Intermediate samples are schematic."
+      }
+    ],
+    "operators": [
+      {
+        "id": "op_forward_noise",
+        "label": "Forward noising",
+        "operator_type": "sample",
+        "source_refs": ["m02_forward_noise", "ddpm_forward_step"],
+        "input_refs": ["clean_sample", "noise_schedule"],
+        "output_refs": ["noisy_state"],
+        "technical_meaning": "Sample a noisier latent state according to the fixed forward transition.",
+        "visual_operation_hint": "Diffuse the clean sample along a timestep chain while a beta_t dial increases."
+      },
+      {
+        "id": "op_closed_form_sample",
+        "label": "Closed-form x_t sampling",
+        "operator_type": "sample",
+        "source_refs": ["m03_closed_form_noisy_state", "ddpm_closed_form"],
+        "input_refs": ["clean_sample", "signal_retention"],
+        "output_refs": ["noisy_state"],
+        "technical_meaning": "Sample x_t directly from x_0 using alpha_bar_t.",
+        "visual_operation_hint": "Move a slider on the signal-retention curve and reveal the corresponding noise level."
+      },
+      {
+        "id": "op_reverse_step",
+        "label": "Reverse denoising step",
+        "operator_type": "iterate",
+        "source_refs": ["m04_reverse_denoise", "ddpm_reverse_step"],
+        "input_refs": ["noisy_state", "denoiser"],
+        "output_refs": ["reverse_sample"],
+        "technical_meaning": "Use the learned reverse process to step from x_t toward x_{t-1}.",
+        "visual_operation_hint": "Route the noisy state through epsilon_theta and reduce cloud dispersion slightly."
+      },
+      {
+        "id": "op_reverse_chain",
+        "label": "Reverse chain",
+        "operator_type": "update",
+        "source_refs": ["m04_reverse_denoise"],
+        "input_refs": ["reverse_sample"],
+        "output_refs": ["reverse_sample"],
+        "technical_meaning": "Repeat reverse steps until structure emerges.",
+        "visual_operation_hint": "Iterate denoising across several timesteps with a visible countdown."
+      }
+    ],
+    "states": [
+      {
+        "id": "state_clean",
+        "label": "Clean sample",
+        "source_refs": ["m01_clean_data"],
+        "represented_quantities": ["x_0"],
+        "description": "The sample begins as a structured clean tile."
+      },
+      {
+        "id": "state_forward_noisy",
+        "label": "Forward noised state",
+        "source_refs": ["m02_forward_noise"],
+        "represented_quantities": ["x_t", "beta_t"],
+        "description": "The sample becomes more noisy as the fixed forward schedule advances."
+      },
+      {
+        "id": "state_closed_form",
+        "label": "Direct x_t sample",
+        "source_refs": ["m03_closed_form_noisy_state"],
+        "represented_quantities": ["alpha_bar_t", "x_t"],
+        "description": "A time slider reveals x_t sampled directly from x_0 using cumulative signal retention."
+      },
+      {
+        "id": "state_reverse_denoise",
+        "label": "Reverse denoise",
+        "source_refs": ["m04_reverse_denoise"],
+        "represented_quantities": ["p_theta(x_{t-1}|x_t)", "epsilon_theta"],
+        "description": "The learned denoiser guides repeated steps from noise toward structure."
+      }
+    ],
+    "relations": [
+      {
+        "id": "rel_schedule_to_noisy_state",
+        "relation_type": "causes",
+        "from_ref": "noise_schedule",
+        "to_ref": "noisy_state",
+        "source_refs": ["m02_forward_noise"],
+        "meaning": "The forward schedule determines how noise grows with timestep."
+      },
+      {
+        "id": "rel_signal_to_direct_sample",
+        "relation_type": "conditions_on",
+        "from_ref": "signal_retention",
+        "to_ref": "noisy_state",
+        "source_refs": ["m03_closed_form_noisy_state"],
+        "meaning": "alpha_bar_t controls the mix of retained signal and Gaussian noise."
+      },
+      {
+        "id": "rel_denoiser_to_reverse_sample",
+        "relation_type": "transforms_to",
+        "from_ref": "noisy_state",
+        "to_ref": "reverse_sample",
+        "source_refs": ["m04_reverse_denoise"],
+        "meaning": "The learned reverse step maps a noisy state to a slightly less noisy predecessor."
+      }
+    ],
+    "invariants": [
+      {
+        "id": "inv_forward_fixed",
+        "statement": "The forward noising schedule is fixed, while the reverse denoiser is learned.",
+        "source_refs": ["ddpm_misconceptions"],
+        "visual_test": "beta_t appears as a fixed schedule; epsilon_theta appears as a learned module."
+      },
+      {
+        "id": "inv_reverse_iterative",
+        "statement": "The reverse process is shown as multiple denoising steps, not a one-step jump.",
+        "source_refs": ["ddpm_misconceptions"],
+        "visual_test": "Several timestep ticks remain visible during reverse convergence."
+      },
+      {
+        "id": "inv_timestep_order",
+        "statement": "Forward timesteps increase from x_0 to x_T; reverse timesteps decrease from x_T to x_0.",
+        "source_refs": ["m02_forward_noise", "m04_reverse_denoise"],
+        "visual_test": "Timeline arrow direction and labels remain consistent."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "asm_low_dimensional_cloud",
+        "statement": "Noise clouds are low-dimensional teaching abstractions.",
+        "impact_on_visualization": "Particles can show dispersion, but narration must not imply exact pixel values."
+      },
+      {
+        "id": "asm_toy_schedule",
+        "statement": "The schedule and signal curve are schematic unless a toy beta schedule is supplied.",
+        "impact_on_visualization": "Do not make numeric schedule claims without explicit values."
+      }
+    ]
+  },
+  "visual_model": {
+    "spaces": [
+      {
+        "id": "space_diffusion_timeline",
+        "dimensionality": "timeline",
+        "coordinate_system": "left-to-right forward time and right-to-left reverse time",
+        "purpose": "Preserve timestep ordering across forward and reverse processes.",
+        "depth_semantics": "No depth meaning."
+      },
+      {
+        "id": "space_latent_cloud",
+        "dimensionality": "2_5d",
+        "coordinate_system": "abstract latent plane with depth for overlap separation",
+        "purpose": "Show sample dispersion and convergence over time.",
+        "depth_semantics": "Depth separates particles visually and is not a model dimension."
+      },
+      {
+        "id": "space_formula_panel",
+        "dimensionality": "2d",
+        "coordinate_system": "static formula and schedule panel",
+        "purpose": "Keep Gaussian transition formulas readable.",
+        "depth_semantics": "No depth meaning."
+      }
+    ],
+    "objects": [
+      {
+        "id": "obj_clean_tile",
+        "object_type": "image_patch",
+        "entity_refs": ["clean_sample"],
+        "source_refs": ["x_0", "m01_clean_data"],
+        "label_policy": "required",
+        "exactness": "pedagogical_simplification",
+        "visual_form": "structured green teaching sample tile",
+        "space_ref": "space_latent_cloud",
+        "layer_role": "spatial_scene",
+        "persistent": true,
+        "state_variables": ["structure", "timestep"],
+        "allowed_transformations": ["appear", "diffuse", "transform"],
+        "renderer_notes": "Do not imply it is a real dataset image."
+      },
+      {
+        "id": "obj_noise_timeline",
+        "object_type": "timeline",
+        "entity_refs": ["noise_schedule", "signal_retention"],
+        "source_refs": ["beta_t", "alpha_bar_t", "m02_forward_noise", "m03_closed_form_noisy_state"],
+        "label_policy": "required",
+        "exactness": "topology_exact",
+        "visual_form": "timestep chain with beta_t and alpha_bar_t indicators",
+        "space_ref": "space_diffusion_timeline",
+        "layer_role": "exact_overlay",
+        "persistent": true,
+        "state_variables": ["timestep", "direction"],
+        "allowed_transformations": ["trace", "highlight", "sweep"],
+        "renderer_notes": "Keep timestep ordering exact even if curve values are schematic."
+      },
+      {
+        "id": "obj_noise_cloud",
+        "object_type": "distribution",
+        "entity_refs": ["noisy_state"],
+        "source_refs": ["x_t", "m02_forward_noise"],
+        "label_policy": "optional",
+        "exactness": "pedagogical_simplification",
+        "visual_form": "purple particle cloud around the sample",
+        "space_ref": "space_latent_cloud",
+        "layer_role": "spatial_scene",
+        "persistent": true,
+        "state_variables": ["noise_level", "dispersion"],
+        "allowed_transformations": ["diffuse", "sample", "converge"],
+        "renderer_notes": "Use dispersion to show qualitative noising, not exact pixel statistics."
+      },
+      {
+        "id": "obj_signal_curve",
+        "object_type": "axis_plot",
+        "entity_refs": ["signal_retention"],
+        "source_refs": ["alpha_bar_t", "ddpm_closed_form"],
+        "label_policy": "required",
+        "exactness": "pedagogical_simplification",
+        "visual_form": "fading signal-strength curve with timestep slider",
+        "space_ref": "space_formula_panel",
+        "layer_role": "exact_overlay",
+        "persistent": true,
+        "state_variables": ["slider_t", "retained_signal"],
+        "allowed_transformations": ["sweep", "highlight"],
+        "renderer_notes": "If a toy beta schedule is later supplied, this can be upgraded to numeric_exact."
+      },
+      {
+        "id": "obj_denoiser_module",
+        "object_type": "layer",
+        "entity_refs": ["denoiser"],
+        "source_refs": ["epsilon_theta", "m04_reverse_denoise"],
+        "label_policy": "required",
+        "exactness": "symbolic_exact",
+        "visual_form": "learned epsilon_theta module",
+        "space_ref": "space_latent_cloud",
+        "layer_role": "exact_overlay",
+        "persistent": true,
+        "state_variables": ["input_timestep"],
+        "allowed_transformations": ["highlight", "route"],
+        "renderer_notes": "The label must be deterministic."
+      },
+      {
+        "id": "obj_reverse_path",
+        "object_type": "timeline",
+        "entity_refs": ["noisy_state", "reverse_sample"],
+        "source_refs": ["m04_reverse_denoise", "ddpm_reverse_step"],
+        "label_policy": "optional",
+        "exactness": "qualitative",
+        "visual_form": "reverse denoising trajectory with several timestep ticks",
+        "space_ref": "space_diffusion_timeline",
+        "layer_role": "spatial_scene",
+        "persistent": false,
+        "state_variables": ["timestep", "structure"],
+        "allowed_transformations": ["iterate", "converge", "trace"],
+        "renderer_notes": "Show repeated steps rather than a one-shot jump."
+      },
+      {
+        "id": "obj_formula_panel",
+        "object_type": "equation",
+        "entity_refs": ["clean_sample", "noisy_state", "noise_schedule", "signal_retention", "denoiser"],
+        "source_refs": ["ddpm_forward_step", "ddpm_closed_form", "ddpm_reverse_step"],
+        "label_policy": "required",
+        "exactness": "symbolic_exact",
+        "visual_form": "forward transition, closed-form x_t, and reverse transition formulas",
+        "space_ref": "space_formula_panel",
+        "layer_role": "exact_overlay",
+        "persistent": true,
+        "state_variables": ["active_formula"],
+        "allowed_transformations": ["reveal", "highlight"],
+        "renderer_notes": "Never render readable math with AI video."
+      }
+    ],
+    "encodings": [
+      {
+        "id": "enc_diffusion_color",
+        "channel": "color",
+        "maps": "DDPM process roles",
+        "domain": ["x_0", "x_t", "beta_t", "alpha_bar_t", "epsilon_theta"],
+        "range": ["#A7F3D0", "#C4B5FD", "#FCA5A5", "#7DD3FC", "#FDE68A"],
+        "object_refs": ["obj_clean_tile", "obj_noise_cloud", "obj_noise_timeline", "obj_signal_curve", "obj_denoiser_module", "obj_formula_panel"],
+        "stability": "global",
+        "risk_note": "Forward schedule and learned denoiser colors must not be swapped."
+      },
+      {
+        "id": "enc_noise_dispersion",
+        "channel": "size",
+        "maps": "qualitative noise level",
+        "domain": ["low noise", "high noise"],
+        "range": ["tight cloud", "wide cloud"],
+        "object_refs": ["obj_noise_cloud"],
+        "stability": "scene_local",
+        "risk_note": "Cloud size is qualitative unless a toy schedule is declared."
+      }
+    ],
+    "layout_constraints": [
+      {
+        "id": "layout_timestep_direction",
+        "constraint_type": "reading_order",
+        "object_refs": ["obj_noise_timeline", "obj_reverse_path"],
+        "rule": "Forward movement increases t; reverse movement decreases t."
+      },
+      {
+        "id": "layout_formula_readability",
+        "constraint_type": "label_readability",
+        "object_refs": ["obj_formula_panel", "obj_denoiser_module", "obj_signal_curve"],
+        "rule": "Hold camera still when formulas and epsilon_theta labels are introduced."
+      }
+    ]
+  },
+  "dynamic_model": {
+    "beats": [
+      {
+        "id": "db01_clean_state",
+        "scene_hint": "s01",
+        "teaching_goal": "Establish x_0 as the clean sample before diffusion starts.",
+        "source_refs": ["m01_clean_data"],
+        "object_refs": ["obj_clean_tile", "obj_noise_timeline", "obj_formula_panel"],
+        "viewer_question": "What state does the diffusion chain start from?",
+        "duration_hint_s": 8,
+        "insight_moment": false
+      },
+      {
+        "id": "db02_forward_noise",
+        "scene_hint": "s02",
+        "teaching_goal": "Show the fixed forward schedule adding noise over time.",
+        "source_refs": ["m02_forward_noise", "ddpm_forward_step"],
+        "object_refs": ["obj_clean_tile", "obj_noise_cloud", "obj_noise_timeline", "obj_formula_panel"],
+        "viewer_question": "How does x_0 become x_t?",
+        "duration_hint_s": 12,
+        "insight_moment": true
+      },
+      {
+        "id": "db03_closed_form",
+        "scene_hint": "s03",
+        "teaching_goal": "Connect alpha_bar_t to direct sampling of x_t from x_0.",
+        "source_refs": ["m03_closed_form_noisy_state", "ddpm_closed_form"],
+        "object_refs": ["obj_signal_curve", "obj_noise_cloud", "obj_formula_panel"],
+        "viewer_question": "Why can we sample x_t directly for any timestep?",
+        "duration_hint_s": 10,
+        "insight_moment": true
+      },
+      {
+        "id": "db04_reverse_denoise",
+        "scene_hint": "s04",
+        "teaching_goal": "Show learned reverse denoising as repeated steps.",
+        "source_refs": ["m04_reverse_denoise", "ddpm_reverse_step"],
+        "object_refs": ["obj_noise_cloud", "obj_denoiser_module", "obj_reverse_path", "obj_formula_panel"],
+        "viewer_question": "How does the learned model reverse the chain?",
+        "duration_hint_s": 14,
+        "insight_moment": true
+      }
+    ],
+    "states": [
+      {
+        "id": "ds01_clean_visible",
+        "beat_ref": "db01_clean_state",
+        "semantic_state_ref": "state_clean",
+        "object_states": [
+          {
+            "object_ref": "obj_clean_tile",
+            "state": "structured x_0 tile visible at t=0"
+          },
+          {
+            "object_ref": "obj_noise_timeline",
+            "state": "forward timeline starts at x_0"
+          }
+        ]
+      },
+      {
+        "id": "ds02_noisy_visible",
+        "beat_ref": "db02_forward_noise",
+        "semantic_state_ref": "state_forward_noisy",
+        "object_states": [
+          {
+            "object_ref": "obj_noise_cloud",
+            "state": "cloud dispersion increases as t advances"
+          }
+        ]
+      },
+      {
+        "id": "ds03_direct_sample_visible",
+        "beat_ref": "db03_closed_form",
+        "semantic_state_ref": "state_closed_form",
+        "object_states": [
+          {
+            "object_ref": "obj_signal_curve",
+            "state": "time slider highlights alpha_bar_t"
+          },
+          {
+            "object_ref": "obj_noise_cloud",
+            "state": "selected x_t noise level appears for the slider position"
+          }
+        ]
+      },
+      {
+        "id": "ds04_reverse_visible",
+        "beat_ref": "db04_reverse_denoise",
+        "semantic_state_ref": "state_reverse_denoise",
+        "object_states": [
+          {
+            "object_ref": "obj_denoiser_module",
+            "state": "epsilon_theta module receives x_t and timestep"
+          },
+          {
+            "object_ref": "obj_reverse_path",
+            "state": "several reverse steps reduce dispersion"
+          }
+        ]
+      }
+    ],
+    "transitions": [
+      {
+        "id": "tr01_forward_diffuse",
+        "from_state_ref": "ds01_clean_visible",
+        "to_state_ref": "ds02_noisy_visible",
+        "motion_primitive_refs": ["mp_diffuse_sample", "mp_trace_forward_time"],
+        "technical_event": "The fixed forward process adds Gaussian noise over timesteps.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_clean_tile",
+            "after_object_ref": "obj_noise_cloud",
+            "correspondence_note": "The noisy cloud represents the same sample identity after corruption."
+          }
+        ],
+        "composition": "sync",
+        "narrative_relation": "cause_effect",
+        "timing_note": "Diffuse cloud while the timeline advances."
+      },
+      {
+        "id": "tr02_closed_form_slider",
+        "from_state_ref": "ds02_noisy_visible",
+        "to_state_ref": "ds03_direct_sample_visible",
+        "motion_primitive_refs": ["mp_sweep_signal_curve", "mp_sample_direct_xt"],
+        "technical_event": "alpha_bar_t lets x_t be sampled directly from x_0.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_noise_cloud",
+            "after_object_ref": "obj_noise_cloud",
+            "correspondence_note": "The same x_t abstraction is selected by the closed-form slider."
+          }
+        ],
+        "composition": "concat",
+        "narrative_relation": "derivation",
+        "timing_note": "Highlight formula first, then sweep slider."
+      },
+      {
+        "id": "tr03_reverse_iterate",
+        "from_state_ref": "ds03_direct_sample_visible",
+        "to_state_ref": "ds04_reverse_visible",
+        "motion_primitive_refs": ["mp_route_through_denoiser", "mp_iterate_reverse_steps"],
+        "technical_event": "The learned reverse process denoises one timestep at a time.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_noise_cloud",
+            "after_object_ref": "obj_reverse_path",
+            "correspondence_note": "Each reverse step should visibly preserve sample identity while reducing noise."
+          }
+        ],
+        "composition": "stagger",
+        "narrative_relation": "payoff",
+        "timing_note": "Show two or three explicit steps before summarizing the remaining chain."
+      }
+    ],
+    "motion_primitives": [
+      {
+        "id": "mp_diffuse_sample",
+        "primitive": "diffuse",
+        "technical_meaning": "Show Gaussian noise being added to x_0 as t increases.",
+        "object_refs": ["obj_clean_tile", "obj_noise_cloud"],
+        "from_object_ref": "obj_clean_tile",
+        "to_object_ref": "obj_noise_cloud",
+        "duration_s": 5,
+        "easing": "ease_in_out",
+        "required_invariant_ref": "inv_forward_fixed",
+        "misread_risk": "Viewer may think noising is learned."
+      },
+      {
+        "id": "mp_trace_forward_time",
+        "primitive": "trace",
+        "technical_meaning": "Advance the forward timestep chain.",
+        "object_refs": ["obj_noise_timeline", "obj_formula_panel"],
+        "duration_s": 4,
+        "easing": "linear",
+        "required_invariant_ref": "inv_timestep_order",
+        "misread_risk": "Timeline direction must not reverse during forward noising."
+      },
+      {
+        "id": "mp_sweep_signal_curve",
+        "primitive": "sweep",
+        "technical_meaning": "Show alpha_bar_t changing with timestep.",
+        "object_refs": ["obj_signal_curve", "obj_formula_panel"],
+        "duration_s": 3,
+        "easing": "ease_in_out",
+        "misread_risk": "Curve values are schematic without a declared toy schedule."
+      },
+      {
+        "id": "mp_sample_direct_xt",
+        "primitive": "sample",
+        "technical_meaning": "Select an x_t state directly from x_0 at a chosen timestep.",
+        "object_refs": ["obj_noise_cloud", "obj_signal_curve"],
+        "duration_s": 2,
+        "easing": "ease_out",
+        "misread_risk": "Direct sampling should not look like a separate learned model."
+      },
+      {
+        "id": "mp_route_through_denoiser",
+        "primitive": "route",
+        "technical_meaning": "Feed x_t and timestep into the learned epsilon_theta module.",
+        "object_refs": ["obj_noise_cloud", "obj_denoiser_module", "obj_formula_panel"],
+        "duration_s": 2.5,
+        "easing": "ease_in_out",
+        "required_invariant_ref": "inv_forward_fixed",
+        "misread_risk": "Forward fixed schedule and learned reverse module must remain distinct."
+      },
+      {
+        "id": "mp_iterate_reverse_steps",
+        "primitive": "iterate",
+        "technical_meaning": "Repeat reverse denoising steps from x_t toward x_0.",
+        "object_refs": ["obj_reverse_path", "obj_noise_cloud"],
+        "duration_s": 6,
+        "easing": "ease_in_out",
+        "required_invariant_ref": "inv_reverse_iterative",
+        "misread_risk": "A single convergence animation would imply one-step generation."
+      }
+    ],
+    "complexity_budget": {
+      "max_new_objects_per_beat": 3,
+      "max_simultaneous_motion_tracks": 3,
+      "hold_during_dense_labels": true,
+      "notes": "Use one process distinction per beat: clean state, fixed forward process, direct x_t sampling, learned reverse chain."
+    }
+  },
+  "camera_model": {
+    "shots": [
+      {
+        "id": "shot_s01_clean",
+        "beat_refs": ["db01_clean_state"],
+        "framing": "medium",
+        "movement": "static",
+        "focus_targets": ["obj_clean_tile", "obj_noise_timeline"],
+        "hold_reason": "x_0 and the timeline start need to be readable.",
+        "depth_usage": "None.",
+        "avoid_motion_during": ["x_0 label"]
+      },
+      {
+        "id": "shot_s02_forward",
+        "beat_refs": ["db02_forward_noise"],
+        "framing": "wide",
+        "movement": "track",
+        "focus_targets": ["obj_noise_cloud", "obj_noise_timeline"],
+        "hold_reason": "Track only along the timestep direction, then hold for formula.",
+        "depth_usage": "2.5D depth separates particles visually.",
+        "avoid_motion_during": ["forward transition formula"]
+      },
+      {
+        "id": "shot_s03_closed_form",
+        "beat_refs": ["db03_closed_form"],
+        "framing": "split_view",
+        "movement": "static",
+        "focus_targets": ["obj_signal_curve", "obj_formula_panel"],
+        "hold_reason": "The alpha_bar_t curve and formula must be compared.",
+        "depth_usage": "None.",
+        "avoid_motion_during": ["closed-form formula"]
+      },
+      {
+        "id": "shot_s04_reverse",
+        "beat_refs": ["db04_reverse_denoise"],
+        "framing": "overview_to_detail",
+        "movement": "push_in",
+        "focus_targets": ["obj_denoiser_module", "obj_reverse_path"],
+        "hold_reason": "Push in only after the repeated reverse-step rhythm is clear.",
+        "depth_usage": "Depth separates convergence particles, not exact latent dimensions.",
+        "avoid_motion_during": ["epsilon_theta label", "reverse formula"]
+      }
+    ],
+    "camera_intents": [
+      {
+        "id": "cam_preserve_time_direction",
+        "intent": "Camera motion must not invert forward and reverse timestep directions.",
+        "beat_refs": ["db02_forward_noise", "db04_reverse_denoise"]
+      },
+      {
+        "id": "cam_formula_hold",
+        "intent": "Hold on Gaussian formulas and epsilon_theta label before moving particles.",
+        "beat_refs": ["db02_forward_noise", "db03_closed_form", "db04_reverse_denoise"]
+      }
+    ],
+    "readability_constraints": [
+      "Forward beta_t schedule must be marked fixed.",
+      "epsilon_theta must be marked learned.",
+      "Particles are a teaching abstraction, not exact image pixels.",
+      "Do not show reverse denoising as a one-step jump."
+    ]
+  },
+  "exactness_policy": {
+    "exact_required": [
+      {
+        "object_or_claim_ref": "obj_formula_panel",
+        "exactness": "symbolic_exact",
+        "reason": "Forward, closed-form, and reverse equations are source anchors.",
+        "recommended_renderer": "manim"
+      },
+      {
+        "object_or_claim_ref": "obj_noise_timeline",
+        "exactness": "topology_exact",
+        "reason": "Timestep ordering is central to the mechanism.",
+        "recommended_renderer": "manim"
+      },
+      {
+        "object_or_claim_ref": "obj_denoiser_module",
+        "exactness": "symbolic_exact",
+        "reason": "epsilon_theta must be labeled as the learned reverse component.",
+        "recommended_renderer": "manim"
+      }
+    ],
+    "metaphor_allowed": [
+      {
+        "layer_or_object_ref": "layer_spatial_diffusion",
+        "allowed_scope": "Particle clouds and convergence paths can communicate qualitative noising and denoising.",
+        "boundary": "They are not exact pixels, latent coordinates, or measured samples."
+      }
+    ],
+    "ai_video_forbidden": [
+      "Readable Gaussian formulas",
+      "x_0, x_t, beta_t, alpha_bar_t, epsilon_theta labels",
+      "Claims that forward noising is learned",
+      "One-step noise-to-image generation",
+      "Exact pixel or latent-coordinate claims"
+    ],
+    "simplifications": [
+      {
+        "id": "simp_low_dimensional_cloud",
+        "statement": "The particle cloud is a low-dimensional teaching abstraction.",
+        "source_refs": ["ddpm_misconceptions"],
+        "assumption_refs": ["asm_low_dimensional_cloud"],
+        "impact": "It explains stochastic corruption and denoising order, not actual image pixels.",
+        "disclosure_or_guardrail": "Narration should call it an abstraction of x_t."
+      },
+      {
+        "id": "simp_toy_schedule",
+        "statement": "The beta_t and alpha_bar_t curves are schematic.",
+        "source_refs": ["m02_forward_noise", "m03_closed_form_noisy_state"],
+        "assumption_refs": ["asm_toy_schedule"],
+        "impact": "Schedule shape teaches monotonic signal/noise intuition without numeric commitment.",
+        "disclosure_or_guardrail": "Do not label exact numeric axis values unless a toy schedule is added."
+      }
+    ]
+  },
+  "renderer_plan": {
+    "candidate_renderers": [
+      {
+        "renderer": "manim",
+        "fit": "primary",
+        "responsibilities": [
+          "Render Gaussian formulas, timestep labels, and schedule curves.",
+          "Render deterministic timeline and process labels."
+        ],
+        "required_inputs": ["mechanism_spec.json", "dynamic_scene_model.json"],
+        "reason": "DDPM explanation depends on readable math and exact time ordering.",
+        "risks": ["Dense formulas can become unreadable if moved during particle animation."]
+      },
+      {
+        "renderer": "threejs",
+        "fit": "support",
+        "responsibilities": [
+          "Render particle cloud noising and reverse convergence in 2.5D.",
+          "Maintain stable sample identity across forward and reverse steps."
+        ],
+        "required_inputs": ["dynamic_scene_model.json", "toy particle seed"],
+        "reason": "Spatial particle motion makes noising and denoising easier to understand.",
+        "risks": ["Particles may be overread as exact pixels or latent dimensions."]
+      },
+      {
+        "renderer": "remotion",
+        "fit": "support",
+        "responsibilities": ["Assemble formula overlays, particle clips, captions, and voice timing."],
+        "required_inputs": ["rendered layers", "caption script"],
+        "reason": "The timeline spans several process phases.",
+        "risks": ["Layer desync could blur fixed-forward versus learned-reverse distinction."]
+      },
+      {
+        "renderer": "ai_video_provider",
+        "fit": "support",
+        "responsibilities": ["Optional text-free atmospheric noise background only."],
+        "required_inputs": ["negative prompts", "must_not_include list"],
+        "reason": "Atmospheric support can be separated from exact formulas.",
+        "risks": ["May hallucinate fake text or image details."]
+      }
+    ],
+    "layer_plan": [
+      {
+        "layer_id": "layer_exact_process",
+        "layer_role": "exact_overlay",
+        "renderer": "manim",
+        "object_refs": ["obj_noise_timeline", "obj_signal_curve", "obj_denoiser_module", "obj_formula_panel"],
+        "contains_exactness_levels": ["pedagogical_simplification", "symbolic_exact", "topology_exact"],
+        "exactness_by_object": [
+          {
+            "object_ref": "obj_noise_timeline",
+            "exactness": "topology_exact"
+          },
+          {
+            "object_ref": "obj_signal_curve",
+            "exactness": "pedagogical_simplification"
+          },
+          {
+            "object_ref": "obj_denoiser_module",
+            "exactness": "symbolic_exact"
+          },
+          {
+            "object_ref": "obj_formula_panel",
+            "exactness": "symbolic_exact"
+          }
+        ],
+        "layer_exactness_overrides": [],
+        "output_target_hint": "ddpm_exact_process_overlay.mov"
+      },
+      {
+        "layer_id": "layer_spatial_diffusion",
+        "layer_role": "spatial_scene",
+        "renderer": "threejs",
+        "object_refs": ["obj_clean_tile", "obj_noise_cloud", "obj_reverse_path"],
+        "contains_exactness_levels": ["pedagogical_simplification", "qualitative"],
+        "exactness_by_object": [
+          {
+            "object_ref": "obj_clean_tile",
+            "exactness": "pedagogical_simplification"
+          },
+          {
+            "object_ref": "obj_noise_cloud",
+            "exactness": "pedagogical_simplification"
+          },
+          {
+            "object_ref": "obj_reverse_path",
+            "exactness": "qualitative"
+          }
+        ],
+        "layer_exactness_overrides": [],
+        "output_target_hint": "ddpm_particle_diffusion.mp4"
+      }
+    ],
+    "fallbacks": [
+      {
+        "if_renderer_unavailable": "threejs",
+        "fallback_renderer": "manim",
+        "tradeoff": "Use 2D particle dots and schedule panels instead of 2.5D particle clouds."
+      }
+    ]
+  },
+  "handoff": {
+    "storyboard_beat_refs": [
+      {
+        "beat_ref": "db01_clean_state",
+        "scene_hint": "s01",
+        "storyboard_note": "Introduce x_0 and the start of the timestep chain."
+      },
+      {
+        "beat_ref": "db02_forward_noise",
+        "scene_hint": "s02",
+        "storyboard_note": "Advance fixed beta_t schedule while the sample diffuses."
+      },
+      {
+        "beat_ref": "db03_closed_form",
+        "scene_hint": "s03",
+        "storyboard_note": "Use alpha_bar_t slider to select a direct x_t sample."
+      },
+      {
+        "beat_ref": "db04_reverse_denoise",
+        "scene_hint": "s04",
+        "storyboard_note": "Route noisy state through learned epsilon_theta for repeated reverse steps."
+      }
+    ],
+    "enriched_scene_spec_hints": [
+      {
+        "scene_id": "s01",
+        "visual_object_refs": ["obj_clean_tile", "obj_noise_timeline", "obj_formula_panel"],
+        "motion_primitive_refs": ["mp_trace_forward_time"],
+        "renderer_hints": ["manim"],
+        "notes": "Keep x_0 and the start of the timeline readable."
+      },
+      {
+        "scene_id": "s02",
+        "visual_object_refs": ["obj_clean_tile", "obj_noise_cloud", "obj_noise_timeline", "obj_formula_panel"],
+        "motion_primitive_refs": ["mp_diffuse_sample", "mp_trace_forward_time"],
+        "renderer_hints": ["threejs", "manim"],
+        "notes": "Forward noising is fixed schedule, not learned."
+      },
+      {
+        "scene_id": "s03",
+        "visual_object_refs": ["obj_signal_curve", "obj_noise_cloud", "obj_formula_panel"],
+        "motion_primitive_refs": ["mp_sweep_signal_curve", "mp_sample_direct_xt"],
+        "renderer_hints": ["manim", "threejs"],
+        "notes": "Closed-form direct x_t sampling should read as formula-driven."
+      },
+      {
+        "scene_id": "s04",
+        "visual_object_refs": ["obj_noise_cloud", "obj_denoiser_module", "obj_reverse_path", "obj_formula_panel"],
+        "motion_primitive_refs": ["mp_route_through_denoiser", "mp_iterate_reverse_steps"],
+        "renderer_hints": ["threejs", "manim", "remotion"],
+        "notes": "Show repeated denoising, not one-step reconstruction."
+      }
+    ],
+    "downstream_tasks": [
+      "Write storyboard.md for clean, forward, closed-form, and reverse beats.",
+      "Choose whether to include a toy beta schedule.",
+      "Generate deterministic formula overlays for forward and reverse transitions."
+    ]
+  },
+  "qa_contract": {
+    "source_fidelity_checks": [
+      "Forward noising is described as fixed, not learned.",
+      "Reverse denoising is described as learned and iterative.",
+      "The closed-form x_t sampling formula is separated from the reverse transition formula."
+    ],
+    "visual_readability_checks": [
+      "Timestep direction remains consistent in forward and reverse scenes.",
+      "epsilon_theta label is deterministic and readable.",
+      "Gaussian formulas are rendered by deterministic layers."
+    ],
+    "misconception_checks": [
+      "The reverse process is not shown as a one-step jump from noise to image.",
+      "Particle clouds are not described as exact image pixels.",
+      "beta_t schedule is not presented as learned."
+    ],
+    "renderer_acceptance_checks": [
+      "Exact formulas and labels are absent from AI-generated support layers.",
+      "Formula panel holds during dense math.",
+      "Fallback 2D rendering still preserves time ordering and process distinction."
+    ]
+  },
+  "open_questions": [
+    {
+      "id": "q_beta_schedule",
+      "question": "Should this example define a toy beta schedule so the signal curve can become numeric_exact?",
+      "blocks_execution": false
+    }
+  ],
+  "known_risks": [
+    {
+      "id": "risk_particles_overread",
+      "risk": "Viewers may treat the particle cloud as exact image pixels or latent coordinates.",
+      "mitigation": "Keep labels and narration explicit that it is a low-dimensional teaching abstraction."
+    }
+  ]
+}

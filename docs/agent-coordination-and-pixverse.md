@@ -10,17 +10,20 @@ The coordination pattern should be:
 
 ```text
 Agents do specialist work.
-The Production Manifest is the shared contract.
+The Production Manifest is the project registry.
+The Enriched Scene Spec is the executable scene-level single source of truth.
 The Orchestrator Agent updates task state and resolves conflicts.
 Trae Solo is the workspace where all of this runs.
 ```
 
 This solves the exact coordination question:
 
-- The Teaching Script Agent can know which visual objects may need PixVerse because it writes `visual_asset_requests` into the manifest.
-- The PixVerse Asset Agent can respond with `asset_status`, `expected_duration`, `style_risk`, and generated paths.
-- The Music & SFX Agent can know where to slow down because the script and storyboard write `beat_markers`, `pacing_intent`, and `emphasis_level`.
-- The Scene Spec Agent can know which objects are Manim-exact, PixVerse-cinematic, or static website assets because every scene has a `render_layer`.
+- The Teaching Script Agent can know which visual objects may need PixVerse because it writes `[PIXVERSE]`, `[MANIM]`, `[HYBRID]`, and `[INSIGHT]` tags plus `visual_asset_requests`.
+- The Scene Spec Agent freezes those choices into `examples/<demo>/enriched_scene_spec.json`.
+- The PixVerse Asset Agent reads only `visual_type` and `pixverse.*`, then responds with `asset_status`, `expected_duration`, `style_risk`, and generated paths.
+- The Music & SFX Agent reads `music_cue.*`, `pacing`, and `insight_moment`.
+- The Assembly Agent reads `timestamp_start_s`, layer fields, and generated asset paths.
+- The Website Agent reads both the manifest and enriched scene spec to show project state and scene-level execution details.
 
 ## Important Style Boundary
 
@@ -106,7 +109,7 @@ Purpose:
 Output sections:
 - `script.beats`
 - `visual_asset_requests`
-- `rhythm_map`
+- rough rhythm notes that the Scene Spec Agent later freezes into `enriched_scene_spec.scenes[*].music_cue`, `pacing`, and `insight_moment`
 
 Key rule:
 - The script should not only say words. It should mark the teaching intention of each beat:
@@ -161,8 +164,9 @@ Purpose:
 - Specify what becomes Manim code and what becomes PixVerse material.
 
 Output:
-- `examples/<demo>/scene_specs/<scene_id>.json`
-- Updates `production_manifest.scenes[*].scene_spec_path`
+- `examples/<demo>/enriched_scene_spec.json`
+- Optional detailed implementation notes in `examples/<demo>/scene_specs/<scene_id>.json`
+- Updates `production_manifest.scenes[*]` with enriched scene refs, timing, and render layer classification.
 
 Render layer classification:
 - `manim_exact`: formulas, matrices, arrows, geometric transforms, graphs, symbol changes.
@@ -176,7 +180,7 @@ Hard rule:
 ### 8. Manim Code Agent
 
 Purpose:
-- Generate Manim Python from scene specs.
+- Generate Manim Python from `enriched_scene_spec.scenes[*].manim`.
 - Use exact math, stable colors, repeatable timing, and repairable scene blocks.
 
 Output:
@@ -187,7 +191,7 @@ Output:
 ### 9. Voiceover Agent
 
 Purpose:
-- Generate voiceover script and audio timing from script beats.
+- Generate voiceover script and audio timing from `enriched_scene_spec.scenes[*].tts`.
 - Align sentence boundaries to scene timing.
 
 Output sections:
@@ -200,7 +204,7 @@ For MVP:
 ### 10. Music & SFX Design Agent
 
 Purpose:
-- Use `rhythm_map` and scene timings to design music and effects.
+- Use `enriched_scene_spec.scenes[*].music_cue`, `pacing`, `insight_moment`, and scene timings to design music and effects.
 - Mark where the video should slow down, where a reveal needs silence, and where a transition needs a small accent.
 
 Output sections:
@@ -269,13 +273,18 @@ Output:
 
 ## Coordination Contract
 
-Every agent reads and writes the same manifest:
+Use a two-level contract:
 
 ```text
 examples/<demo>/production_manifest.json
+examples/<demo>/enriched_scene_spec.json
 ```
 
-The Orchestrator Agent owns the canonical version. Specialist agents may propose changes, but cross-cutting changes must go back through the Orchestrator.
+`production_manifest.json` is the project-level registry. It stores intent, curriculum, script beats, storyboard overview, artifact paths, PixVerse job summaries, asset manifest, edit decision list, and website-facing status.
+
+`enriched_scene_spec.json` is the executable scene-level single source of truth. It stores timing, narration, Manim instructions, TTS cues, music cues, PixVerse instructions, assembly layering, and QA checks.
+
+The Orchestrator Agent owns both canonical files. Specialist agents may propose changes, but cross-cutting changes must go back through the Orchestrator.
 
 ## How Script Knows PixVerse Asset Needs
 
@@ -325,7 +334,7 @@ This means the writer can request PixVerse early, but final production only depe
 
 ## How Music Knows Where To Slow Down
 
-The script and storyboard must produce a `rhythm_map`.
+The script and storyboard should produce rough rhythm intent. The Scene Spec Agent freezes it into each scene's `music_cue`, `pacing`, `insight_moment`, and timing fields.
 
 Example:
 
@@ -342,7 +351,7 @@ Example:
 }
 ```
 
-The Music & SFX Agent uses this map. The Manim Code Agent also uses it for animation timing. That keeps video rhythm, narration, and sound aligned.
+The Music & SFX Agent uses these scene-level fields. The Manim Code Agent also uses scene timing for animation pacing. That keeps video rhythm, narration, and sound aligned.
 
 ## Recommended Data Flow
 
@@ -354,13 +363,13 @@ Prerequisite Graph Agent
 Curriculum Agent
   -> curriculum_plan
 Teaching Script Agent
-  -> script beats + visual_asset_requests + rhythm_map
+  -> script beats + visual_asset_requests + rough rhythm intent
 Style Agent
   -> revised script, same beat IDs
 Storyboard Agent
   -> storyboard scenes
 Scene Spec Agent
-  -> scene_specs/*.json + render_layer classification
+  -> enriched_scene_spec.json + render_layer classification
 PixVerse Asset Agent
   -> pixverse_jobs + asset_manifest
 Manim Code Agent
@@ -382,7 +391,7 @@ Do not build all agents as software services. Build them as Trae Solo prompt sta
 Minimum for demo:
 
 1. `production_manifest.json`
-2. one `scene_specs/*.json`
+2. `enriched_scene_spec.json`
 3. Manim render for exact formula layer
 4. one PixVerse job spec for a cinematic support clip
 5. website section showing the agent workflow

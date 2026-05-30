@@ -1,0 +1,154 @@
+{
+  "title": "Scaled Dot-Product Attention",
+  "learning_objective": "Explain how the scaled dot-product attention formula turns token relationships into a weighted value aggregation.",
+  "source_excerpt": "Attention(Q, K, V) = softmax(QK^T / sqrt(d_k))V. A query vector is compared with key vectors to create relevance scores. The scores are scaled, normalized with softmax, and used to mix value vectors into contextual output vectors.",
+  "symbol_ledger": [
+    {
+      "symbol": "Q",
+      "meaning": "Query vectors: what each token is asking for.",
+      "color": "#7DD3FC",
+      "visual_role": "Highlighted asking cards and source arrows."
+    },
+    {
+      "symbol": "K",
+      "meaning": "Key vectors: what each token can match against.",
+      "color": "#A7F3D0",
+      "visual_role": "Answer cards arranged across the comparison axis."
+    },
+    {
+      "symbol": "V",
+      "meaning": "Value vectors: information carried forward when a token is attended to.",
+      "color": "#F9A8D4",
+      "visual_role": "Value streams that get scaled and merged."
+    },
+    {
+      "symbol": "QK^T",
+      "meaning": "Pairwise query-key relevance scores.",
+      "color": "#FBBF24",
+      "visual_role": "Similarity heatmap cells and raw score bars."
+    },
+    {
+      "symbol": "sqrt(d_k)",
+      "meaning": "Scale term that keeps dot-product scores from becoming too large as vector dimension grows.",
+      "color": "#FCA5A5",
+      "visual_role": "Cooling filter applied to the heatmap before softmax."
+    },
+    {
+      "symbol": "softmax",
+      "meaning": "Normalization that converts scores into non-negative weights summing to one.",
+      "color": "#C4B5FD",
+      "visual_role": "Bar normalization from raw scores into proportions."
+    },
+    {
+      "symbol": "context",
+      "meaning": "The output token representation after mixing attended values.",
+      "color": "#37D67A",
+      "visual_role": "Final merged vector."
+    }
+  ],
+  "prerequisite_policy": {
+    "assume_known": ["basic linear algebra notation"],
+    "introduce_just_in_time": [
+      {
+        "concept": "dot product similarity",
+        "one_sentence": "点积可以被当作两个向量朝向是否相似的快速打分。"
+      },
+      {
+        "concept": "softmax normalization",
+        "one_sentence": "softmax 会把一排分数变成总和为 1 的注意力比例。"
+      }
+    ]
+  },
+  "causal_steps": [
+    {
+      "id": "m01_token_context_question",
+      "plain_language": "A token asks which other tokens matter to it in the current context.",
+      "formula_link": "pre-formula setup",
+      "visual_metaphor": "One token tile emits soft arcs toward related neighbor tiles.",
+      "manim_objects": ["sentence_tokens", "active_token", "context_arcs"]
+    },
+    {
+      "id": "m02_role_projection",
+      "plain_language": "Each token is projected into three roles: query, key, and value.",
+      "formula_link": "Q, K, V",
+      "visual_metaphor": "Each token splits into three stable-color cards labelled Q, K, and V.",
+      "manim_objects": ["token_tiles", "query_cards", "key_cards", "value_cards"]
+    },
+    {
+      "id": "m03_pairwise_scores",
+      "plain_language": "Queries compare with keys to produce pairwise relevance scores.",
+      "formula_link": "QK^T",
+      "visual_metaphor": "Comparison lines populate a small heatmap row by row.",
+      "manim_objects": ["formula_qkt", "comparison_lines", "attention_heatmap"]
+    },
+    {
+      "id": "m04_score_scaling",
+      "plain_language": "The scores are divided by sqrt(d_k) so the heatmap does not become overconfident too early.",
+      "formula_link": "QK^T / sqrt(d_k)",
+      "visual_metaphor": "High-intensity heatmap cells cool into a more readable score field.",
+      "manim_objects": ["sharp_scores", "scale_term", "attention_heatmap"]
+    },
+    {
+      "id": "m05_weight_normalization",
+      "plain_language": "Softmax converts raw relevance scores into proportions that sum to one.",
+      "formula_link": "softmax(QK^T / sqrt(d_k))",
+      "visual_metaphor": "Raw bars transform into normalized attention weight bars.",
+      "manim_objects": ["raw_score_bars", "weight_bars", "sum_label"]
+    },
+    {
+      "id": "m06_value_aggregation",
+      "plain_language": "The attention weights scale value vectors and merge them into a contextual output.",
+      "formula_link": "softmax(QK^T / sqrt(d_k))V",
+      "visual_metaphor": "Weighted value streams converge into a single context vector.",
+      "manim_objects": ["attention_weights", "value_vectors", "context_vector", "full_formula"]
+    }
+  ],
+  "visual_metaphors": [
+    {
+      "id": "vm_roles_as_cards",
+      "meaning": "Q/K/V 是同一 token 表示的三种角色，而不是三种不同 token。",
+      "use_in_steps": ["m02_role_projection"]
+    },
+    {
+      "id": "vm_scores_as_heatmap",
+      "meaning": "QK^T 是一张“query 行 × key 列”的相关性表格。",
+      "use_in_steps": ["m03_pairwise_scores", "m04_score_scaling"]
+    },
+    {
+      "id": "vm_weights_as_proportions",
+      "meaning": "softmax 让权重可解释为比例（非负且和为 1）。",
+      "use_in_steps": ["m05_weight_normalization"]
+    },
+    {
+      "id": "vm_values_as_streams",
+      "meaning": "加权求和可以用多路流按权重汇聚成一个 context 向量来表达。",
+      "use_in_steps": ["m06_value_aggregation"]
+    }
+  ],
+  "misconceptions": [
+    {
+      "risk": "Viewers may think attention chooses only one token.",
+      "animation_guardrail": "Show multiple arcs, multiple weights, and a weighted sum rather than a single hard selection."
+    },
+    {
+      "risk": "Viewers may think Q, K, and V are different input tokens.",
+      "animation_guardrail": "Show Q, K, and V as roles copied from the same source token tiles."
+    },
+    {
+      "risk": "Viewers may treat scaling as a cosmetic step.",
+      "animation_guardrail": "Pulse over-sharp scores before scaling, then cool the heatmap while the sqrt(d_k) term appears."
+    },
+    {
+      "risk": "Viewers may think softmax preserves raw score magnitudes.",
+      "animation_guardrail": "Transform score bars into proportions and show the sum-to-one label only after normalization."
+    },
+    {
+      "risk": "Viewers may think PixVerse is responsible for exact formulas.",
+      "animation_guardrail": "Keep every formula, label, heatmap, and bar chart in Manim; use PixVerse only for text-free cinematic support."
+    }
+  ],
+  "claim_boundaries": [
+    "本示例只解释 scaled dot-product attention 的机制直觉，不覆盖 multi-head attention、训练过程或完整 Transformer block。",
+    "热力图/权重/数值均为教学用 toy values，不代表任何真实模型在特定输入上的激活。"
+  ]
+}

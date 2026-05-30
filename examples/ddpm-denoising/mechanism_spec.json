@@ -1,0 +1,82 @@
+{
+  "title": "DDPM Reverse Diffusion",
+  "learning_objective": "Explain how DDPMs define a forward noising process and learn a reverse process that gradually denoises samples.",
+  "source_excerpt": "Diffusion probabilistic models use a latent variable chain inspired by nonequilibrium thermodynamics. The forward process adds Gaussian noise over timesteps, while the learned reverse process denoises step by step.",
+  "source_url": "https://arxiv.org/abs/2006.11239",
+  "symbol_ledger": [
+    {
+      "symbol": "x_0",
+      "meaning": "Clean data sample.",
+      "color": "#A7F3D0",
+      "visual_role": "Structured point or image tile on the data manifold."
+    },
+    {
+      "symbol": "x_t",
+      "meaning": "Noisy latent at timestep t.",
+      "color": "#C4B5FD",
+      "visual_role": "Particle or image tile increasingly covered by noise."
+    },
+    {
+      "symbol": "beta_t",
+      "meaning": "Noise variance schedule for the forward step.",
+      "color": "#FCA5A5",
+      "visual_role": "Time-varying noise dial."
+    },
+    {
+      "symbol": "alpha_bar_t",
+      "meaning": "Cumulative signal retention over timesteps.",
+      "color": "#7DD3FC",
+      "visual_role": "Fading signal-strength curve."
+    },
+    {
+      "symbol": "epsilon_theta",
+      "meaning": "Learned noise prediction network.",
+      "color": "#FDE68A",
+      "visual_role": "Denoiser module guiding reverse steps."
+    }
+  ],
+  "causal_steps": [
+    {
+      "id": "m01_clean_data",
+      "plain_language": "Start from a clean sample on the data manifold.",
+      "formula_link": "x_0",
+      "visual_metaphor": "A green structured sample sits on a clean manifold ribbon.",
+      "manim_objects": ["clean_sample", "data_manifold"]
+    },
+    {
+      "id": "m02_forward_noise",
+      "plain_language": "The forward process repeatedly adds Gaussian noise according to beta_t.",
+      "formula_link": "q(x_t | x_{t-1})",
+      "visual_metaphor": "The sample diffuses into a purple noise cloud as time increases.",
+      "manim_objects": ["noise_schedule", "noisy_sample", "noise_cloud"]
+    },
+    {
+      "id": "m03_closed_form_noisy_state",
+      "plain_language": "At any timestep t, x_t can be sampled directly from x_0 using alpha_bar_t.",
+      "formula_link": "q(x_t | x_0)",
+      "visual_metaphor": "A time slider maps clean signal strength to noise variance.",
+      "manim_objects": ["time_slider", "signal_curve", "variance_band"]
+    },
+    {
+      "id": "m04_reverse_denoise",
+      "plain_language": "The learned reverse process removes predicted noise step by step.",
+      "formula_link": "p_theta(x_{t-1} | x_t)",
+      "visual_metaphor": "Particles converge from noise cloud back toward a structured sample.",
+      "manim_objects": ["denoiser_module", "reverse_trajectory", "reconstructed_sample"]
+    }
+  ],
+  "misconceptions": [
+    {
+      "risk": "Viewers may think the model jumps from noise to image in one step.",
+      "animation_guardrail": "Show multiple reverse timesteps with gradual convergence."
+    },
+    {
+      "risk": "Viewers may think forward noising is learned.",
+      "animation_guardrail": "Show beta_t as a fixed schedule and the reverse denoiser as learned."
+    },
+    {
+      "risk": "Viewers may interpret particle clouds as exact image pixels.",
+      "animation_guardrail": "Mark them as low-dimensional teaching abstractions."
+    }
+  ]
+}

@@ -6,7 +6,8 @@ Goal:
 - Turn one complex formula or paper mechanism into a short interactive science explainer demo.
 - Keep every stage file-backed and reviewable.
 - Use Trae Solo's workspace, task management, terminal, editor, browser preview, and parallel execution abilities.
-- Coordinate agents through `production_manifest.json`.
+- Coordinate project state through `production_manifest.json`.
+- Coordinate executable scene details through `enriched_scene_spec.json`.
 
 Current MVP:
 - Demo topic: scaled dot-product attention.
@@ -16,14 +17,17 @@ Current MVP:
 Read first:
 - `memory/active/current.md`
 - `docs/research-and-mvp-plan.md`
+- `docs/project-plan-fusion.md`
 - `docs/trae-solo-native-workflow.md`
 - `docs/agent-coordination-and-pixverse.md`
 - `contracts/production_manifest.schema.json`
+- `contracts/enriched_scene_spec.schema.json`
 
 Create or update:
 - `solo/task-board.md`
 - `solo/review-checklist.md`
 - `examples/attention/production_manifest.json`
+- `examples/attention/enriched_scene_spec.json`
 - `examples/attention/input.md` if missing
 
 Rules:
@@ -34,7 +38,8 @@ Rules:
 - Keep exact math in Manim.
 - Prefer small, repairable tasks over one giant generation step.
 - Every task must have a concrete input file, output file, owner, and acceptance check.
-- Every cross-agent dependency must be expressed in the production manifest.
+- Every project-level cross-agent dependency must be expressed in the production manifest.
+- Every scene-level timing/layer/audio/PixVerse/assembly dependency must be expressed in the enriched scene spec.
 
 Output format:
 

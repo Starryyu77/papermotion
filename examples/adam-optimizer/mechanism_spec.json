@@ -1,0 +1,82 @@
+{
+  "title": "Adam Optimizer Landscape",
+  "learning_objective": "Explain how Adam converts noisy gradients into adaptive parameter updates through first and second moment estimates.",
+  "source_excerpt": "Adam is a first-order gradient-based optimization algorithm based on adaptive estimates of lower-order moments. It updates biased first and second moment estimates, corrects them, and applies a scaled step to the parameters.",
+  "source_url": "https://arxiv.org/abs/1412.6980",
+  "symbol_ledger": [
+    {
+      "symbol": "theta_t",
+      "meaning": "Current parameter vector at iteration t.",
+      "color": "#FDE68A",
+      "visual_role": "Moving point on a loss landscape."
+    },
+    {
+      "symbol": "g_t",
+      "meaning": "Gradient of the stochastic objective at the current parameters.",
+      "color": "#FCA5A5",
+      "visual_role": "Raw noisy gradient arrow."
+    },
+    {
+      "symbol": "m_t",
+      "meaning": "Exponential moving average of gradients.",
+      "color": "#7DD3FC",
+      "visual_role": "Smoothed momentum arrow."
+    },
+    {
+      "symbol": "v_t",
+      "meaning": "Exponential moving average of squared gradients.",
+      "color": "#C4B5FD",
+      "visual_role": "Per-direction scale field or uncertainty halo."
+    },
+    {
+      "symbol": "alpha",
+      "meaning": "Learning rate.",
+      "color": "#A7F3D0",
+      "visual_role": "Step-size gauge."
+    }
+  ],
+  "causal_steps": [
+    {
+      "id": "m01_gradient_sample",
+      "plain_language": "At each iteration, Adam observes a stochastic gradient at the current parameter point.",
+      "formula_link": "g_t",
+      "visual_metaphor": "A noisy red arrow appears at the parameter point on a loss surface.",
+      "manim_objects": ["loss_surface", "parameter_point", "gradient_arrow"]
+    },
+    {
+      "id": "m02_first_moment",
+      "plain_language": "Adam smooths gradients into a first moment estimate.",
+      "formula_link": "m_t = beta_1 m_{t-1} + (1 - beta_1) g_t",
+      "visual_metaphor": "The raw gradient arrow blends with previous direction into a steadier blue arrow.",
+      "manim_objects": ["gradient_arrow", "momentum_arrow"]
+    },
+    {
+      "id": "m03_second_moment",
+      "plain_language": "Adam estimates squared gradient magnitude to adapt each coordinate's scale.",
+      "formula_link": "v_t = beta_2 v_{t-1} + (1 - beta_2) g_t^2",
+      "visual_metaphor": "A purple scale halo widens in directions with high squared gradients.",
+      "manim_objects": ["second_moment_field", "scale_halo"]
+    },
+    {
+      "id": "m04_adaptive_step",
+      "plain_language": "The corrected first moment is divided by the square root of the corrected second moment to produce the update.",
+      "formula_link": "theta_t = theta_{t-1} - alpha * m_hat_t / (sqrt(v_hat_t) + epsilon)",
+      "visual_metaphor": "A final green update arrow is shorter in high-variance directions and moves the parameter point.",
+      "manim_objects": ["adaptive_step_arrow", "parameter_point"]
+    }
+  ],
+  "misconceptions": [
+    {
+      "risk": "Viewers may think Adam is just gradient descent with momentum.",
+      "animation_guardrail": "Show the second-moment scale changing the length of the update arrow."
+    },
+    {
+      "risk": "Viewers may think v_t is curvature.",
+      "animation_guardrail": "Label it as squared-gradient scale, not Hessian curvature."
+    },
+    {
+      "risk": "Viewers may overread the 2D landscape as a real high-dimensional loss surface.",
+      "animation_guardrail": "Mark the landscape as a 2D teaching slice."
+    }
+  ]
+}

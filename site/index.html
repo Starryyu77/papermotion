@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PaperMotion - Formula to Research Video Demo</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230b2f35'/%3E%3Cpath d='M14 39h36M18 25h28M24 14l-8 18 8 18M40 14l8 18-8 18' stroke='%23f7faf9' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body>
+    <main class="site-shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="PaperMotion home">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>PaperMotion</span>
+        </a>
+        <nav class="nav-links" aria-label="Page navigation">
+          <a href="#studio">Studio</a>
+          <a href="#workflow">Workflow</a>
+          <a href="#demo">Demo</a>
+          <a href="#contracts">Contracts</a>
+        </nav>
+        <a class="github-link" href="#studio">Workflow preview</a>
+      </header>
+
+      <section class="studio-band" id="top">
+        <div class="hero-copy">
+          <p class="hero-kicker">PaperMotion</p>
+          <h1>Turn research artifacts into explainer films.</h1>
+          <p>
+            Paste a formula or paper excerpt, run a simulated production pipeline, and preview the
+            pre-rendered result.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="primary-link" href="#studio">Start a simulated run</a>
+            <a class="secondary-link" href="#demo">Watch attention demo</a>
+          </div>
+        </div>
+
+        <section class="studio-card" aria-label="Simulated formula to video run">
+          <div class="studio-title">
+            <div>
+              <span class="pulse-mark" aria-hidden="true"></span>
+              <strong>Simulated Formula-to-Video Run</strong>
+            </div>
+            <span class="studio-caption">Preset workflow. Local interaction. Pre-rendered output.</span>
+          </div>
+
+          <div class="studio-surface" id="studio" aria-label="Simulated PaperMotion studio">
+          <section class="panel source-panel" aria-label="Source input console">
+            <div class="panel-heading">
+              <span class="step-badge">1</span>
+              <div>
+                <h2>Source</h2>
+                <p>Provide a formula, note, or paper excerpt</p>
+              </div>
+              <button class="panel-menu" type="button">Example: Attention</button>
+            </div>
+
+            <div class="tab-row" aria-label="Source modes">
+              <button class="active" type="button">Formula / Notes</button>
+              <button type="button" disabled>Paper PDF (future)</button>
+            </div>
+
+            <label class="sr-only" for="sourceInput">Formula, paper excerpt, or one-line generation request</label>
+            <textarea id="sourceInput" spellcheck="false">Scaled dot-product attention.
+
+Attention(Q,K,V) = softmax(QK^T / sqrt(d_k))V</textarea>
+
+            <div class="preset-row" aria-label="Preset inputs">
+              <button type="button" data-preset="formula">Attention</button>
+              <button type="button" data-preset="paper">Paper excerpt</button>
+              <button type="button" disabled>Diffusion</button>
+              <button type="button" disabled>GNN</button>
+            </div>
+
+            <button class="generate-button" type="button" id="generateButton">
+              Generate video preview
+            </button>
+
+            <div class="formula-detect">
+              <span class="signal-dot"></span>
+              <strong>Core formula detected</strong>
+              <code>Attention(Q,K,V)=softmax(QK^T/sqrt(d_k))V</code>
+            </div>
+          </section>
+
+          <section class="panel trace-panel" aria-label="Preset pipeline progress">
+            <div class="panel-heading">
+              <span class="step-badge">2</span>
+              <div>
+                <h2>Compilation Trace</h2>
+                <p>Preset pipeline, simulated locally</p>
+              </div>
+              <span class="state-pill" id="pipelineStatus">Waiting</span>
+            </div>
+
+            <div class="pipeline-list" id="pipelineList"></div>
+            <div class="console-log" id="consoleLog" aria-live="polite"></div>
+          </section>
+
+          <section class="panel detail-panel" aria-label="Selected pipeline step explanation">
+            <div class="panel-heading">
+              <span class="step-badge">3</span>
+              <div>
+                <h2>Step explanation</h2>
+                <p>Click a workflow step to inspect the preset output</p>
+              </div>
+              <span class="state-pill" id="runState">Ready</span>
+            </div>
+
+            <article class="step-detail" id="stepDetail"></article>
+
+            <div class="panel-heading film-heading">
+              <div>
+                <h2>Generated film</h2>
+                <p id="outputStatus">Pre-rendered output locked</p>
+              </div>
+            </div>
+
+            <div class="result-shell" id="resultShell">
+              <div class="result-placeholder" id="resultPlaceholder">
+                <img src="./public/videos/attention-demo-poster.jpg" alt="" aria-hidden="true" />
+                <div>
+                  <strong>Video preview locked</strong>
+                  <span>Run the simulated pipeline to reveal the pre-rendered attention demo.</span>
+                </div>
+              </div>
+              <button class="result-cover" type="button" id="resultCover" aria-label="Play pre-rendered attention demo">
+                <img src="./public/videos/attention-demo-poster.jpg" alt="Scaled dot-product attention video poster" />
+                <span>Play pre-rendered video</span>
+              </button>
+              <video id="finalVideo" controls preload="metadata" playsinline poster="./public/videos/attention-demo-poster.jpg">
+                <source src="./public/videos/attention-demo.mp4" type="video/mp4" />
+              </video>
+            </div>
+
+            <div class="scene-chip-row" aria-label="Scene chips">
+              <button type="button" class="active">01 Overview</button>
+              <button type="button">02 QK^T</button>
+              <button type="button">03 Scale</button>
+              <button type="button">04 Softmax</button>
+              <button type="button">05 Output</button>
+            </div>
+
+            <div class="film-note">
+              This is a workflow preview. The final video is already generated and served from the
+              repo artifact bundle.
+            </div>
+          </section>
+          </div>
+        </section>
+      </section>
+
+      <section class="workflow-band" id="workflow" aria-labelledby="workflowTitle">
+        <div class="section-heading">
+          <h2 id="workflowTitle">How the preset run works</h2>
+          <p>
+            PaperMotion follows a deterministic chain so viewers can see where the explanation,
+            render, and final video came from.
+          </p>
+        </div>
+        <div class="workflow-rail" id="workflowRail"></div>
+      </section>
+
+      <section class="demo-band" id="demo" aria-labelledby="demoTitle">
+        <div class="demo-layout">
+          <section class="video-panel">
+            <div class="section-heading compact">
+              <h2 id="demoTitle">Attention demo evidence</h2>
+              <p>
+                The sample run uses scaled dot-product attention because it has real symbols, clear
+                mechanism steps, and a short Manim-renderable path.
+              </p>
+            </div>
+            <video class="evidence-video" controls preload="metadata" playsinline poster="./public/videos/attention-demo-poster.jpg">
+              <source src="./public/videos/attention-demo.mp4" type="video/mp4" />
+            </video>
+          </section>
+          <aside class="scene-panel" aria-label="Scene list">
+            <div class="panel-heading compact-panel-heading">
+              <h2>Scene chapters</h2>
+              <span id="activeSceneBadge">Scene 01</span>
+            </div>
+            <div class="scene-list" id="sceneList"></div>
+            <div class="scene-detail" id="sceneDetail"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="contracts-band" id="contracts" aria-labelledby="contractsTitle">
+        <div class="section-heading">
+          <h2 id="contractsTitle">File-backed proof</h2>
+          <p>
+            The website mirrors the same repo artifacts the production workflow uses: a project
+            registry plus scene-level execution contracts.
+          </p>
+        </div>
+        <div class="contract-grid">
+          <article class="contract-panel">
+            <span>Project registry</span>
+            <h3>production_manifest.json</h3>
+            <p id="manifestSummary">Loading manifest summary...</p>
+            <code>site/data/production_manifest.json</code>
+          </article>
+          <article class="contract-panel">
+            <span>Executable scene contract</span>
+            <h3>enriched_scene_spec.json</h3>
+            <p id="specSummary">Loading scene spec summary...</p>
+            <code>site/data/enriched_scene_spec.json</code>
+          </article>
+          <article class="contract-panel">
+            <span>Safety boundary</span>
+            <h3>Manim exact, AI video support</h3>
+            <p>
+              Manim owns formulas, matrices, labels, and symbolic transformations. AI video is only
+              for optional atmosphere, transitions, and non-symbolic support shots.
+            </p>
+            <code>no fake equations from AI video</code>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./scripts/app.js"></script>
+  </body>
+</html>

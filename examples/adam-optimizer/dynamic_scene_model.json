@@ -1,0 +1,942 @@
+{
+  "contract_version": "dynamic-scene-model/v0.1",
+  "demo_id": "adam-optimizer",
+  "source_links": {
+    "mechanism_spec_path": "examples/adam-optimizer/mechanism_spec.json",
+    "source_claim_ids": ["adam_algorithm_claim", "adam_misconceptions"],
+    "formula_ids": ["adam_first_moment", "adam_second_moment", "adam_adaptive_update"],
+    "figure_ids": [],
+    "mechanism_step_ids": [
+      "m01_gradient_sample",
+      "m02_first_moment",
+      "m03_second_moment",
+      "m04_adaptive_step"
+    ],
+    "symbol_ids": ["theta_t", "g_t", "m_t", "v_t", "alpha", "epsilon"]
+  },
+  "content_profile": {
+    "content_families": ["optimization_process", "algorithm_execution", "formula_derivation"],
+    "learning_objective": "Explain how Adam turns noisy gradients into adaptive parameter updates through first and second moment estimates.",
+    "audience_level": "graduate",
+    "visual_thesis": "Adam is shown as a parameter point moving across a teaching loss slice while raw gradients are smoothed and rescaled before becoming the final update step.",
+    "scope": [
+      "Show stochastic gradient sampling at the current parameter point.",
+      "Show first moment smoothing as a stable direction estimate.",
+      "Show second moment tracking as a coordinate-wise scale field.",
+      "Show the final adaptive step as a shorter step in high-variance directions."
+    ],
+    "out_of_scope": [
+      "Bias-correction derivation details beyond the displayed corrected update.",
+      "Convergence theory.",
+      "Real high-dimensional optimizer traces."
+    ]
+  },
+  "semantic_units": {
+    "entities": [
+      {
+        "id": "parameters",
+        "label": "theta_t",
+        "type": "vector",
+        "source_refs": ["theta_t", "m01_gradient_sample", "m04_adaptive_step"],
+        "technical_role": "Current parameter vector being updated.",
+        "meaning": "The optimizer state whose position changes after each update.",
+        "state_variables": ["position", "iteration"],
+        "visualization_need": "Needs a persistent anchor so viewers see before and after.",
+        "claim_boundary": "Shown as a 2D slice of a high-dimensional vector."
+      },
+      {
+        "id": "loss_surface",
+        "label": "Teaching loss slice",
+        "type": "surface",
+        "source_refs": ["m01_gradient_sample"],
+        "technical_role": "Pedagogical surface that gives the gradient direction a visible context.",
+        "meaning": "A local teaching slice of the stochastic objective.",
+        "state_variables": ["height", "local_slope"],
+        "visualization_need": "Provides spatial context for noisy and smoothed directions.",
+        "claim_boundary": "Not a literal learned loss landscape."
+      },
+      {
+        "id": "gradient",
+        "label": "g_t",
+        "type": "vector",
+        "source_refs": ["g_t", "m01_gradient_sample"],
+        "technical_role": "Stochastic gradient observed at the current parameters.",
+        "meaning": "The raw direction estimate that can be noisy.",
+        "state_variables": ["direction", "magnitude"],
+        "visualization_need": "Must be visibly distinct from the smoothed moment.",
+        "claim_boundary": "Toy gradients are illustrative."
+      },
+      {
+        "id": "first_moment",
+        "label": "m_t",
+        "type": "vector",
+        "source_refs": ["m_t", "m02_first_moment", "adam_first_moment"],
+        "technical_role": "Exponential moving average of gradients.",
+        "meaning": "A smoothed direction that carries momentum from prior gradients.",
+        "state_variables": ["direction", "decay"],
+        "visualization_need": "Needs blending from previous direction and current gradient.",
+        "claim_boundary": "Bias correction is summarized in the formula overlay."
+      },
+      {
+        "id": "second_moment",
+        "label": "v_t",
+        "type": "vector",
+        "source_refs": ["v_t", "m03_second_moment", "adam_second_moment"],
+        "technical_role": "Exponential moving average of squared gradients.",
+        "meaning": "A coordinate-wise scale estimate used to damp high-variance directions.",
+        "state_variables": ["coordinate_scale", "decay"],
+        "visualization_need": "Must not be confused with curvature.",
+        "claim_boundary": "Shown as squared-gradient scale, not Hessian curvature."
+      },
+      {
+        "id": "adaptive_update",
+        "label": "adaptive step",
+        "type": "vector",
+        "source_refs": ["m04_adaptive_step", "adam_adaptive_update"],
+        "technical_role": "Final parameter displacement after scaling the corrected first moment.",
+        "meaning": "The update direction and length after adaptive rescaling.",
+        "state_variables": ["step_length", "direction"],
+        "visualization_need": "Needs to show m_t divided by sqrt(v_t)+epsilon.",
+        "claim_boundary": "Step length is pedagogical unless computed from chosen toy values."
+      }
+    ],
+    "operators": [
+      {
+        "id": "op_sample_gradient",
+        "label": "Sample gradient",
+        "operator_type": "measure",
+        "source_refs": ["m01_gradient_sample"],
+        "input_refs": ["parameters", "loss_surface"],
+        "output_refs": ["gradient"],
+        "technical_meaning": "Observe a stochastic gradient at the current parameter point.",
+        "visual_operation_hint": "A red arrow appears from the parameter point on the surface."
+      },
+      {
+        "id": "op_update_first_moment",
+        "label": "Update first moment",
+        "operator_type": "update",
+        "source_refs": ["m02_first_moment", "adam_first_moment"],
+        "input_refs": ["gradient", "first_moment"],
+        "output_refs": ["first_moment"],
+        "technical_meaning": "Blend the raw gradient with the previous first moment.",
+        "visual_operation_hint": "Blend red raw gradient into a steadier blue arrow."
+      },
+      {
+        "id": "op_update_second_moment",
+        "label": "Update second moment",
+        "operator_type": "update",
+        "source_refs": ["m03_second_moment", "adam_second_moment"],
+        "input_refs": ["gradient", "second_moment"],
+        "output_refs": ["second_moment"],
+        "technical_meaning": "Track squared gradient magnitude for adaptive coordinate scaling.",
+        "visual_operation_hint": "Expand a purple scale halo in high squared-gradient directions."
+      },
+      {
+        "id": "op_apply_adaptive_step",
+        "label": "Apply adaptive step",
+        "operator_type": "optimize",
+        "source_refs": ["m04_adaptive_step", "adam_adaptive_update"],
+        "input_refs": ["parameters", "first_moment", "second_moment"],
+        "output_refs": ["adaptive_update", "parameters"],
+        "technical_meaning": "Move parameters by the corrected first moment divided by the square root of the corrected second moment plus epsilon.",
+        "visual_operation_hint": "Route the blue direction through the purple scale field to produce a green step arrow."
+      }
+    ],
+    "states": [
+      {
+        "id": "state_parameter_ready",
+        "label": "Parameter point ready",
+        "source_refs": ["m01_gradient_sample"],
+        "represented_quantities": ["theta_t"],
+        "description": "A parameter point sits on a 2D teaching loss slice before observing the current gradient."
+      },
+      {
+        "id": "state_gradient_visible",
+        "label": "Raw gradient visible",
+        "source_refs": ["m01_gradient_sample"],
+        "represented_quantities": ["g_t"],
+        "description": "A noisy gradient arrow is attached to the parameter point."
+      },
+      {
+        "id": "state_moments_ready",
+        "label": "Moments ready",
+        "source_refs": ["m02_first_moment", "m03_second_moment"],
+        "represented_quantities": ["m_t", "v_t"],
+        "description": "The first moment arrow and second moment scale field are visible."
+      },
+      {
+        "id": "state_update_applied",
+        "label": "Adaptive update applied",
+        "source_refs": ["m04_adaptive_step"],
+        "represented_quantities": ["theta_t update"],
+        "description": "The adaptive step moves the parameter point to its next iteration."
+      }
+    ],
+    "relations": [
+      {
+        "id": "rel_gradient_to_first_moment",
+        "relation_type": "updates",
+        "from_ref": "gradient",
+        "to_ref": "first_moment",
+        "source_refs": ["m02_first_moment"],
+        "meaning": "The raw gradient contributes to the smoothed first moment."
+      },
+      {
+        "id": "rel_gradient_to_second_moment",
+        "relation_type": "updates",
+        "from_ref": "gradient",
+        "to_ref": "second_moment",
+        "source_refs": ["m03_second_moment"],
+        "meaning": "The squared gradient contributes to the adaptive scale estimate."
+      },
+      {
+        "id": "rel_moments_to_step",
+        "relation_type": "conditions_on",
+        "from_ref": "second_moment",
+        "to_ref": "adaptive_update",
+        "source_refs": ["m04_adaptive_step"],
+        "meaning": "The final step is conditioned on the second moment scale."
+      }
+    ],
+    "invariants": [
+      {
+        "id": "inv_symbol_colors",
+        "statement": "theta_t, g_t, m_t, v_t, alpha, and epsilon keep stable colors across all beats.",
+        "source_refs": ["adam_algorithm_claim"],
+        "visual_test": "No scene swaps role colors between gradient, moments, and update."
+      },
+      {
+        "id": "inv_v_not_curvature",
+        "statement": "v_t is presented as squared-gradient scale, not as Hessian curvature.",
+        "source_refs": ["adam_misconceptions"],
+        "visual_test": "The scale field label uses squared-gradient language."
+      },
+      {
+        "id": "inv_update_depends_on_both_moments",
+        "statement": "The final update depends on both first and second moment estimates.",
+        "source_refs": ["m04_adaptive_step"],
+        "visual_test": "The green update arrow is shown after both blue direction and purple scale are visible."
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "asm_2d_loss_slice",
+        "statement": "The loss surface is a 2D teaching slice of a high-dimensional objective.",
+        "impact_on_visualization": "Surface geometry can guide intuition but must not be described as the real full loss."
+      },
+      {
+        "id": "asm_toy_gradients",
+        "statement": "Displayed gradients and step lengths use toy values.",
+        "impact_on_visualization": "Numeric claims should be avoided unless derived from explicit toy constants."
+      }
+    ]
+  },
+  "visual_model": {
+    "spaces": [
+      {
+        "id": "space_loss_landscape",
+        "dimensionality": "3d",
+        "coordinate_system": "2D parameter plane with height-coded teaching loss",
+        "purpose": "Show why gradient direction and adaptive step direction matter.",
+        "depth_semantics": "Height is a pedagogical loss value; horizontal position is a 2D parameter slice."
+      },
+      {
+        "id": "space_formula_panel",
+        "dimensionality": "2d",
+        "coordinate_system": "right-side formula panel",
+        "purpose": "Keep formulas readable while the spatial scene moves.",
+        "depth_semantics": "No depth meaning."
+      }
+    ],
+    "objects": [
+      {
+        "id": "obj_loss_surface",
+        "object_type": "surface",
+        "entity_refs": ["loss_surface"],
+        "source_refs": ["m01_gradient_sample"],
+        "label_policy": "external_caption",
+        "exactness": "pedagogical_simplification",
+        "visual_form": "smooth 3D teaching loss slice",
+        "space_ref": "space_loss_landscape",
+        "layer_role": "spatial_scene",
+        "persistent": true,
+        "state_variables": ["height", "local_slope"],
+        "allowed_transformations": ["appear", "rotate"],
+        "renderer_notes": "Use a simple deterministic surface; avoid implying real optimizer telemetry."
+      },
+      {
+        "id": "obj_parameter_point",
+        "object_type": "particle",
+        "entity_refs": ["parameters"],
+        "source_refs": ["theta_t"],
+        "label_policy": "required",
+        "exactness": "qualitative",
+        "visual_form": "yellow point on the teaching loss slice",
+        "space_ref": "space_loss_landscape",
+        "layer_role": "spatial_scene",
+        "persistent": true,
+        "state_variables": ["position", "iteration"],
+        "allowed_transformations": ["trace", "iterate", "highlight"],
+        "renderer_notes": "The point should move only when the update is applied."
+      },
+      {
+        "id": "obj_gradient_arrow",
+        "object_type": "vector",
+        "entity_refs": ["gradient"],
+        "source_refs": ["g_t", "m01_gradient_sample"],
+        "label_policy": "required",
+        "exactness": "qualitative",
+        "visual_form": "red raw gradient arrow",
+        "space_ref": "space_loss_landscape",
+        "layer_role": "spatial_scene",
+        "persistent": false,
+        "state_variables": ["direction", "magnitude"],
+        "allowed_transformations": ["appear", "trace", "highlight"],
+        "renderer_notes": "Jitter can show noise but should not distract from moment smoothing."
+      },
+      {
+        "id": "obj_momentum_arrow",
+        "object_type": "vector",
+        "entity_refs": ["first_moment"],
+        "source_refs": ["m_t", "m02_first_moment"],
+        "label_policy": "required",
+        "exactness": "qualitative",
+        "visual_form": "blue smoothed first-moment arrow",
+        "space_ref": "space_loss_landscape",
+        "layer_role": "spatial_scene",
+        "persistent": true,
+        "state_variables": ["direction", "decay"],
+        "allowed_transformations": ["transform", "align", "highlight"],
+        "renderer_notes": "Blend from red to blue only after formula highlight."
+      },
+      {
+        "id": "obj_scale_field",
+        "object_type": "field",
+        "entity_refs": ["second_moment"],
+        "source_refs": ["v_t", "m03_second_moment"],
+        "label_policy": "required",
+        "exactness": "pedagogical_simplification",
+        "visual_form": "purple coordinate-wise scale halo",
+        "space_ref": "space_loss_landscape",
+        "layer_role": "spatial_scene",
+        "persistent": true,
+        "state_variables": ["coordinate_scale"],
+        "allowed_transformations": ["expand", "highlight"],
+        "renderer_notes": "Label as squared-gradient scale."
+      },
+      {
+        "id": "obj_update_arrow",
+        "object_type": "vector",
+        "entity_refs": ["adaptive_update"],
+        "source_refs": ["m04_adaptive_step", "alpha"],
+        "label_policy": "required",
+        "exactness": "qualitative",
+        "visual_form": "green final adaptive step arrow",
+        "space_ref": "space_loss_landscape",
+        "layer_role": "spatial_scene",
+        "persistent": false,
+        "state_variables": ["step_length", "direction"],
+        "allowed_transformations": ["route", "iterate"],
+        "renderer_notes": "Show shortening through high-variance scale field."
+      },
+      {
+        "id": "obj_formula_stack",
+        "object_type": "equation",
+        "entity_refs": ["gradient", "first_moment", "second_moment", "adaptive_update"],
+        "source_refs": ["adam_first_moment", "adam_second_moment", "adam_adaptive_update"],
+        "label_policy": "required",
+        "exactness": "symbolic_exact",
+        "visual_form": "m_t, v_t, and theta_t update equations",
+        "space_ref": "space_formula_panel",
+        "layer_role": "exact_overlay",
+        "persistent": true,
+        "state_variables": ["active_formula"],
+        "allowed_transformations": ["reveal", "highlight", "transform"],
+        "renderer_notes": "Render formulas deterministically with Manim or equivalent math renderer."
+      }
+    ],
+    "encodings": [
+      {
+        "id": "enc_optimizer_colors",
+        "channel": "color",
+        "maps": "optimizer state roles",
+        "domain": ["theta_t", "g_t", "m_t", "v_t", "alpha"],
+        "range": ["#FDE68A", "#FCA5A5", "#7DD3FC", "#C4B5FD", "#A7F3D0"],
+        "object_refs": ["obj_parameter_point", "obj_gradient_arrow", "obj_momentum_arrow", "obj_scale_field", "obj_update_arrow", "obj_formula_stack"],
+        "stability": "global",
+        "risk_note": "Role-color drift would obscure how moments become the update."
+      },
+      {
+        "id": "enc_scale_opacity",
+        "channel": "opacity",
+        "maps": "relative squared-gradient scale",
+        "domain": ["low v_t", "high v_t"],
+        "range": ["transparent halo", "opaque halo"],
+        "object_refs": ["obj_scale_field"],
+        "stability": "scene_local",
+        "risk_note": "Opacity means squared-gradient scale, not loss curvature."
+      }
+    ],
+    "layout_constraints": [
+      {
+        "id": "layout_formula_static",
+        "constraint_type": "label_readability",
+        "object_refs": ["obj_formula_stack"],
+        "rule": "Hold the formula panel still whenever a new Adam equation is introduced."
+      },
+      {
+        "id": "layout_surface_depth",
+        "constraint_type": "depth_order",
+        "object_refs": ["obj_loss_surface", "obj_parameter_point", "obj_gradient_arrow", "obj_momentum_arrow", "obj_scale_field", "obj_update_arrow"],
+        "rule": "The parameter point and arrows must remain above the surface and not be hidden by the scale halo."
+      }
+    ]
+  },
+  "dynamic_model": {
+    "beats": [
+      {
+        "id": "db01_gradient_sample",
+        "scene_hint": "s01",
+        "teaching_goal": "Anchor Adam in an iterative parameter update and show the raw gradient sample.",
+        "source_refs": ["m01_gradient_sample"],
+        "object_refs": ["obj_loss_surface", "obj_parameter_point", "obj_gradient_arrow", "obj_formula_stack"],
+        "viewer_question": "What does Adam observe at each iteration?",
+        "duration_hint_s": 10,
+        "insight_moment": false
+      },
+      {
+        "id": "db02_momentum_smoothing",
+        "scene_hint": "s02",
+        "teaching_goal": "Show first moment smoothing as a memory of gradient direction.",
+        "source_refs": ["m02_first_moment", "adam_first_moment"],
+        "object_refs": ["obj_gradient_arrow", "obj_momentum_arrow", "obj_formula_stack"],
+        "viewer_question": "Why is m_t less jumpy than g_t?",
+        "duration_hint_s": 11,
+        "insight_moment": true
+      },
+      {
+        "id": "db03_second_moment_scale",
+        "scene_hint": "s03",
+        "teaching_goal": "Show second moment scale as the adaptive denominator.",
+        "source_refs": ["m03_second_moment", "adam_second_moment"],
+        "object_refs": ["obj_scale_field", "obj_formula_stack"],
+        "viewer_question": "What does v_t change about the step?",
+        "duration_hint_s": 11,
+        "insight_moment": true
+      },
+      {
+        "id": "db04_apply_update",
+        "scene_hint": "s04",
+        "teaching_goal": "Show both moments combining into the final adaptive update.",
+        "source_refs": ["m04_adaptive_step", "adam_adaptive_update"],
+        "object_refs": ["obj_parameter_point", "obj_momentum_arrow", "obj_scale_field", "obj_update_arrow", "obj_formula_stack"],
+        "viewer_question": "How does Adam move theta_t?",
+        "duration_hint_s": 12,
+        "insight_moment": true
+      }
+    ],
+    "states": [
+      {
+        "id": "ds01_parameter_ready",
+        "beat_ref": "db01_gradient_sample",
+        "semantic_state_ref": "state_parameter_ready",
+        "object_states": [
+          {
+            "object_ref": "obj_parameter_point",
+            "state": "theta_t point visible on the teaching loss slice"
+          },
+          {
+            "object_ref": "obj_loss_surface",
+            "state": "2D teaching slice visible"
+          }
+        ]
+      },
+      {
+        "id": "ds02_gradient_visible",
+        "beat_ref": "db01_gradient_sample",
+        "semantic_state_ref": "state_gradient_visible",
+        "object_states": [
+          {
+            "object_ref": "obj_gradient_arrow",
+            "state": "raw red gradient arrow attached to theta_t"
+          }
+        ]
+      },
+      {
+        "id": "ds03_moments_visible",
+        "beat_ref": "db03_second_moment_scale",
+        "semantic_state_ref": "state_moments_ready",
+        "object_states": [
+          {
+            "object_ref": "obj_momentum_arrow",
+            "state": "blue first-moment arrow visible"
+          },
+          {
+            "object_ref": "obj_scale_field",
+            "state": "purple second-moment scale field visible"
+          }
+        ]
+      },
+      {
+        "id": "ds04_update_applied",
+        "beat_ref": "db04_apply_update",
+        "semantic_state_ref": "state_update_applied",
+        "object_states": [
+          {
+            "object_ref": "obj_update_arrow",
+            "state": "green adaptive update arrow visible"
+          },
+          {
+            "object_ref": "obj_parameter_point",
+            "state": "parameter point moves to next iteration"
+          }
+        ]
+      }
+    ],
+    "transitions": [
+      {
+        "id": "tr01_show_gradient",
+        "from_state_ref": "ds01_parameter_ready",
+        "to_state_ref": "ds02_gradient_visible",
+        "motion_primitive_refs": ["mp_appear_gradient", "mp_reveal_gradient_formula"],
+        "technical_event": "A stochastic gradient is measured at the current parameters.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_parameter_point",
+            "after_object_ref": "obj_gradient_arrow",
+            "correspondence_note": "The gradient originates at the current parameter point."
+          }
+        ],
+        "composition": "concat",
+        "narrative_relation": "setup",
+        "timing_note": "Show point first, then arrow, then formula label."
+      },
+      {
+        "id": "tr02_update_moments",
+        "from_state_ref": "ds02_gradient_visible",
+        "to_state_ref": "ds03_moments_visible",
+        "motion_primitive_refs": ["mp_blend_first_moment", "mp_expand_second_moment"],
+        "technical_event": "Adam updates first and second moment estimates.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_gradient_arrow",
+            "after_object_ref": "obj_momentum_arrow",
+            "correspondence_note": "The smoothed arrow is derived from raw gradient history."
+          },
+          {
+            "before_object_ref": "obj_gradient_arrow",
+            "after_object_ref": "obj_scale_field",
+            "correspondence_note": "The scale field is derived from squared gradients."
+          }
+        ],
+        "composition": "stagger",
+        "narrative_relation": "derivation",
+        "timing_note": "First moment first, then second moment scale."
+      },
+      {
+        "id": "tr03_apply_scaled_step",
+        "from_state_ref": "ds03_moments_visible",
+        "to_state_ref": "ds04_update_applied",
+        "motion_primitive_refs": ["mp_route_through_scale", "mp_iterate_parameter"],
+        "technical_event": "The corrected first moment is scaled by the second moment and applied to theta_t.",
+        "object_correspondence": [
+          {
+            "before_object_ref": "obj_momentum_arrow",
+            "after_object_ref": "obj_update_arrow",
+            "correspondence_note": "The update keeps the smoothed direction but changes length through v_t."
+          },
+          {
+            "before_object_ref": "obj_parameter_point",
+            "after_object_ref": "obj_parameter_point",
+            "correspondence_note": "Parameter identity persists across the iteration."
+          }
+        ],
+        "composition": "sync",
+        "narrative_relation": "payoff",
+        "timing_note": "Route through scale field before moving the parameter point."
+      }
+    ],
+    "motion_primitives": [
+      {
+        "id": "mp_appear_gradient",
+        "primitive": "appear",
+        "technical_meaning": "Show the observed stochastic gradient at theta_t.",
+        "object_refs": ["obj_gradient_arrow", "obj_parameter_point"],
+        "duration_s": 1.5,
+        "easing": "ease_out",
+        "required_invariant_ref": "inv_symbol_colors",
+        "misread_risk": "A single arrow may look deterministic without narration."
+      },
+      {
+        "id": "mp_reveal_gradient_formula",
+        "primitive": "reveal",
+        "technical_meaning": "Connect g_t to the algorithm state.",
+        "object_refs": ["obj_formula_stack"],
+        "duration_s": 1.2,
+        "easing": "linear",
+        "misread_risk": "Formula should not appear before the spatial role is clear."
+      },
+      {
+        "id": "mp_blend_first_moment",
+        "primitive": "transform",
+        "technical_meaning": "Blend current and previous gradients into m_t.",
+        "object_refs": ["obj_gradient_arrow", "obj_momentum_arrow", "obj_formula_stack"],
+        "from_object_ref": "obj_gradient_arrow",
+        "to_object_ref": "obj_momentum_arrow",
+        "duration_s": 3,
+        "easing": "ease_in_out",
+        "required_invariant_ref": "inv_update_depends_on_both_moments",
+        "misread_risk": "Do not imply m_t ignores prior gradients."
+      },
+      {
+        "id": "mp_expand_second_moment",
+        "primitive": "expand",
+        "technical_meaning": "Represent squared-gradient scale estimate v_t.",
+        "object_refs": ["obj_scale_field", "obj_formula_stack"],
+        "duration_s": 3,
+        "easing": "ease_in_out",
+        "required_invariant_ref": "inv_v_not_curvature",
+        "misread_risk": "The purple field can be mistaken for curvature unless labeled."
+      },
+      {
+        "id": "mp_route_through_scale",
+        "primitive": "route",
+        "technical_meaning": "Scale the first moment by sqrt(v_t)+epsilon before producing the final step.",
+        "object_refs": ["obj_momentum_arrow", "obj_scale_field", "obj_update_arrow", "obj_formula_stack"],
+        "from_object_ref": "obj_momentum_arrow",
+        "to_object_ref": "obj_update_arrow",
+        "duration_s": 3.5,
+        "easing": "ease_in_out",
+        "required_invariant_ref": "inv_update_depends_on_both_moments",
+        "misread_risk": "Viewer may miss that v_t changes step length, not direction alone."
+      },
+      {
+        "id": "mp_iterate_parameter",
+        "primitive": "iterate",
+        "technical_meaning": "Move theta_t to the next parameter state after applying the adaptive update.",
+        "object_refs": ["obj_parameter_point", "obj_update_arrow"],
+        "duration_s": 2.5,
+        "easing": "ease_out",
+        "misread_risk": "The path is a teaching trace, not a measured training run."
+      }
+    ],
+    "complexity_budget": {
+      "max_new_objects_per_beat": 3,
+      "max_simultaneous_motion_tracks": 3,
+      "hold_during_dense_labels": true,
+      "notes": "Keep the formula panel static and introduce only one optimizer state update per beat."
+    }
+  },
+  "camera_model": {
+    "shots": [
+      {
+        "id": "shot_s01_surface",
+        "beat_refs": ["db01_gradient_sample"],
+        "framing": "wide",
+        "movement": "orbit",
+        "focus_targets": ["obj_loss_surface", "obj_parameter_point"],
+        "hold_reason": "Hold after the first orbit so labels are readable.",
+        "depth_usage": "Height encodes teaching loss on a 2D slice.",
+        "avoid_motion_during": ["theta_t label", "g_t label"]
+      },
+      {
+        "id": "shot_s02_momentum",
+        "beat_refs": ["db02_momentum_smoothing"],
+        "framing": "medium",
+        "movement": "static",
+        "focus_targets": ["obj_gradient_arrow", "obj_momentum_arrow", "obj_formula_stack"],
+        "hold_reason": "The first moment formula and arrow blend must be compared.",
+        "depth_usage": "Depth only separates arrows above the surface.",
+        "avoid_motion_during": ["m_t formula"]
+      },
+      {
+        "id": "shot_s03_scale",
+        "beat_refs": ["db03_second_moment_scale"],
+        "framing": "medium",
+        "movement": "static",
+        "focus_targets": ["obj_scale_field", "obj_formula_stack"],
+        "hold_reason": "The v_t label must remain clear to avoid curvature confusion.",
+        "depth_usage": "Scale halo remains on the parameter plane.",
+        "avoid_motion_during": ["v_t formula", "squared-gradient label"]
+      },
+      {
+        "id": "shot_s04_step",
+        "beat_refs": ["db04_apply_update"],
+        "framing": "overview_to_detail",
+        "movement": "push_in",
+        "focus_targets": ["obj_update_arrow", "obj_parameter_point", "obj_formula_stack"],
+        "hold_reason": "Hold on final update equation before the point moves.",
+        "depth_usage": "Push-in highlights the final adaptive displacement.",
+        "avoid_motion_during": ["theta update formula"]
+      }
+    ],
+    "camera_intents": [
+      {
+        "id": "cam_surface_then_labels",
+        "intent": "Use 3D movement only to establish the teaching loss slice, then hold for formulas.",
+        "beat_refs": ["db01_gradient_sample", "db02_momentum_smoothing"]
+      },
+      {
+        "id": "cam_keep_formula_static",
+        "intent": "Keep the formula panel fixed while optimizer state variables are introduced.",
+        "beat_refs": ["db02_momentum_smoothing", "db03_second_moment_scale", "db04_apply_update"]
+      }
+    ],
+    "readability_constraints": [
+      "Do not rotate the formula panel.",
+      "Label v_t as squared-gradient scale, not curvature.",
+      "Keep theta_t identity stable across the update.",
+      "Disclose that the surface is a 2D teaching slice."
+    ]
+  },
+  "exactness_policy": {
+    "exact_required": [
+      {
+        "object_or_claim_ref": "obj_formula_stack",
+        "exactness": "symbolic_exact",
+        "reason": "Adam equations are the source anchor.",
+        "recommended_renderer": "manim"
+      },
+      {
+        "object_or_claim_ref": "obj_parameter_point",
+        "exactness": "qualitative",
+        "reason": "The parameter identity must persist across the iteration.",
+        "recommended_renderer": "threejs"
+      }
+    ],
+    "metaphor_allowed": [
+      {
+        "layer_or_object_ref": "layer_spatial_mechanism",
+        "allowed_scope": "3D surface and halo can make the adaptive step easier to inspect.",
+        "boundary": "They are teaching abstractions and cannot be described as real optimizer telemetry."
+      }
+    ],
+    "ai_video_forbidden": [
+      "Readable Adam equations",
+      "theta_t, g_t, m_t, v_t labels",
+      "Claims that v_t is curvature",
+      "Unlabeled 3D landscapes that imply measured training loss"
+    ],
+    "simplifications": [
+      {
+        "id": "simp_loss_slice",
+        "statement": "The loss landscape is a 2D teaching slice.",
+        "source_refs": ["m01_gradient_sample"],
+        "assumption_refs": ["asm_2d_loss_slice"],
+        "impact": "The scene can explain motion but not real high-dimensional geometry.",
+        "disclosure_or_guardrail": "Caption or narration should call it a teaching slice."
+      },
+      {
+        "id": "simp_toy_gradients",
+        "statement": "Gradient, moment, and update values are illustrative.",
+        "source_refs": [],
+        "assumption_refs": ["asm_toy_gradients"],
+        "impact": "The animation teaches dependency structure, not measured optimizer numbers.",
+        "disclosure_or_guardrail": "Avoid numeric claims unless a toy table is provided."
+      }
+    ]
+  },
+  "renderer_plan": {
+    "candidate_renderers": [
+      {
+        "renderer": "manim",
+        "fit": "primary",
+        "responsibilities": [
+          "Render Adam equations and symbolic labels.",
+          "Render deterministic arrows and formula highlights when a 3D engine is unavailable."
+        ],
+        "required_inputs": ["mechanism_spec.json", "dynamic_scene_model.json"],
+        "reason": "Readable math and labels must be deterministic.",
+        "risks": ["3D surface polish may be limited without Three.js or Blender."]
+      },
+      {
+        "renderer": "threejs",
+        "fit": "support",
+        "responsibilities": [
+          "Render the inspectable 3D teaching loss slice.",
+          "Keep parameter point, arrows, and scale halo spatially coherent."
+        ],
+        "required_inputs": ["dynamic_scene_model.json", "toy surface parameters"],
+        "reason": "This example benefits from genuine spatial depth to show surface, arrows, and scale.",
+        "risks": ["Depth can distract from formulas if camera movement is overused."]
+      },
+      {
+        "renderer": "remotion",
+        "fit": "support",
+        "responsibilities": ["Assemble math overlay, 3D capture, captions, and audio timing."],
+        "required_inputs": ["rendered layers", "caption script"],
+        "reason": "Timeline composition should be separate from mechanism modeling.",
+        "risks": ["Overlay alignment must be checked after capture."]
+      },
+      {
+        "renderer": "ai_video_provider",
+        "fit": "forbidden",
+        "responsibilities": ["No exact optimizer math or labels."],
+        "required_inputs": [],
+        "reason": "AI video cannot be trusted to render Adam formulas or symbolic state labels.",
+        "risks": ["May hallucinate unreadable math."]
+      }
+    ],
+    "layer_plan": [
+      {
+        "layer_id": "layer_exact_math",
+        "layer_role": "exact_overlay",
+        "renderer": "manim",
+        "object_refs": ["obj_formula_stack"],
+        "contains_exactness_levels": ["symbolic_exact"],
+        "exactness_by_object": [
+          {
+            "object_ref": "obj_formula_stack",
+            "exactness": "symbolic_exact"
+          }
+        ],
+        "layer_exactness_overrides": [],
+        "output_target_hint": "math_overlay_alpha.mov"
+      },
+      {
+        "layer_id": "layer_spatial_mechanism",
+        "layer_role": "spatial_scene",
+        "renderer": "threejs",
+        "object_refs": [
+          "obj_loss_surface",
+          "obj_parameter_point",
+          "obj_gradient_arrow",
+          "obj_momentum_arrow",
+          "obj_scale_field",
+          "obj_update_arrow"
+        ],
+        "contains_exactness_levels": ["qualitative", "pedagogical_simplification"],
+        "exactness_by_object": [
+          {
+            "object_ref": "obj_loss_surface",
+            "exactness": "pedagogical_simplification"
+          },
+          {
+            "object_ref": "obj_parameter_point",
+            "exactness": "qualitative"
+          },
+          {
+            "object_ref": "obj_gradient_arrow",
+            "exactness": "qualitative"
+          },
+          {
+            "object_ref": "obj_momentum_arrow",
+            "exactness": "qualitative"
+          },
+          {
+            "object_ref": "obj_scale_field",
+            "exactness": "pedagogical_simplification"
+          },
+          {
+            "object_ref": "obj_update_arrow",
+            "exactness": "qualitative"
+          }
+        ],
+        "layer_exactness_overrides": [],
+        "output_target_hint": "optimizer_spatial_scene.mp4"
+      }
+    ],
+    "fallbacks": [
+      {
+        "if_renderer_unavailable": "threejs",
+        "fallback_renderer": "manim",
+        "tradeoff": "Use a 2.5D contour plot instead of an interactive 3D teaching surface."
+      }
+    ]
+  },
+  "handoff": {
+    "storyboard_beat_refs": [
+      {
+        "beat_ref": "db01_gradient_sample",
+        "scene_hint": "s01",
+        "storyboard_note": "Start with theta_t on a teaching loss slice and reveal the raw gradient."
+      },
+      {
+        "beat_ref": "db02_momentum_smoothing",
+        "scene_hint": "s02",
+        "storyboard_note": "Blend noisy gradient into the first moment direction."
+      },
+      {
+        "beat_ref": "db03_second_moment_scale",
+        "scene_hint": "s03",
+        "storyboard_note": "Expand v_t as squared-gradient scale and label the misconception guardrail."
+      },
+      {
+        "beat_ref": "db04_apply_update",
+        "scene_hint": "s04",
+        "storyboard_note": "Route m_t through sqrt(v_t)+epsilon, then move theta_t."
+      }
+    ],
+    "enriched_scene_spec_hints": [
+      {
+        "scene_id": "s01",
+        "visual_object_refs": ["obj_loss_surface", "obj_parameter_point", "obj_gradient_arrow", "obj_formula_stack"],
+        "motion_primitive_refs": ["mp_appear_gradient", "mp_reveal_gradient_formula"],
+        "renderer_hints": ["threejs", "manim"],
+        "notes": "Use 3D only to establish the teaching slice; keep labels deterministic."
+      },
+      {
+        "scene_id": "s02",
+        "visual_object_refs": ["obj_gradient_arrow", "obj_momentum_arrow", "obj_formula_stack"],
+        "motion_primitive_refs": ["mp_blend_first_moment"],
+        "renderer_hints": ["manim", "threejs"],
+        "notes": "Formula highlight should precede the arrow transformation."
+      },
+      {
+        "scene_id": "s03",
+        "visual_object_refs": ["obj_scale_field", "obj_formula_stack"],
+        "motion_primitive_refs": ["mp_expand_second_moment"],
+        "renderer_hints": ["threejs", "manim"],
+        "notes": "Use explicit squared-gradient wording."
+      },
+      {
+        "scene_id": "s04",
+        "visual_object_refs": ["obj_parameter_point", "obj_momentum_arrow", "obj_scale_field", "obj_update_arrow", "obj_formula_stack"],
+        "motion_primitive_refs": ["mp_route_through_scale", "mp_iterate_parameter"],
+        "renderer_hints": ["threejs", "manim", "remotion"],
+        "notes": "Final step is the payoff; show both moment dependencies."
+      }
+    ],
+    "downstream_tasks": [
+      "Write storyboard.md from the four storyboard beats.",
+      "Create deterministic formula overlays for Adam update equations.",
+      "Choose toy gradients and verify any displayed numbers."
+    ]
+  },
+  "qa_contract": {
+    "source_fidelity_checks": [
+      "Displayed equations match Adam first moment, second moment, and adaptive update formulas.",
+      "v_t is described as squared-gradient scale, not curvature.",
+      "The 2D loss surface is disclosed as a teaching slice."
+    ],
+    "visual_readability_checks": [
+      "Formula panel remains still during equation introduction.",
+      "Gradient, first moment, second moment, and update colors remain stable.",
+      "The parameter point persists across the update."
+    ],
+    "misconception_checks": [
+      "Adam is not presented as momentum-only gradient descent.",
+      "The purple scale field is not described as a Hessian or curvature estimate.",
+      "The 3D surface is not implied to be measured training telemetry."
+    ],
+    "renderer_acceptance_checks": [
+      "Exact formulas are rendered by deterministic renderer layers.",
+      "3D movement stops while labels are read.",
+      "The fallback Manim-only path can still show arrows, scale, and update order."
+    ]
+  },
+  "open_questions": [
+    {
+      "id": "q_toy_values",
+      "question": "Should the sample include a toy numeric table for m_t, v_t, and the final update?",
+      "blocks_execution": false
+    }
+  ],
+  "known_risks": [
+    {
+      "id": "risk_surface_overread",
+      "risk": "Viewers may overread the surface as a real high-dimensional loss landscape.",
+      "mitigation": "Use explicit teaching-slice language in labels and narration."
+    }
+  ]
+}

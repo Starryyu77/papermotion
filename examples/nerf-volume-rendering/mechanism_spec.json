@@ -1,0 +1,88 @@
+{
+  "title": "NeRF Volume Rendering",
+  "learning_objective": "Explain how NeRF maps 5D coordinates to density/color and integrates samples along camera rays to synthesize a pixel or view.",
+  "source_excerpt": "NeRF represents a scene as a fully connected network mapping spatial location and viewing direction to volume density and view-dependent emitted radiance. Views are synthesized by querying 5D coordinates along camera rays and using volume rendering to project colors and densities into an image.",
+  "source_url": "https://arxiv.org/abs/2003.08934",
+  "symbol_ledger": [
+    {
+      "symbol": "F_Theta",
+      "meaning": "Neural radiance field function.",
+      "color": "#A7F3D0",
+      "visual_role": "Field module queried by sample points."
+    },
+    {
+      "symbol": "x",
+      "meaning": "3D spatial location.",
+      "color": "#7DD3FC",
+      "visual_role": "Sample point in volume."
+    },
+    {
+      "symbol": "d",
+      "meaning": "Viewing direction.",
+      "color": "#FDE68A",
+      "visual_role": "Camera ray direction arrow."
+    },
+    {
+      "symbol": "sigma",
+      "meaning": "Volume density.",
+      "color": "#C4B5FD",
+      "visual_role": "Opacity bead at each sample."
+    },
+    {
+      "symbol": "c",
+      "meaning": "View-dependent emitted color.",
+      "color": "#F9A8D4",
+      "visual_role": "Color contribution attached to a sample."
+    },
+    {
+      "symbol": "T(t)",
+      "meaning": "Accumulated transmittance up to depth t.",
+      "color": "#FCA5A5",
+      "visual_role": "Fading visibility ribbon along ray."
+    }
+  ],
+  "causal_steps": [
+    {
+      "id": "m01_camera_ray",
+      "plain_language": "A camera pixel corresponds to a ray passing through the 3D scene volume.",
+      "formula_link": "r(t)",
+      "visual_metaphor": "A yellow ray leaves the camera and cuts through a translucent volume.",
+      "manim_objects": ["camera", "ray", "volume_box"]
+    },
+    {
+      "id": "m02_sample_points",
+      "plain_language": "The renderer samples positions along that ray.",
+      "formula_link": "x = r(t)",
+      "visual_metaphor": "Evenly spaced blue beads appear along the ray.",
+      "manim_objects": ["sample_points", "ray"]
+    },
+    {
+      "id": "m03_field_query",
+      "plain_language": "Each sample and viewing direction are sent into the neural field.",
+      "formula_link": "F_Theta(x, d) -> (c, sigma)",
+      "visual_metaphor": "Each bead sends a query into a green field module and receives color plus density.",
+      "manim_objects": ["field_module", "density_beads", "color_chips"]
+    },
+    {
+      "id": "m04_volume_integration",
+      "plain_language": "Colors are accumulated along the ray, weighted by density and transmittance.",
+      "formula_link": "C(r) = integral T(t) sigma(r(t)) c(r(t), d) dt",
+      "visual_metaphor": "Color chips stack into the final pixel while the transmittance ribbon fades with depth.",
+      "manim_objects": ["transmittance_ribbon", "color_accumulator", "output_pixel"]
+    }
+  ],
+  "misconceptions": [
+    {
+      "risk": "Viewers may think NeRF stores an explicit voxel grid.",
+      "animation_guardrail": "Show a continuous field module queried at points rather than a fixed voxel table."
+    },
+    {
+      "risk": "Viewers may think every sampled point contributes equally.",
+      "animation_guardrail": "Use density and transmittance to modulate contribution opacity."
+    },
+    {
+      "risk": "Viewers may treat the single-ray example as the whole image.",
+      "animation_guardrail": "End by sweeping many rays across the image plane."
+    }
+  ]
+}
